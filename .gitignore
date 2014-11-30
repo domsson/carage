@@ -2,3 +2,5 @@
 *~
 # ignore everything in the bin folder
 bin/*
+# ignore eclipse metadata folder
+.metadata/
