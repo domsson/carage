@@ -215,8 +215,8 @@ public class Mesh {
 		maxX = (x > maxX) ? x : maxX;
 		minY = (y < minY) ? y : minY;
 		maxY = (y > maxY) ? y : maxY;
-		minZ = (z < minZ) ? x : minZ;
-		maxZ = (z > maxZ) ? x : maxZ;
+		minZ = (z < minZ) ? z : minZ;
+		maxZ = (z > maxZ) ? z : maxZ;
 		updateDimensions();		
 	}
 	
