@@ -1,4 +1,4 @@
-package dau.cg;
+package carage;
 
 public class Entity {
 	
@@ -20,6 +20,10 @@ public class Entity {
 	
 	public Entity(float[] position, float[] direction, float[] velocity) {
 		
+	}
+	
+	public void setMesh(Mesh mesh) {
+		this.mesh = mesh;
 	}
 	
 	public void setPosition(float[] position) {

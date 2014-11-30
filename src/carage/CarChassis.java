@@ -1,4 +1,4 @@
-package dau.cg;
+package carage;
 
 public class CarChassis extends Entity {
 	

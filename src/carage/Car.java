@@ -1,4 +1,4 @@
-package dau.cg;
+package carage;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -8,8 +8,8 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Car extends Entity {
 	
-	public String defaultChassisMeshResource = "vw-polo.obj";
-	public String defaultWheelMeshResource   = "vw-polo-wheel.obj";
+	public String chassisMeshResource = "vw-polo.obj";
+	public String wheelMeshResource   = "vw-polo-wheel.obj";
 	
 	// Chassis Mesh
 	private CarChassis chassis = null;
@@ -41,16 +41,15 @@ public class Car extends Entity {
 		initMeshes();
 	}
 	
-	public Car(float frontAxleOffset, float rearAxleOffset, float frontWheelClearance, float rearWheelClearance) {
+	public Car(float frontAxleOffset, float rearAxleOffset, float frontWheelTrack, float rearWheelTrack) {
 		this.frontAxleOffset = frontAxleOffset;
 		this.rearAxleOffset  = rearAxleOffset;
-		this.frontWheelClearance = frontWheelClearance;
-		this.rearWheelClearance  = rearWheelClearance;		
+		this.frontWheelClearance = frontWheelTrack * 0.5f;
+		this.rearWheelClearance  = rearWheelTrack * 0.5f;
 		
 		initMeshes();
 		setWheelPositions();
 	}
-	
 
 	/**
 	 * Set the wheel's positions as offsets from the car's origin
@@ -119,6 +118,30 @@ public class Car extends Entity {
 		System.out.println("Vehicle velocity : "+velocity[0]+" "+velocity[1]+" "+velocity[2]);
 	}
 	
+	public void setChassisMesh(String resource) {
+		this.chassisMeshResource = resource;
+		
+		WavefrontLoader chassisLoader = new WavefrontLoader(chassisMeshResource);
+		chassis.setMesh(chassisLoader.getMesh());
+	}
+	
+	public void setWheelMesh(String resource) {
+		this.wheelMeshResource = resource;
+		
+		// Left Front Wheel
+		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(wheelMeshResource);
+		leftFrontWheel.setMesh(leftFrontWheelLoader.getMesh());
+		// Right Front Wheel
+		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(wheelMeshResource);
+		rightFrontWheel.setMesh(rightFrontWheelLoader.getMesh());
+		// Left Rear Wheel
+		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(wheelMeshResource);
+		leftRearWheel.setMesh(leftRearWheelLoader.getMesh());
+		// Right Rear Wheel
+		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelMeshResource);
+		rightRearWheel.setMesh(rightRearWheelLoader.getMesh());
+	}
+	
 	/**
 	 * Set the chassis' texture to the texture with the given id
 	 * 
@@ -180,61 +203,7 @@ public class Car extends Entity {
 	 * @param delta 
 	 */
 	public void tick(float delta) {
-		// debugDrivingDirection();
-		int drivingDirection = getDrivingDirection(); // this method is weird and confusing...
-		if (drivingDirection == 0) { drivingDirection = 1; } // this ugly hack should not be necessary if i did everything in the right way...
-		float currentSpeed = (float) getSpeed();
-		//System.out.println("v: "+currentSpeed);
-		
-		float[] normalizedVelocity = getNormalizedVelocity((float) currentSpeed); //einheitsvektor aus velocity; also nur die richtung von velocity (bewegungsrichtung!)
-		
-		// v(t) = a * t + v0
-		//	a  = beschleunigung
-		//  t  = zeit
-		//  v0 = anfangsgeschwindigkeit
-		float a = 0f;
-			if      (accelerated) { a =  acceleration * (float) drivingDirection; }
-			else if (decelerated) {	a = -acceleration * (float) drivingDirection; }
-			else                  { a = -currentSpeed/2f * (float) drivingDirection; } // Luftwiderstand, Rollwiderstand, ...? TODO
-		float t = delta / 60f;
-		float v0 = (float) currentSpeed;
-		
-		// float newSpeed = (acceleration * (float) drivingDirection) * (delta / 60f) + ((float) currentSpeed);
-		float newSpeed = a * t + v0; // erhoehte geschwindigkeit (oder verringert, oder gleich geblieben; je nach dem...)
-		float speedDelta = newSpeed - v0; // geschwindigkeitsunterschied zum vorherigen tick
-		
-		// update velocity vector with new speed! (add speed difference to velocity) TODO: should take (new) direction into account!?
-		if (currentSpeed > 0) {
-			velocity[0] += speedDelta * normalizedVelocity[0];
-			velocity[1] += speedDelta * normalizedVelocity[1];
-			velocity[2] += speedDelta * normalizedVelocity[2];
-		}
-		else {
-			velocity[0] += speedDelta * direction[0];
-			velocity[1] += speedDelta * direction[1];
-			velocity[2] += speedDelta * direction[2];
-		}
-		
-		//System.out.println("n: "+getSpeed());
-		
-		// s = 0.5 * a * t^2
-		//  s = strecke
-		//  a = beschleunigung
-		//  t = zeit
-		float distanceDelta = 0.5f * a * t * t; // gesamte zurueckgelegte strecke (in metern) seit letztem tick 
-		float[] driven = new float[] { (normalizedVelocity[0] * distanceDelta), (normalizedVelocity[1] * distanceDelta), (normalizedVelocity[2] * distanceDelta) }; // zurueckgelegte strecke in vektor ausgedrueckt
-		
-		// position mit zurueckgelegtem-distanz-vektor verheiraten TODO SEVERELY BROKEN
-		position[0] += driven[0] * direction[0];
-		position[1] += driven[1] * direction[1];
-		position[2] += driven[2] * direction[2];
-		
-		// TODO winkel updaten! noch dreht sich das auto beim kurven fahren nicht, obgleich seine position stimmen sollte
-		
-		//System.out.println(getSpeed());
-		spinWheels((int)(drivingDirection*3*currentSpeed));
-		
-		// Reset the acc/dec flags to false
+
 		accelerated = false;
 		decelerated = false;
 	}
@@ -247,17 +216,7 @@ public class Car extends Entity {
 	 */
 	public void accelerate(float delta) {
 		accelerated = true;
-		
-		// TODO BROKEN!
-//		velocity[0] += delta * 0.01 * direction[0];
-//		velocity[1] += delta * 0.01 * direction[1];
-//		velocity[2] += delta * 0.01 * direction[2];
-		
-//		position[0] = position[0] + (velocity[0] * direction[0]);
-//		position[1] = position[1] + (velocity[1] * direction[1]);
-//		position[2] = position[2] + (velocity[2] * direction[2]);
-		
-		// position = position + (speed * direction);
+
 	}
 	
 	/**
@@ -270,15 +229,7 @@ public class Car extends Entity {
 	 */
 	public void decelerate(float delta) {
 		decelerated = true;
-		
-		// TODO BROKEN!
-//		velocity[0] -= delta * 0.01 * direction[0];
-//		velocity[1] -= delta * 0.01 * direction[1];
-//		velocity[2] -= delta * 0.01 * direction[2];
-		
-//		position[0] = position[0] + (velocity[0] * direction[0]);
-//		position[1] = position[1] + (velocity[1] * direction[1]);
-//		position[2] = position[2] + (velocity[2] * direction[2]);
+
 	}
 	
 	/**
@@ -340,20 +291,22 @@ public class Car extends Entity {
 		// TODO Also, it'd be nicer if once a mesh resource has been loaded, it could be cloned instead of loading it all over
 		
 		// Chassis
-		WavefrontLoader chassisLoader = new WavefrontLoader(defaultChassisMeshResource);
+		WavefrontLoader chassisLoader = new WavefrontLoader(chassisMeshResource);
 		chassis = new CarChassis(chassisLoader.getMesh());
 		// Left Front Wheel
-		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(defaultWheelMeshResource);
+		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(wheelMeshResource);
 		leftFrontWheel = new CarWheel(leftFrontWheelLoader.getMesh());
 		// Right Front Wheel
-		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(defaultWheelMeshResource);
+		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(wheelMeshResource);
 		rightFrontWheel = new CarWheel(rightFrontWheelLoader.getMesh());
+		rightFrontWheel.invert();
 		// Left Rear Wheel
-		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(defaultWheelMeshResource);
+		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(wheelMeshResource);
 		leftRearWheel = new CarWheel(leftRearWheelLoader.getMesh());
 		// Right Rear Wheel
-		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(defaultWheelMeshResource);
+		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelMeshResource);
 		rightRearWheel = new CarWheel(rightRearWheelLoader.getMesh());
+		rightRearWheel.invert();
 	}
 	
 	/**

@@ -1,4 +1,4 @@
-package dau.cg;
+package carage;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -11,6 +11,8 @@ public class CarWheel extends Entity {
 	// here, angle should be easier then the direction vector, no?
 	private int angle = 0;
 	
+	private boolean invert = false;
+	
 	// How far to the left/right can the wheel turn?
 	// TODO should come from the wheel's or car's config, right?
 	private int maxSteeringAngle = 40;
@@ -19,6 +21,10 @@ public class CarWheel extends Entity {
 		this.mesh = mesh;
 		this.radius = (getMesh().getHeight()/2);
 		this.circumfence = Math.PI * getMesh().getHeight();
+	}
+	
+	public void invert() {
+		invert = !invert;
 	}
 	
 	public int getMaxAngle() {
@@ -63,6 +69,7 @@ public class CarWheel extends Entity {
 			// TODO Which axis to rotate around should be determined via code... or convention?
 			glRotatef(angle, 0, 1, 0);
 			glRotatef(rot, 0, 0, 1);
+			glScalef(1f, 1f, (invert ? -1f : 1f));
 			super.draw(textureId);
 		glPopMatrix();
 	}

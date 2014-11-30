@@ -1,4 +1,4 @@
-package dau.cg;
+package carage;
 
 import static org.lwjgl.opengl.GL11.*;
 

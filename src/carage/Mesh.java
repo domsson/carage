@@ -1,4 +1,4 @@
-package dau.cg;
+package carage;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -303,7 +303,6 @@ public class Mesh {
 		draw();
 	}
 	
-	// TODO broken! wrong size. check vertices and everything...
 	public void drawBoundingBox(float[] color) {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBegin(GL_QUADS);
