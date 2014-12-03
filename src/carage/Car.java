@@ -203,6 +203,8 @@ public class Car extends Entity {
 	 * @param delta 
 	 */
 	public void tick(float delta) {
+		if (accelerated) { spinWheels( 2); }
+		if (decelerated) { spinWheels(-2); }
 
 		accelerated = false;
 		decelerated = false;
