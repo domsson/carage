@@ -66,6 +66,9 @@ public class Carage extends AbstractSimpleBase {
 
 	@Override
 	protected void initOpenGL() {
+		// Print OpenGL Version Info
+		System.out.println("OpenGL Version: "+glGetString(GL_VERSION));
+		
 		// Perspective and Viewport
 		glMatrixMode(GL_PROJECTION);
 		glFrustum(-(WIDTH/(float)HEIGHT), (WIDTH/(float)HEIGHT), -1, 1, 1.5, 100);
