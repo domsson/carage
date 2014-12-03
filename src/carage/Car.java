@@ -8,6 +8,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Car extends Entity {
 	
+	// TODO these should be determined on initialization (via constructor)
 	public String chassisMeshResource = "vw-polo.obj";
 	public String wheelMeshResource   = "vw-polo-wheel.obj";
 	
@@ -34,12 +35,15 @@ public class Car extends Entity {
 	boolean accelerated = false; 
 	boolean decelerated = false;
 	
+	// TODO some more values that should come from the config file!
 	private float weight = 780f;
 	private float acceleration = 3.31f;
 
 	public Car() {
 		initMeshes();
 	}
+	
+	// TODO have a Car(CarProperties props) {} constructor which initializes a car from a config gile / config object
 	
 	public Car(float frontAxleOffset, float rearAxleOffset, float frontWheelTrack, float rearWheelTrack) {
 		this.frontAxleOffset = frontAxleOffset;

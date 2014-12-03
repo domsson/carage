@@ -124,6 +124,8 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void modifyCar() {
+		// TODO should loop through the available wheels/chassis
+		// TODO there should be one modifyWheels() and one modifyChassis()!
 		car.setWheelMesh("generic-wheel.obj");
 		car.setWheelTexture(textureManager.getId("generic-wheel.png"));
 	}
@@ -165,7 +167,7 @@ public class Carage extends AbstractSimpleBase {
 		double xDiff = Math.cos(rotRad+Math.PI) / 10;
 		double zDiff = Math.sin(rotRad+Math.PI) / 10;
 					
-		// TIME SHIZZLE
+		// TIME SHIZZLE TODO this is basically abandoned code; delta should be used properly!
 		float delta = getDelta();
 		angle = (angle >= 360) ? 0 : angle + delta;
 		offset += 0.05;
