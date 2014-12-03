@@ -1,5 +1,6 @@
 package carage;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 
@@ -7,6 +8,7 @@ import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 
 import lenz.opengl.AbstractSimpleBase;
+import lenz.opengl.utils.ShaderProgram;
 import lenz.opengl.utils.Texture;
 
 public class Carage extends AbstractSimpleBase {
@@ -55,6 +57,8 @@ public class Carage extends AbstractSimpleBase {
 	private Mesh carWorkshop;
 	
 	private Car car;
+	
+	private ShaderProgram sp;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -71,14 +75,17 @@ public class Carage extends AbstractSimpleBase {
 		glShadeModel(GL_FLAT);
 		glClearColor(0.4f, 0.6f, 1.0f, 1.0f);
 		
-		// Enable depth test
-		// TODO Figure out which one to use (in what situation) and why: DEPTH_TEST or CULL_FACE?
+		// Enable depth test and backface culling
 		glEnable(GL_DEPTH_TEST);
-		// glEnable(GL_CULL_FACE);
+		glEnable(GL_CULL_FACE);
 		
 		loadTextures();
 		// Textures
 		glEnable(GL_TEXTURE_2D);
+		
+		// Shaders
+		sp = new ShaderProgram("phong");
+		glUseProgram(sp.getId());
 		
 		initFog();
 		initMeshes();

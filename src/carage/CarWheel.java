@@ -69,7 +69,8 @@ public class CarWheel extends Entity {
 			// TODO Which axis to rotate around should be determined via code... or convention?
 			glRotatef(angle, 0, 1, 0);
 			glRotatef(rot, 0, 0, 1);
-			glScalef(1f, 1f, (invert ? -1f : 1f));
+			glRotatef((invert ? 180 : 0), 1, 0, 0);
+			// glScalef(1f, 1f, (invert ? -1f : 1f));
 			super.draw(textureId);
 		glPopMatrix();
 	}
