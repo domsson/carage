@@ -99,12 +99,6 @@ public class Car extends Entity {
 		return (rearWheelClearance * 2);
 	}
 	
-	// TODO does this make sense? z as y and x as x?
-	public double getRotationY() {
-		// return atan2(y, x)
-		return Math.atan2(velocity[2], velocity[0]);
-	}
-	
 	/**
 	 * Indicates if the vehicle is driving forwards, backwards or neither of those.
 	 * @return 1 for forward movement, -1 for backwards movement, 0 for else (TODO what does 'else' mean, bitch?)

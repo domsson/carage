@@ -35,7 +35,9 @@ public class Carage extends AbstractSimpleBase {
 	
 	private boolean modify   = false;
 	
-	// TODO Create a Cam object?
+	// TODO Create a Cam object? (and use it, too?)
+	private Entity camera;
+	
 	private float[] camPos = new float[] {0.0f, 0.4f, 4f};
 	private int[]   camRot = new int[] {30, 0, 0};
 		
@@ -58,6 +60,10 @@ public class Carage extends AbstractSimpleBase {
 	
 	private Car car;
 	
+	// TODO this solution is ugly as f0ck, too many fields anyway...
+	private String[] wheels = new String[] {"vw-polo-wheel", "generic-wheel" };
+	private int curWheels = 0;
+	
 	private ShaderProgram sp;
 
 	public static void main(String[] args) {
@@ -72,6 +78,9 @@ public class Carage extends AbstractSimpleBase {
 		// Perspective and Viewport
 		glMatrixMode(GL_PROJECTION);
 		glFrustum(-(WIDTH/(float)HEIGHT), (WIDTH/(float)HEIGHT), -1, 1, 1.5, 100);
+		// TODO glFrustrum raus, OpenGL will:
+		// Matrix4f projection = new Matrix4f();
+		
 		glMatrixMode(GL_MODELVIEW);
 		
 		// Shading
@@ -88,10 +97,11 @@ public class Carage extends AbstractSimpleBase {
 		
 		// Shaders
 		sp = new ShaderProgram("phong");
-		glUseProgram(sp.getId());
+		// glUseProgram(sp.getId());
 		
 		initFog();
 		initMeshes();
+		initCamera();
 	}
 	
 	public void initFog() {
@@ -115,6 +125,13 @@ public class Carage extends AbstractSimpleBase {
 		car.printInfo();
 	}
 	
+	private void initCamera() {
+		camera = new Entity();
+		camera.setPosition(0.0f, 0.4f, 4.0f);
+		// direction should always be a unit vector... who should take care of it?
+		camera.setDirection(0.0f, 0.0f, -1.0f);
+	}
+	
 	private void loadTextures() {
 		textureManager = TextureManager.getInstance();
 		
@@ -134,10 +151,12 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void modifyCar() {
-		// TODO should loop through the available wheels/chassis
 		// TODO there should be one modifyWheels() and one modifyChassis()!
-		car.setWheelMesh("generic-wheel.obj");
-		car.setWheelTexture(textureManager.getId("generic-wheel.png"));
+		if (++curWheels>wheels.length-1) {
+			curWheels=0;
+		}
+		car.setWheelMesh(wheels[curWheels]+".obj");
+		car.setWheelTexture(textureManager.getId(wheels[curWheels]+".png"));
 	}
 
 	@Override
@@ -208,6 +227,7 @@ public class Carage extends AbstractSimpleBase {
 		glPushMatrix();
 
 			// POSITION THE CAMERA
+			// TODO use the camera object!
 			glTranslatef(-camPos[0], -camPos[1], -camPos[2]);
 			glRotatef(camRot[0], 1, 0, 0);
 			glRotatef(camRot[1], 0, 1 ,0);
