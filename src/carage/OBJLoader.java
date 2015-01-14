@@ -23,7 +23,7 @@ public class OBJLoader {
 	private ArrayList<Vector2f> vt  = new ArrayList<>();
 	private ArrayList<Vector3f> vn  = new ArrayList<>();
 	
-	private ArrayList<Byte>  idx = new ArrayList<>();
+	private ArrayList<Integer>  idx = new ArrayList<>();
 	private ArrayList<Vertex> vertexList = new ArrayList<>();
 	
 	public OBJLoader(String resourceName) {
@@ -103,7 +103,10 @@ public class OBJLoader {
 	// TODO this is not what we need... we need to make a set of unique vertices (position AND normals AND unwrap different!)
 	private void processFace(String p1, String p2, String p3) {
 
-		Vertex[] vertices = new Vertex[] { faceIndicesToVertex(p1), faceIndicesToVertex(p2), faceIndicesToVertex(p3) };
+		Vertex v1 = faceIndicesToVertex(p1);
+		Vertex v2 = faceIndicesToVertex(p2);
+		Vertex v3 = faceIndicesToVertex(p3);
+		Vertex[] vertices = new Vertex[] { v1, v2, v3 };
 		// HIER! HIER! TODO ROBERT! ER HATS!
 		
 		/*
@@ -119,14 +122,14 @@ public class OBJLoader {
 		}
 		*/
 		
-		byte vertexIndex;
+		int vertexIndex;
 		for (int i=0; i<3; ++i) {
-			vertexIndex = (byte) vertexList.indexOf(vertices[i]);
+			vertexIndex = vertexList.indexOf(vertices[i]);
 			if (vertexIndex >= 0) {
 				idx.add(vertexIndex);
 			}
 			else {
-				idx.add((byte) (vertexList.size()));
+				idx.add(vertexList.size());
 				vertexList.add(vertices[i]);
 			}
 		}
@@ -157,7 +160,7 @@ public class OBJLoader {
 		else if (numParts == 3) {
 			vIndex = Integer.parseInt(parts[0]) - 1;
 			vnIndex = (parts[1].equals("")) ? vnIndex : Integer.parseInt(parts[1]) - 1;
-			vtIndex = Integer.parseInt(parts[1]) - 1;
+			vtIndex = Integer.parseInt(parts[2]) - 1;
 		}
 		
 		if (vIndex  >= 0) { vert.setPosition(v.get(vIndex)); }
@@ -182,8 +185,8 @@ public class OBJLoader {
 		return (Vector2f[]) vt.toArray(unwraps);
 	}
 	
-	public byte[] getIndices() {
-		return arrayListToByteArray(idx);
+	public int[] getIndices() {
+		return arrayListToIntArray(idx);
 	}
 	
 	public float[] getExpandedPositions() {
@@ -221,8 +224,8 @@ public class OBJLoader {
 	}
 	
 	// TODO warum funktioniert die kack toArray Methode nicht (so wie ich will)?
-	private byte[] arrayListToByteArray(ArrayList<Byte> list) {
-		byte[] array = new byte[list.size()];
+	private int[] arrayListToIntArray(ArrayList<Integer> list) {
+		int[] array = new int[list.size()];
 		for (int i=0; i<list.size(); ++i) {
 			array[i] = list.get(i);
 		}

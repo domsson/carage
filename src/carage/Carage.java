@@ -7,6 +7,8 @@ import static org.lwjgl.opengl.GL30.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+
 import org.lwjgl.BufferUtils;
 
 import org.lwjgl.Sys;
@@ -158,7 +160,7 @@ public class Carage extends AbstractSimpleBase {
 
 		float[] cardboardboxVertices = cardboardboxLoader.getExpandedPositions();
 		float[] cardboardboxUVs      = cardboardboxLoader.getExpandedUnwraps();
-		byte[]  cardboardboxIndices  = cardboardboxLoader.getIndices();
+		int[]  cardboardboxIndices   = cardboardboxLoader.getIndices();
 		
 		/*
 		float[] vertices = new float[] {
@@ -189,9 +191,9 @@ public class Carage extends AbstractSimpleBase {
 		*/
 		float[] vertices = cardboardboxVertices;
 		float[] uvs = cardboardboxUVs;
-		byte[] indices = cardboardboxIndices;
+		int[] indices = cardboardboxIndices;
 		
-		ByteBuffer indicesBuffer = BufferUtils.createByteBuffer(indices.length);
+		IntBuffer indicesBuffer = BufferUtils.createIntBuffer(indices.length);
 		indicesBuffer.put(indices);
 		indicesBuffer.flip();
 		indicesLength = indices.length;
@@ -260,7 +262,7 @@ public class Carage extends AbstractSimpleBase {
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVBOId);
-		glDrawElements(GL_TRIANGLES, indicesLength, GL_UNSIGNED_BYTE, 0);
+		glDrawElements(GL_TRIANGLES, indicesLength, GL_UNSIGNED_INT, 0);
 		
 		// VertexArrayObject.render(vaoId);
 	}
