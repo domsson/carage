@@ -5,12 +5,14 @@ import org.lwjgl.opengl.DisplayMode;
 
 public abstract class AbstractSimpleBase {
 	
+	public static final String TITLE = "Carage";
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 600;
 
 	public void start() {
 
 		try {
+			Display.setTitle(TITLE);
 			Display.setDisplayMode(new DisplayMode(WIDTH, HEIGHT));
 			Display.create();
 		} catch (LWJGLException e) {

@@ -1,8 +1,21 @@
-varying vec4 color;
-varying vec2 uv;
+#version 130
+
+in vec4 in_Position;
+in vec3 in_Color;
+in vec2 in_TextureCoord;
+
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 modelMatrix;
+
+out vec4 pass_Color;
+out vec2 pass_TextureCoord;
+
 
 void main(void) {
-	color = gl_Color;
-	uv = gl_MultiTexCoord0.xy;
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * in_Position;
+	
+	pass_Color = vec4(in_Color, 1.0);
+	pass_TextureCoord = in_TextureCoord;
 }

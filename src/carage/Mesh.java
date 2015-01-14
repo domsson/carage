@@ -15,6 +15,7 @@ public class Mesh {
 	
 	private ArrayList<float[]> vertices = new ArrayList<>();
 	private ArrayList<float[]> uvs      = new ArrayList<>();
+	private ArrayList<float[]> normals  = new ArrayList<>();
 	private ArrayList<int[][]> faces    = new ArrayList<>();
 	
 	private float geomOffsetX = 0;

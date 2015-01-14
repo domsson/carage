@@ -1,70 +1,73 @@
 package carage;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
+
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import org.lwjgl.BufferUtils;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector2f;
+import org.lwjgl.util.vector.Vector3f;
 
 import lenz.opengl.AbstractSimpleBase;
 import lenz.opengl.utils.ShaderProgram;
 import lenz.opengl.utils.Texture;
 
+// http://antongerdelan.net/opengl/
+// http://www.opengl-tutorial.org/beginners-tutorials/
+// http://wiki.lwjgl.org/wiki/Main_Page
 public class Carage extends AbstractSimpleBase {
 		
 	public static final int FPS = 60;
 	
-	// TODO Abstract this away. Re-mapping keys should be easy.
-	// Keys for car movement
-	private boolean moveLeft  = false;
-	private boolean moveRight = false;
-	private boolean moveUp    = false;
-	private boolean moveDown  = false;
-	private boolean moveFwd   = false;
-	private boolean moveBack  = false;
+	private String shader = "phong";
+	
+	public static final Vector3f X_AXIS = new Vector3f(1, 0, 0);
+	public static final Vector3f Y_AXIS = new Vector3f(0, 1, 0);
+	public static final Vector3f Z_AXIS = new Vector3f(0, 0, 1);
+	
+	// TODO we also want to store their names, can enum help?
+	private final int ATTR_LOCATION_GEOMETRY = 0; // in_Position
+	private final int ATTR_LOCATION_COLOR    = 1; // in_Color
+	private final int ATTR_LOCATION_TEXTURE  = 2; // in_TextureCoord
+	private final int ATTR_LOCATION_NORMALS  = 3; // Not yet used
 
-	// TODO Abstract this away. Re-mapping keys should be easy.
-	// Keys for camera movement
-	private boolean camUp    = false;
-	private boolean camRight = false;
-	private boolean camDown  = false;
-	private boolean camLeft  = false;
-	private boolean camIn    = false;
-	private boolean camOut   = false;
-	
-	private boolean modify   = false;
-	
-	// TODO Create a Cam object? (and use it, too?)
-	private Entity camera;
-	
-	private float[] camPos = new float[] {0.0f, 0.4f, 4f};
-	private int[]   camRot = new int[] {30, 0, 0};
-		
-	// Okay, timing and stuff
 	private long lastRender = 0;
+	private float delta = 0;
 	
-	// TODO what.... what even is this?
-	private float angle = 0.0f;
-	private float offset = 0.0f;
-	private int rot = 0;
+	private boolean buttonUp = false;
+	private boolean buttonLeft = false;
+	private boolean buttonRight = false;
+	private boolean buttonDown = false;
+	private boolean buttonZoomIn = false;
+	private boolean buttonZoomOut = false;
 	
 	private TextureManager textureManager;
-	// TODO private MeshManager meshManager;
-	
-	private WavefrontLoader cardBoardBoxLoader;
-	private Mesh cardBoardBox;
-	
-	private WavefrontLoader carWorkshopLoader;
-	private Mesh carWorkshop;
-	
-	private Car car;
-	
-	// TODO this solution is ugly as f0ck, too many fields anyway...
-	private String[] wheels = new String[] {"vw-polo-wheel", "generic-wheel" };
-	private int curWheels = 0;
-	
+		
 	private ShaderProgram sp;
+	private int spId;
+	
+	private Matrix4f projectionMatrix;
+	private Matrix4f viewMatrix;
+	private Matrix4f modelMatrix;
+	
+	private int projectionMatrixLocation;
+	private int viewMatrixLocation;
+	private int modelMatrixLocation;
+	
+	private FloatBuffer matrixBuffer;
+	
+	private int vaoId = 0;
+	private int vboId = 0;
+	private int indicesVBOId = 0;
+	private int indicesLength = 0;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -72,192 +75,232 @@ public class Carage extends AbstractSimpleBase {
 
 	@Override
 	protected void initOpenGL() {
-		// Print OpenGL Version Info
-		System.out.println("OpenGL Version: "+glGetString(GL_VERSION));
+		printInfo();
+		initMatrices();
+		initViewport();
+		loadTextures(); // can we load textures after shaders or will it break?
 		
-		// Perspective and Viewport
-		glMatrixMode(GL_PROJECTION);
-		glFrustum(-(WIDTH/(float)HEIGHT), (WIDTH/(float)HEIGHT), -1, 1, 1.5, 100);
-		// TODO glFrustrum raus, OpenGL will:
-		// Matrix4f projection = new Matrix4f();
-		
-		glMatrixMode(GL_MODELVIEW);
-		
-		// Shading
-		glShadeModel(GL_FLAT);
+		initShaders();
+		initTestMesh();
+	}
+	
+	private void printInfo() {
+		System.out.println("[Starting "+TITLE+"]");
+		System.out.println("Viewport size  : "+WIDTH+" * "+HEIGHT+" px");
+		System.out.println("OpenGL Renderer: "+glGetString(GL_RENDERER));
+		System.out.println("OpenGL Version : "+glGetString(GL_VERSION));
+		System.out.println("GLSL Version   : "+glGetString(GL_SHADING_LANGUAGE_VERSION));
+	}
+	
+	private void initViewport() {
 		glClearColor(0.4f, 0.6f, 1.0f, 1.0f);
-		
-		// Enable depth test and backface culling
+		glViewport(0, 0, WIDTH, HEIGHT);
 		glEnable(GL_DEPTH_TEST);
+		
+		// Do not render back sides
 		glEnable(GL_CULL_FACE);
+		glCullFace (GL_BACK); // cull back face - this is the default
+		glFrontFace (GL_CCW); // GL_CCW for counter clock-wise - default again
 		
-		loadTextures();
-		// Textures
-		glEnable(GL_TEXTURE_2D);
+	}
+	
+	private void initShaders() {
+		sp = new ShaderProgram(shader);
+		String[] attributeLocations = new String[] {"in_Position", "in_Color", "in_TextureCoord"};
+		sp.bindAttributeLocations(attributeLocations);
 		
-		// Shaders
-		sp = new ShaderProgram("phong");
-		// glUseProgram(sp.getId());
+		spId = sp.getId();
+		projectionMatrixLocation = glGetUniformLocation(spId, "projectionMatrix");
+		viewMatrixLocation = glGetUniformLocation(spId, "viewMatrix");
+		modelMatrixLocation = glGetUniformLocation(spId, "modelMatrix");
 		
-		initFog();
-		initMeshes();
-		initCamera();
+		glUseProgram(spId);
 	}
 	
-	public void initFog() {
-		glEnable(GL_FOG);
-		FloatBuffer fogColor = BufferUtils.createFloatBuffer(4);
-		fogColor.put(0.4f).put(0.6f).put(1.0f).put(1.0f).flip();
-		glFog(GL_FOG_COLOR, fogColor);
-		glFogi(GL_FOG_MODE, GL_LINEAR);
-		glFogf(GL_FOG_START, 5.0f);
-		glFogf(GL_FOG_END, 20.0f);
+	private void initMatrices() {
+		initModelMatrix();
+		initViewMatrix();
+		initProjectionMatrix();
+		initMatrixBuffer();
 	}
 	
-	private void initMeshes() {
-		carWorkshopLoader = new WavefrontLoader("workshop.obj");
-		carWorkshop = carWorkshopLoader.getMesh();
-			
-		cardBoardBoxLoader = new WavefrontLoader("cardboardbox.obj");
-		cardBoardBox = cardBoardBoxLoader.getMesh();
-				
-		loadCar();
-		car.printInfo();
+	private void initProjectionMatrix() {
+		projectionMatrix = new ProjectionMatrix(WIDTH, HEIGHT, 0.1f, 100f, 60f);
 	}
 	
-	private void initCamera() {
-		camera = new Entity();
-		camera.setPosition(0.0f, 0.4f, 4.0f);
-		// direction should always be a unit vector... who should take care of it?
-		camera.setDirection(0.0f, 0.0f, -1.0f);
+	private void initViewMatrix() {
+		viewMatrix = new Matrix4f();
 	}
 	
+	private void initModelMatrix() {
+		modelMatrix = new Matrix4f();
+	}
+	
+	private void initMatrixBuffer() {
+		// http://stackoverflow.com/questions/10697161/why-floatbuffer-instead-of-float
+		matrixBuffer = BufferUtils.createFloatBuffer(16);
+	}
+		
 	private void loadTextures() {
 		textureManager = TextureManager.getInstance();
 		
 		textureManager.load("cg.png");
-		//textureManager.load("two-floors.png");
 		textureManager.load("generic-wheel.png");
 		textureManager.load("vw-polo.png");
 		textureManager.load("vw-polo-wheel.png");
 		textureManager.load("road.png");
 		textureManager.load("cardboardbox.png");
 	}
-	
-	private void loadCar() {
-		car = new Car(1.15f, 1.23f, 1.3f, 1.3f);
-		car.setChassisTexture(textureManager.getId("vw-polo.png"));
-		car.setWheelTexture(textureManager.getId("vw-polo-wheel.png"));
-	}
-	
-	private void modifyCar() {
-		// TODO there should be one modifyWheels() and one modifyChassis()!
-		if (++curWheels>wheels.length-1) {
-			curWheels=0;
-		}
-		car.setWheelMesh(wheels[curWheels]+".obj");
-		car.setWheelTexture(textureManager.getId(wheels[curWheels]+".png"));
-	}
 
+	private void initTestMesh() {
+		OBJLoader cardboardboxLoader = new OBJLoader("vw-polo.obj");
+		cardboardboxLoader.debugOutput();
+
+		float[] cardboardboxVertices = cardboardboxLoader.getExpandedPositions();
+		float[] cardboardboxUVs      = cardboardboxLoader.getExpandedUnwraps();
+		byte[]  cardboardboxIndices  = cardboardboxLoader.getIndices();
+		
+		/*
+		float[] vertices = new float[] {
+				-0.5f, -0.5f, -2.5f, // Bottom Left
+				 0.5f, -0.5f, -2.5f, // Bottom right
+				-0.5f,  0.5f, -2.5f, // Top Left
+				 0.5f,  0.5f, -2.5f  // Top Right
+		};
+		
+		float[] colors = new float[] {
+				 0.5f,  0.5f,  0.5f,
+			     0.5f,  0.5f,  0.5f,
+			     0.5f,  0.5f,  0.5f, 
+			     0.5f,  0.5f,  0.5f
+		};
+		
+		float[] uvs = new float[] {
+				0.0f, 1.0f,
+				1.0f, 1.0f,
+				0.0f, 0.0f,
+				1.0f, 0.0f
+		};
+		
+		byte[] indices = new byte[] {
+				0, 1, 2,
+				2, 1, 3
+		};
+		*/
+		float[] vertices = cardboardboxVertices;
+		float[] uvs = cardboardboxUVs;
+		byte[] indices = cardboardboxIndices;
+		
+		ByteBuffer indicesBuffer = BufferUtils.createByteBuffer(indices.length);
+		indicesBuffer.put(indices);
+		indicesBuffer.flip();
+		indicesLength = indices.length;
+
+		indicesVBOId = glGenBuffers();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVBOId);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
+			
+		VertexArrayObject vao = new VertexArrayObject();
+		vaoId = vao.getId();
+		/*
+		vaoId = glGenVertexArrays();									// generate a VAO and remember its ID
+		glBindVertexArray(vaoId);										// bind the freshly created VAO (with ID 'vaoId')
+		*/
+				
+		VertexBufferObject vbo = new VertexBufferObject(vertices);
+//		VertexBufferObject colorVBO = new VertexBufferObject(colors);
+		VertexBufferObject uvVBO = new VertexBufferObject(uvs);
+		/*
+		vboId = glGenBuffers();											// generate a VBO and remember its ID
+		glBindBuffer(GL_ARRAY_BUFFER, vboId);							// bind the freshly created VBO (with ID 'vboId')
+		glBufferData(GL_ARRAY_BUFFER, triangleBuffer, GL_STATIC_DRAW);	// explain to OpenGL how our VBO data is structured
+		*/
+		
+		vao.addVBO(vbo, ShaderAttribute.GEOMETRY.getLocation(), 3);
+		VertexBufferObject.unbind();
+//		vao.addVBO(colorVBO, ShaderAttribute.COLOR.getLocation(), 3);
+//		VertexBufferObject.unbind();
+		vao.addVBO(uvVBO, ShaderAttribute.TEXTURE.getLocation(), 2);
+		VertexBufferObject.unbind();
+		/*
+		glVertexAttribPointer(ATTR_LOCATION_GEOMETRY, 3, GL_FLOAT, false, 0, 0); 			
+		glEnableVertexAttribArray(ATTR_LOCATION_GEOMETRY);			// Enable VAO's first (0) VBO object (?)
+		*/
+		
+		VertexArrayObject.unbind();
+		/*
+		glBindBuffer(GL_ARRAY_BUFFER, 0);								// unbind VBO
+		glBindVertexArray(0);											// unbind VAO
+		*/
+		
+	}
+	
 	@Override
 	protected void render() {
+		// Time shizzle
+		delta = getDelta();
+		
+		// User pressed any relevant keys?
 		processInput();
 		
-		// Cam rotation
-		camRot[1] = camLeft  ? camRot[1]+2 : camRot[1];
-		camRot[1] = camRight ? camRot[1]-2 : camRot[1];
+		// Let our Quad (or Tri or whatever) move a bit
+		modifyModelMatrix();
 		
-		camRot[1] = (camRot[1] > 360) ? camRot[1]-360 : camRot[1];
-		camRot[1] = (camRot[1] <   0) ? 360-camRot[1] : camRot[1];
+		// Hand over the matrices to the vertex shader
+		matricesToShader();
 		
-		camRot[0] = camUp   ? camRot[0]+2 : camRot[0];
-		camRot[0] = camDown ? camRot[0]-2 : camRot[0];
-		
-		camRot[0] = (camRot[0] > 360) ? camRot[0]-360 : camRot[0];
-		camRot[0] = (camRot[0] <   0) ? 360-camRot[0] : camRot[0];
-		
-		// Cam position
-		if (camIn) {
-			camPos[2] -= 0.1;
-		}
-		if (camOut) {
-			camPos[2] += 0.1;
-		}
-		
-		// Car rotation
-		rot = moveLeft  ? rot+2 : rot;
-		rot = moveRight ? rot-2 : rot;
-		
-		rot = (rot > 360) ? rot-360 : rot;
-		rot = (rot <   0) ? 360-rot : rot;
-		
-		double rotRad = Math.toRadians(rot);
-				
-		double xDiff = Math.cos(rotRad+Math.PI) / 10;
-		double zDiff = Math.sin(rotRad+Math.PI) / 10;
-					
-		// TIME SHIZZLE TODO this is basically abandoned code; delta should be used properly!
-		float delta = getDelta();
-		angle = (angle >= 360) ? 0 : angle + delta;
-		offset += 0.05;
-		
-		// Spin wheels... maybe?
-		if (moveFwd) {
-			car.accelerate(delta);
-		}
-		if (moveBack) {
-			car.decelerate(delta);
-		}
-		// Angle wheels... maybe?
-		if (moveLeft) {
-			car.steerLeft(delta);
-		}
-		if (moveRight) {
-			car.steerRight(delta);
-		}
-		car.tick(delta);
-		
-		if (modify) {
-			modifyCar();
-		}
-			
-		// Clear screen and z-Buffer
+		// Clear dat screen!
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				
-		glPushMatrix();
+        
+		// Finally, render our simple test geometry!
+		//glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary?
+		glBindTexture(GL_TEXTURE_2D, textureManager.getId("vw-polo.png"));
+		
+		glBindVertexArray(vaoId);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVBOId);
+		glDrawElements(GL_TRIANGLES, indicesLength, GL_UNSIGNED_BYTE, 0);
+		
+		// VertexArrayObject.render(vaoId);
+	}
+	
+	private void modifyModelMatrix() {
+		// What we want: SCALE, ROTATE, TRANS
+		// What we do  : TRANS, ROTATE, SCALE
+		float transX = buttonLeft  ? -0.02f * delta : 0f;
+			  transX = buttonRight ?  0.02f * delta : transX;
+			  
+		float transY = buttonUp    ?  0.02f * delta : 0f;
+			  transY = buttonDown  ? -0.02f * delta : transY;
+			  
+		float transZ = buttonZoomIn  ? -0.02f * delta : 0f;
+			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
+		
+		// TODO We need some pushing and popping here, otherwise rotating+translating doesn't work as expected
+		modelMatrix.translate(new Vector3f(transX, transY, transZ));
+		//modelMatrix.rotate(-delta*0.03f, Z_AXIS);
+	}
+	
+	private void matricesToShader() {
+		//glUseProgram(spId);
+		
+		// Projection Matrix
+        projectionMatrix.store(matrixBuffer);
+        matrixBuffer.flip();
+        glUniformMatrix4(projectionMatrixLocation, false, matrixBuffer);
+        
+        // View Matrix
+        viewMatrix.store(matrixBuffer);
+        matrixBuffer.flip();
+        glUniformMatrix4(viewMatrixLocation, false, matrixBuffer);
+        
+        // Model Matrix
+        modelMatrix.store(matrixBuffer);
+        matrixBuffer.flip();
+        glUniformMatrix4(modelMatrixLocation, false, matrixBuffer);
 
-			// POSITION THE CAMERA
-			// TODO use the camera object!
-			glTranslatef(-camPos[0], -camPos[1], -camPos[2]);
-			glRotatef(camRot[0], 1, 0, 0);
-			glRotatef(camRot[1], 0, 1 ,0);
-			glRotatef(camRot[2], 0, 0, 1);
-			
-			// BOX
-			glPushMatrix();
-				glTranslatef(-2.5f, 0, -3.6f);
-				glRotatef(32, 0, 1, 0);
-				
-				cardBoardBox.draw(textureManager.getId("cardboardbox.png"));
-			glPopMatrix();
-
-			// CAR
-			glPushMatrix();
-				//glTranslatef(-transX, -transY, -transZ);
-				float[] carPos = car.getPosition();
-				float[] carDir = car.getDirection();
-				// glTranslatef(carPos[0], carPos[1], carPos[2]);
-				//glRotatef(angle, 0, 1, 0); // Fucking stop rotating, I'm gonna vomit all over the screen!
-				
-				car.draw();
-			glPopMatrix();
-			
-			// WORKSHOP
-			glPushMatrix();				
-				carWorkshop.draw(textureManager.getId("cg.png"));
-			glPopMatrix();
-					
-		glPopMatrix();
+        //glUseProgram(0);
 	}
 			
 	/**
@@ -282,89 +325,72 @@ public class Carage extends AbstractSimpleBase {
 		    if (Keyboard.getEventKeyState()) {
 		        switch (Keyboard.getEventKey()) {
 			        case Keyboard.KEY_A:
-			        	moveLeft = true;	
+			        	buttonLeft = true;	
 			        	break;
 			        case Keyboard.KEY_D:
-			        	moveRight = true;	
+			        	buttonRight = true;	
 			        	break;
 			        case Keyboard.KEY_W:
-			        	moveFwd = true;	
+			        	buttonUp = true;	
 			        	break;
 			        case Keyboard.KEY_S:
-			        	moveBack = true;	
-			        	break;
-			        case Keyboard.KEY_O:
-			        	moveUp = true;
-			        	break;
-			        case Keyboard.KEY_L:
-			        	moveDown = true;
+			        	buttonDown = true;	
 			        	break;
 			        case Keyboard.KEY_UP:
-			        	camUp = true;
+			        	buttonUp = true;
 			        	break;
 			        case Keyboard.KEY_RIGHT:
-			        	camRight = true;
+			        	buttonRight = true;
 			        	break;
 			        case Keyboard.KEY_DOWN:
-			        	camDown = true;
+			        	buttonDown = true;
 			        	break;
 			        case Keyboard.KEY_LEFT:
-			        	camLeft = true;
+			        	buttonLeft = true;
 			        	break;
-			        case Keyboard.KEY_ADD:
-			        	camIn = true;
+			        case Keyboard.KEY_I:
+			        	buttonZoomIn = true;
 			        	break;
-			        case Keyboard.KEY_SUBTRACT:
-			        	camOut = true;
-			        	break;
-			        case Keyboard.KEY_M:
-			        	modify = true;
+			        case Keyboard.KEY_K:
+			        	buttonZoomOut = true;
 			        	break;
 		        }
 		    }
 		    else {
 		    	switch (Keyboard.getEventKey()) {
 			        case Keyboard.KEY_A:
-			        	moveLeft = false;	
+			        	buttonLeft = false;	
 			        	break;
 			        case Keyboard.KEY_D:
-			        	moveRight = false;	
+			        	buttonRight = false;	
 			        	break;
 			        case Keyboard.KEY_W:
-			        	moveFwd = false;
+			        	buttonUp = false;	
 			        	break;
 			        case Keyboard.KEY_S:
-			        	moveBack = false;	
-			        	break;
-			        case Keyboard.KEY_O:
-			        	moveUp = false;
-			        	break;
-			        case Keyboard.KEY_L:
-			        	moveDown = false;
+			        	buttonDown = false;	
 			        	break;
 			        case Keyboard.KEY_UP:
-			        	camUp = false;
+			        	buttonUp = false;
 			        	break;
 			        case Keyboard.KEY_RIGHT:
-			        	camRight = false;
+			        	buttonRight = false;
 			        	break;
 			        case Keyboard.KEY_DOWN:
-			        	camDown = false;
+			        	buttonDown = false;
 			        	break;
 			        case Keyboard.KEY_LEFT:
-			        	camLeft = false;
+			        	buttonLeft = false;
 			        	break;
-			        case Keyboard.KEY_ADD:
-			        	camIn = false;
+			        case Keyboard.KEY_I:
+			        	buttonZoomIn = false;
 			        	break;
-			        case Keyboard.KEY_SUBTRACT:
-			        	camOut = false;
+			        case Keyboard.KEY_K:
+			        	buttonZoomOut = false;
 			        	break;
-			        case Keyboard.KEY_M:
-			        	modify = false;
-			        	break;
-		    	}
+		        }
 		    }
 		}
 	}
+	
 }
