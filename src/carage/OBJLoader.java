@@ -14,17 +14,23 @@ import java.util.Scanner;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import carage.utils.ArrayUtils;
+
 // http://www.martinreddy.net/gfx/3d/OBJ.spec
 public class OBJLoader {
 
 	private Mesh mesh = new Mesh();
 	
-	private ArrayList<Vector3f> v   = new ArrayList<>();
-	private ArrayList<Vector2f> vt  = new ArrayList<>();
-	private ArrayList<Vector3f> vn  = new ArrayList<>();
+	private ArrayList<Vector3f> v   = new ArrayList<>();		// geometry vertices
+	private ArrayList<Vector2f> vt  = new ArrayList<>();		// texture vertices
+	private ArrayList<Vector3f> vn  = new ArrayList<>();		// vertex normals
 	
-	private ArrayList<Integer>  idx = new ArrayList<>();
-	private ArrayList<Vertex> vertexList = new ArrayList<>();
+	private ArrayList<Integer>  idx = new ArrayList<>();		// face indices (three of them define a tri) (using the vertexList)
+	private ArrayList<Vertex> vertexList = new ArrayList<>();	// the final list of unique vertices
+	
+	private Vector3f min  = new Vector3f();	// smallest position values
+	private Vector3f max  = new Vector3f(); // biggest position values
+	private Vector3f size = new Vector3f();	// x=width, y=height, z=length
 	
 	public OBJLoader(String resourceName) {
 		try {
@@ -75,12 +81,15 @@ public class OBJLoader {
 	}
 	
 	private void processGeometryVertex(String x, String y, String z) {
-//		mesh.addVertex(Float.parseFloat(x), Float.parseFloat(y), Float.parseFloat(z));
-		v.add(new Vector3f(Float.parseFloat(x), Float.parseFloat(y), Float.parseFloat(z)));
+		float xValue = Float.parseFloat(x);
+		float yValue = Float.parseFloat(y);
+		float zValue = Float.parseFloat(z);
+		
+		v.add(new Vector3f(xValue, yValue, zValue));
+		updateBoundingBox(xValue, yValue, zValue);
 	}
 	
 	private void processTextureVertex(String u, String v) {
-//		mesh.addUV(Float.parseFloat(u), Float.parseFloat(v));
 		vt.add(new Vector2f(Float.parseFloat(u), 1 - Float.parseFloat(v)));
 	}
 	
@@ -100,31 +109,31 @@ public class OBJLoader {
 		}
 	}
 	
-	// TODO this is not what we need... we need to make a set of unique vertices (position AND normals AND unwrap different!)
 	private void processFace(String p1, String p2, String p3) {
-
-		Vertex v1 = faceIndicesToVertex(p1);
-		Vertex v2 = faceIndicesToVertex(p2);
-		Vertex v3 = faceIndicesToVertex(p3);
-		Vertex[] vertices = new Vertex[] { v1, v2, v3 };
+		// Make vertices out of those index strings and feed them to processTri()
+		processTri(new Vertex[] { faceIndicesToVertex(p1), faceIndicesToVertex(p2), faceIndicesToVertex(p3) });		
+	}
+	
+	private void processFace(String p1, String p2, String p3, String p4) {
+		// Triangulation
+		processFace(p1, p2, p3);
+		processFace(p3, p4, p1);
+	}
+	
+	private void processTri(Vertex[] vertices) {
+		if (vertices.length < 3) { return; } // We need at least 3 vertices. TODO: Better throw an exception here?
 		
 		int vertexIndex;
 		for (int i=0; i<3; ++i) {
-			vertexIndex = vertexList.indexOf(vertices[i]);
-			if (vertexIndex >= 0) {
+			vertexIndex = vertexList.indexOf(vertices[i]); // Search the vertexList for this vertex
+			if (vertexIndex >= 0) {	// If it was found: remember its index
 				idx.add(vertexIndex);
 			}
-			else {
+			else { // If it wasn't found: add it and remember its index
 				idx.add(vertexList.size());
 				vertexList.add(vertices[i]);
 			}
 		}
-	}
-	
-	// TODO see above
-	private void processFace(String p1, String p2, String p3, String p4) {		
-		processFace(p1, p2, p3);
-		processFace(p3, p4, p1);
 	}
 	
 	private Vertex faceIndicesToVertex(String f) {
@@ -161,6 +170,7 @@ public class OBJLoader {
 		System.out.println("Unique Vertices  : "+vertexList.size());
 		System.out.println("Number of Indices: "+idx.size());
 		System.out.println("IBO savings      : "+(v.size() - vertexList.size()));
+		System.out.println("Object Dimensions: "+size.getX()+" x "+size.getY()+" x "+size.getZ());
 	}
 	
 	public Vector3f[] getPositions() {
@@ -179,7 +189,7 @@ public class OBJLoader {
 	}
 	
 	public int[] getIndices() {
-		return arrayListToIntArray(idx);
+		return ArrayUtils.arrayListToIntArray(idx, 0);
 	}
 	
 	public float[] getExpandedPositions() {
@@ -220,22 +230,22 @@ public class OBJLoader {
 		return normals;
 	}
 	
-	// TODO warum funktioniert die kack toArray Methode nicht (so wie ich will)?
-	private float[] arrayListToFloatArray(ArrayList<Float> list) {
-		float[] array = new float[list.size()];
-		for (int i=0; i<list.size(); ++i) {
-			array[i] = list.get(i);
-		}
-		return array;
+	private void updateBoundingBox(float x, float y, float z) {
+		min.setX((x < min.getX()) ? x : min.getX());
+		min.setY((y < min.getY()) ? y : min.getY());
+		min.setZ((z < min.getZ()) ? z : min.getZ());
+		
+		max.setX((x > max.getX()) ? x : max.getX());
+		max.setY((y > max.getY()) ? y : max.getY());
+		max.setZ((z > max.getZ()) ? z : max.getZ());
+		
+		updateDimensions();		
 	}
 	
-	// TODO warum funktioniert die kack toArray Methode nicht (so wie ich will)?
-	private int[] arrayListToIntArray(ArrayList<Integer> list) {
-		int[] array = new int[list.size()];
-		for (int i=0; i<list.size(); ++i) {
-			array[i] = list.get(i);
-		}
-		return array;
+	private void updateDimensions() {
+		size.setX(max.getX()- min.getX());	// width
+		size.setY(max.getY()- min.getY());	// height
+		size.setZ(max.getZ()- min.getZ());	// length
 	}
 	
 }

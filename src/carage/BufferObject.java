@@ -51,7 +51,7 @@ public class BufferObject {
 	
 	/**
 	 * Creates a BufferObject from integer data, assuming that it is supposed to be an IBO.
-	 * @param data An array of type int; its size should be a multiple of 3
+	 * @param data An array of type int
 	 */
 	public BufferObject(int[] data) {
 		// We assume that integer data means that this is supposed to be an IBO
@@ -62,7 +62,7 @@ public class BufferObject {
 
 	/**
 	 * Creates a BufferObject from float data, assuming that it is supposed to be a VBO
-	 * @param data An array of type float; its size should be a multiple of 3
+	 * @param data An array of type float
 	 */
 	public BufferObject(float[] data) {
 		// We assume that float data means that this is supposed to be a VBO
@@ -97,7 +97,7 @@ public class BufferObject {
 	 * Set this buffer's data. This will trigger the actual creation of this Buffer.
 	 * Once the data has been set, this Buffer will have an id and can be bound and drawn.
 	 * If the data has been set before, this will do nothing.
-	 * @param data An array of type int; its size should be a multiple of 3
+	 * @param data An array of type int
 	 */
 	public void setData(int[] data) {
 		if (id == 0) {
@@ -109,7 +109,7 @@ public class BufferObject {
 	 * Set this buffer's data. This will trigger the actual creation of this Buffer.
 	 * Once the data has been set, this Buffer will have an id and can be bound and drawn.
 	 * If the data has been set before, this will do nothing.
-	 * @param data An array of type float; its size should be a multiple of 3
+	 * @param data An array of type float
 	 */
 	public void setData(float[] data) {
 		if (id == 0) {
@@ -150,7 +150,7 @@ public class BufferObject {
 	}
 	
 	/**
-	 * Bind this Buffer in the OpenGL state machine in order to perform action on/with it.
+	 * Bind this Buffer in the OpenGL state machine in order to perform actions on/with it.
 	 */
 	public void bind() {
 		glBindBuffer(bufferType, id);
@@ -204,7 +204,7 @@ public class BufferObject {
 	 * Actually creates this Buffer from the given int data.
 	 * This will register the buffer with OpenGL and send its data to OpenGL.
 	 * Afterwards, this Buffer will have a valid id/name and can be used for drawing.
-	 * @param data An array of type int; its size should be a multiple of 3
+	 * @param data An array of type int
 	 */
 	protected void createBuffer(int[] data) {
 		size = data.length;
@@ -218,7 +218,7 @@ public class BufferObject {
 	 * Actually creates this Buffer from the given float data.
 	 * This will register the buffer with OpenGL and send its data to OpenGL.
 	 * Afterwards, this Buffer will have a valid id/name and can be used for drawing.
-	 * @param data An array of type float; its size should be a multiple of 3
+	 * @param data An array of type float
 	 */
 	protected void createBuffer(float[] data) {
 		size = data.length;

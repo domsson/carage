@@ -35,12 +35,6 @@ public class Carage extends AbstractSimpleBase {
 	public static final Vector3f Y_AXIS = new Vector3f(0, 1, 0);
 	public static final Vector3f Z_AXIS = new Vector3f(0, 0, 1);
 	
-	// TODO we also want to store their names, can enum help?
-	private final int ATTR_LOCATION_GEOMETRY = 0; // in_Position
-	private final int ATTR_LOCATION_COLOR    = 1; // in_Color
-	private final int ATTR_LOCATION_TEXTURE  = 2; // in_TextureCoord
-	private final int ATTR_LOCATION_NORMALS  = 3; // Not yet used
-
 	private long lastRender = 0;
 	private float delta = 0;
 	
@@ -106,13 +100,13 @@ public class Carage extends AbstractSimpleBase {
 	
 	private void initShaders() {
 		sp = new ShaderProgram(shader);
-		String[] attributeLocations = new String[] {"in_Position", "in_Color", "in_TextureCoord"};
+		String[] attributeLocations = new String[] {ShaderAttribute.POSITION.getName(), ShaderAttribute.COLOR.getName(), ShaderAttribute.TEXTURE.getName()};
 		sp.bindAttributeLocations(attributeLocations);
 		
 		spId = sp.getId();
 		projectionMatrixLocation = glGetUniformLocation(spId, "projectionMatrix");
-		viewMatrixLocation = glGetUniformLocation(spId, "viewMatrix");
-		modelMatrixLocation = glGetUniformLocation(spId, "modelMatrix");
+		viewMatrixLocation       = glGetUniformLocation(spId, "viewMatrix");
+		modelMatrixLocation      = glGetUniformLocation(spId, "modelMatrix");
 		
 		glUseProgram(spId);
 	}
@@ -153,32 +147,33 @@ public class Carage extends AbstractSimpleBase {
 	}
 
 	private void initTestMesh() {
-		OBJLoader cardboardboxLoader = new OBJLoader("vw-polo.obj");
-		cardboardboxLoader.debugOutput();
+		OBJLoader objectLoader = new OBJLoader("vw-polo.obj");
+		objectLoader.debugOutput();
 
-		float[] cardboardboxVertices = cardboardboxLoader.getExpandedPositions();
-		float[] cardboardboxUVs      = cardboardboxLoader.getExpandedUnwraps();
-		int[]  cardboardboxIndices   = cardboardboxLoader.getIndices();
+		float[] objectVertices = objectLoader.getExpandedPositions();
+		float[] objectUVs      = objectLoader.getExpandedUnwraps();
+		int[]   objectIndices  = objectLoader.getIndices();
 		
-		float[] vertices = cardboardboxVertices;
-		float[] uvs = cardboardboxUVs;
-		int[] indices = cardboardboxIndices;
+		float[] vertices = objectVertices;
+		float[] uvs = objectUVs;
+		int[] indices = objectIndices;
 		
-		ibo = new IndexBufferObject(indices);	
+		ibo = new IndexBufferObject(indices);
 		vao = new VertexArrayObject();
+		vao.setIBO(ibo);
 					
-		VertexBufferObject vbo = new VertexBufferObject(vertices);
-//		VertexBufferObject colorVBO = new VertexBufferObject(colors);
-		VertexBufferObject uvVBO = new VertexBufferObject(uvs);
+		VertexBufferObject vbo = new VertexBufferObject(vertices, 3);
+//		VertexBufferObject colorVBO = new VertexBufferObject(colors, 3);
+		VertexBufferObject uvVBO = new VertexBufferObject(uvs, 2);
 
-		vao.addVBO(vbo, ShaderAttribute.GEOMETRY.getLocation(), 3);
+		vao.addVBO(vbo, ShaderAttribute.POSITION);
 		vbo.unbind();
-//		vao.addVBO(colorVBO, ShaderAttribute.COLOR.getLocation(), 3);
+//		vao.addVBO(colorVBO, ShaderAttribute.COLOR.getLocation());
 //		VertexBufferObject.unbind();
-		vao.addVBO(uvVBO, ShaderAttribute.TEXTURE.getLocation(), 2);
+		vao.addVBO(uvVBO, ShaderAttribute.TEXTURE);
 		uvVBO.unbind();
 	
-		VertexArrayObject.unbind();
+		vao.unbind();
 		
 	}
 	
@@ -203,22 +198,13 @@ public class Carage extends AbstractSimpleBase {
 		//glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary?
 		glBindTexture(GL_TEXTURE_2D, textureManager.getId("vw-polo.png"));
 		
-		glBindVertexArray(vao.getId());
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getId());
-		glDrawElements(GL_TRIANGLES, ibo.getSize(), GL_UNSIGNED_INT, 0);
-		
-		// VertexArrayObject.render(vaoId);
+		Renderer.renderVAO(vao);
 	}
 	
 	private void modifyModelMatrix() {
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
-		Matrix4f transMatrix = new Matrix4f();
-		Matrix4f rotMatrix = new Matrix4f();
-		Matrix4f scaleMatrix = new Matrix4f();
 		
 		float transX = buttonLeft  ? -0.02f * delta : 0;
 			  transX = buttonRight ?  0.02f * delta : transX;
