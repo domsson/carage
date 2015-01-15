@@ -85,7 +85,7 @@ public class OBJLoader {
 	}
 	
 	private void processVertexNormal(String x, String y, String z) {
-		
+		vn.add(new Vector3f(Float.parseFloat(x), Float.parseFloat(y), Float.parseFloat(z)));
 	}
 	
 	private void processFace(String[] polyPoints) {
@@ -107,20 +107,6 @@ public class OBJLoader {
 		Vertex v2 = faceIndicesToVertex(p2);
 		Vertex v3 = faceIndicesToVertex(p3);
 		Vertex[] vertices = new Vertex[] { v1, v2, v3 };
-		// HIER! HIER! TODO ROBERT! ER HATS!
-		
-		/*
-		byte[] vertexIndices = new byte[] { (byte) vertexList.indexOf(vertices[0]), (byte) vertexList.indexOf(vertices[1]), (byte) vertexList.indexOf(vertices[2]) };
-		for (int i=0; i<3; ++i) {
-			if (vertexIndices[i] >= 0) {
-				idx.add(vertexIndices[i]);
-			}
-			else {
-				idx.add((byte) (vertexList.size()));
-				vertexList.add(vertices[i]);
-			}
-		}
-		*/
 		
 		int vertexIndex;
 		for (int i=0; i<3; ++i) {
@@ -133,7 +119,6 @@ public class OBJLoader {
 				vertexList.add(vertices[i]);
 			}
 		}
-		
 	}
 	
 	// TODO see above
@@ -164,15 +149,18 @@ public class OBJLoader {
 		}
 		
 		if (vIndex  >= 0) { vert.setPosition(v.get(vIndex)); }
-//		if (vnIndex >= 0) { vert.setNormal(vn.get(vnIndex)); }
+		if (vnIndex >= 0) { vert.setNormal(vn.get(vnIndex)); }
 		if (vtIndex >= 0) { vert.setUnwrap(vt.get(vtIndex)); }
 		
 		return vert;
 	}
 	
 	public void debugOutput() {
+		System.out.println("[OBJ Information]");
+		System.out.println("Number of v/vn/vt: "+v.size()+"/"+vn.size()+"/"+vt.size());
 		System.out.println("Unique Vertices  : "+vertexList.size());
 		System.out.println("Number of Indices: "+idx.size());
+		System.out.println("IBO savings      : "+(v.size() - vertexList.size()));
 	}
 	
 	public Vector3f[] getPositions() {
@@ -183,6 +171,11 @@ public class OBJLoader {
 	public Vector2f[] getUnwraps() {
 		Vector2f[] unwraps = new Vector2f[vt.size()];
 		return (Vector2f[]) vt.toArray(unwraps);
+	}
+	
+	public Vector3f[] getNormals() {
+		Vector3f[] normals = new Vector3f[vn.size()];
+		return (Vector3f[]) vn.toArray(normals);
 	}
 	
 	public int[] getIndices() {
@@ -212,6 +205,19 @@ public class OBJLoader {
 		}
 		
 		return unwraps;
+	}
+	
+	public float[] getExpandedNormals() {
+		float[] normals = new float[vertexList.size() * 3];
+		
+		for (int i=0; i<vertexList.size(); ++i) {
+			int pos = 3 * i;
+			normals[pos]   = vertexList.get(i).getNormal().getX();
+			normals[pos+1] = vertexList.get(i).getNormal().getY();
+			normals[pos+2] = vertexList.get(i).getNormal().getZ();
+		}
+		
+		return normals;
 	}
 	
 	// TODO warum funktioniert die kack toArray Methode nicht (so wie ich will)?

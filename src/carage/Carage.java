@@ -50,7 +50,7 @@ public class Carage extends AbstractSimpleBase {
 	private boolean buttonDown = false;
 	private boolean buttonZoomIn = false;
 	private boolean buttonZoomOut = false;
-	
+		
 	private TextureManager textureManager;
 		
 	private ShaderProgram sp;
@@ -66,10 +66,8 @@ public class Carage extends AbstractSimpleBase {
 	
 	private FloatBuffer matrixBuffer;
 	
-	private int vaoId = 0;
-	private int vboId = 0;
-	private int indicesVBOId = 0;
-	private int indicesLength = 0;
+	private VertexArrayObject vao = null;
+	private IndexBufferObject ibo = null;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -162,78 +160,25 @@ public class Carage extends AbstractSimpleBase {
 		float[] cardboardboxUVs      = cardboardboxLoader.getExpandedUnwraps();
 		int[]  cardboardboxIndices   = cardboardboxLoader.getIndices();
 		
-		/*
-		float[] vertices = new float[] {
-				-0.5f, -0.5f, -2.5f, // Bottom Left
-				 0.5f, -0.5f, -2.5f, // Bottom right
-				-0.5f,  0.5f, -2.5f, // Top Left
-				 0.5f,  0.5f, -2.5f  // Top Right
-		};
-		
-		float[] colors = new float[] {
-				 0.5f,  0.5f,  0.5f,
-			     0.5f,  0.5f,  0.5f,
-			     0.5f,  0.5f,  0.5f, 
-			     0.5f,  0.5f,  0.5f
-		};
-		
-		float[] uvs = new float[] {
-				0.0f, 1.0f,
-				1.0f, 1.0f,
-				0.0f, 0.0f,
-				1.0f, 0.0f
-		};
-		
-		byte[] indices = new byte[] {
-				0, 1, 2,
-				2, 1, 3
-		};
-		*/
 		float[] vertices = cardboardboxVertices;
 		float[] uvs = cardboardboxUVs;
 		int[] indices = cardboardboxIndices;
 		
-		IntBuffer indicesBuffer = BufferUtils.createIntBuffer(indices.length);
-		indicesBuffer.put(indices);
-		indicesBuffer.flip();
-		indicesLength = indices.length;
-
-		indicesVBOId = glGenBuffers();
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVBOId);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-			
-		VertexArrayObject vao = new VertexArrayObject();
-		vaoId = vao.getId();
-		/*
-		vaoId = glGenVertexArrays();									// generate a VAO and remember its ID
-		glBindVertexArray(vaoId);										// bind the freshly created VAO (with ID 'vaoId')
-		*/
-				
+		ibo = new IndexBufferObject(indices);	
+		vao = new VertexArrayObject();
+					
 		VertexBufferObject vbo = new VertexBufferObject(vertices);
 //		VertexBufferObject colorVBO = new VertexBufferObject(colors);
 		VertexBufferObject uvVBO = new VertexBufferObject(uvs);
-		/*
-		vboId = glGenBuffers();											// generate a VBO and remember its ID
-		glBindBuffer(GL_ARRAY_BUFFER, vboId);							// bind the freshly created VBO (with ID 'vboId')
-		glBufferData(GL_ARRAY_BUFFER, triangleBuffer, GL_STATIC_DRAW);	// explain to OpenGL how our VBO data is structured
-		*/
-		
+
 		vao.addVBO(vbo, ShaderAttribute.GEOMETRY.getLocation(), 3);
-		VertexBufferObject.unbind();
+		vbo.unbind();
 //		vao.addVBO(colorVBO, ShaderAttribute.COLOR.getLocation(), 3);
 //		VertexBufferObject.unbind();
 		vao.addVBO(uvVBO, ShaderAttribute.TEXTURE.getLocation(), 2);
-		VertexBufferObject.unbind();
-		/*
-		glVertexAttribPointer(ATTR_LOCATION_GEOMETRY, 3, GL_FLOAT, false, 0, 0); 			
-		glEnableVertexAttribArray(ATTR_LOCATION_GEOMETRY);			// Enable VAO's first (0) VBO object (?)
-		*/
-		
+		uvVBO.unbind();
+	
 		VertexArrayObject.unbind();
-		/*
-		glBindBuffer(GL_ARRAY_BUFFER, 0);								// unbind VBO
-		glBindVertexArray(0);											// unbind VAO
-		*/
 		
 	}
 	
@@ -258,26 +203,32 @@ public class Carage extends AbstractSimpleBase {
 		//glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary?
 		glBindTexture(GL_TEXTURE_2D, textureManager.getId("vw-polo.png"));
 		
-		glBindVertexArray(vaoId);
+		glBindVertexArray(vao.getId());
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesVBOId);
-		glDrawElements(GL_TRIANGLES, indicesLength, GL_UNSIGNED_INT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getId());
+		glDrawElements(GL_TRIANGLES, ibo.getSize(), GL_UNSIGNED_INT, 0);
 		
 		// VertexArrayObject.render(vaoId);
 	}
 	
 	private void modifyModelMatrix() {
+		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
-		float transX = buttonLeft  ? -0.02f * delta : 0f;
+		Matrix4f transMatrix = new Matrix4f();
+		Matrix4f rotMatrix = new Matrix4f();
+		Matrix4f scaleMatrix = new Matrix4f();
+		
+		float transX = buttonLeft  ? -0.02f * delta : 0;
 			  transX = buttonRight ?  0.02f * delta : transX;
 			  
-		float transY = buttonUp    ?  0.02f * delta : 0f;
+		float transY = buttonUp    ?  0.02f * delta : 0;
 			  transY = buttonDown  ? -0.02f * delta : transY;
 			  
-		float transZ = buttonZoomIn  ? -0.02f * delta : 0f;
+		float transZ = buttonZoomIn  ? -0.02f * delta : 0;
 			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
+		
 		
 		// TODO We need some pushing and popping here, otherwise rotating+translating doesn't work as expected
 		modelMatrix.translate(new Vector3f(transX, transY, transZ));

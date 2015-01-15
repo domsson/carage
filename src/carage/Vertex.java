@@ -7,7 +7,7 @@ import org.lwjgl.util.vector.Vector4f;
 public class Vertex {
 
 	private Vector3f position = new Vector3f(0, 0, 0);
-	//private Vector3f normal   = new Vector3f(1, 0, 0);	// TODO what are good default values?
+	private Vector3f normal   = null;
 	private Vector2f unwrap   = new Vector2f(0, 0);
 	
 	public Vertex() {
@@ -16,6 +16,12 @@ public class Vertex {
 	
 	public Vertex(Vector3f position, Vector2f unwrap) {
 		this.position = position;
+		this.unwrap = unwrap;
+	}
+	
+	public Vertex(Vector3f position, Vector3f normal, Vector2f unwrap) {
+		this.position = position;
+		this.normal = normal;
 		this.unwrap = unwrap;
 	}
 	
@@ -32,6 +38,15 @@ public class Vertex {
 		Vector2f otherUnwrap = otherVert.getUnwrap();
 		if (unwrap.getX() != otherUnwrap.getX()) { return false; }
 		if (unwrap.getY() != otherUnwrap.getY()) { return false; }
+		// Compare Normal
+		boolean hasNormal = hasNormal();
+		boolean otherHasNormal = otherVert.hasNormal();
+		if (hasNormal != otherHasNormal) { return false; } // One has normal, the other one doesn't
+		if (hasNormal == false) { return true; } // Since both are same, both don't have a normal
+		Vector3f otherNormal = otherVert.getNormal();
+		if (normal.getX() != otherNormal.getX()) { return false; }
+		if (normal.getY() != otherNormal.getY()) { return false; }
+		if (normal.getZ() != otherNormal.getZ()) { return false; }
 		// All clear
 		return true;
 	}
@@ -58,6 +73,14 @@ public class Vertex {
 		unwrap.y = uv[1];
 	}
 	
+	public void setNormal(Vector3f normal) {
+		this.normal = normal;
+	}
+	
+	public void setIJK(float[] ijk) {
+		this.normal = new Vector3f(ijk[0], ijk[1], ijk[2]);
+	}
+	
 	public Vector3f getPosition() {
 		return new Vector3f( position.getX(), position.getY(), position.getZ() );
 	}
@@ -80,5 +103,17 @@ public class Vertex {
 	
 	public float[] getUVW() {
 		return new float[] { unwrap.getX(), unwrap.getY(), 0f };
+	}
+	
+	public boolean hasNormal() {
+		return (normal != null);
+	}
+	
+	public Vector3f getNormal() {
+		return new Vector3f( normal.getX(), normal.getY(), normal.getZ() );
+	}
+	
+	public float[] getIJK() {
+		return new float[] { normal.getX(), normal.getY(), normal.getZ() };
 	}
 }
