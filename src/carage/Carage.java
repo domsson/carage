@@ -1,26 +1,34 @@
 package carage;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL11.GL_BACK;
+import static org.lwjgl.opengl.GL11.GL_CCW;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_RENDERER;
+import static org.lwjgl.opengl.GL11.GL_VERSION;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glCullFace;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glFrontFace;
+import static org.lwjgl.opengl.GL11.glGetString;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
+import static org.lwjgl.opengl.GL20.glGetUniformLocation;
+import static org.lwjgl.opengl.GL20.glUniformMatrix4;
+import static org.lwjgl.opengl.GL20.glUseProgram;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-import org.lwjgl.BufferUtils;
-
-import org.lwjgl.Sys;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
 
 import lenz.opengl.AbstractSimpleBase;
 import lenz.opengl.utils.ShaderProgram;
-import lenz.opengl.utils.Texture;
+
+import org.lwjgl.BufferUtils;
+import org.lwjgl.Sys;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
 // http://antongerdelan.net/opengl/
 // http://www.opengl-tutorial.org/beginners-tutorials/
@@ -60,8 +68,7 @@ public class Carage extends AbstractSimpleBase {
 	
 	private FloatBuffer matrixBuffer;
 	
-	private VertexArrayObject vao = null;
-	private IndexBufferObject ibo = null;
+	private Asset asset = null;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -72,7 +79,6 @@ public class Carage extends AbstractSimpleBase {
 		printInfo();
 		initMatrices();
 		initViewport();
-		loadTextures(); // can we load textures after shaders or will it break?
 		
 		initShaders();
 		initTestMesh();
@@ -119,6 +125,7 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void initProjectionMatrix() {
+		// width, height, near plane, far plane, field of view
 		projectionMatrix = new ProjectionMatrix(WIDTH, HEIGHT, 0.1f, 100f, 60f);
 	}
 	
@@ -134,47 +141,9 @@ public class Carage extends AbstractSimpleBase {
 		// http://stackoverflow.com/questions/10697161/why-floatbuffer-instead-of-float
 		matrixBuffer = BufferUtils.createFloatBuffer(16);
 	}
-		
-	private void loadTextures() {
-		textureManager = TextureManager.getInstance();
-		
-		textureManager.load("cg.png");
-		textureManager.load("generic-wheel.png");
-		textureManager.load("vw-polo.png");
-		textureManager.load("vw-polo-wheel.png");
-		textureManager.load("road.png");
-		textureManager.load("cardboardbox.png");
-	}
 
 	private void initTestMesh() {
-		OBJLoader objectLoader = new OBJLoader("vw-polo.obj");
-		objectLoader.debugOutput();
-
-		float[] objectVertices = objectLoader.getExpandedPositions();
-		float[] objectUVs      = objectLoader.getExpandedUnwraps();
-		int[]   objectIndices  = objectLoader.getIndices();
-		
-		float[] vertices = objectVertices;
-		float[] uvs = objectUVs;
-		int[] indices = objectIndices;
-		
-		ibo = new IndexBufferObject(indices);
-		vao = new VertexArrayObject();
-		vao.setIBO(ibo);
-					
-		VertexBufferObject vbo = new VertexBufferObject(vertices, 3);
-//		VertexBufferObject colorVBO = new VertexBufferObject(colors, 3);
-		VertexBufferObject uvVBO = new VertexBufferObject(uvs, 2);
-
-		vao.addVBO(vbo, ShaderAttribute.POSITION);
-		vbo.unbind();
-//		vao.addVBO(colorVBO, ShaderAttribute.COLOR.getLocation());
-//		VertexBufferObject.unbind();
-		vao.addVBO(uvVBO, ShaderAttribute.TEXTURE);
-		uvVBO.unbind();
-	
-		vao.unbind();
-		
+		asset = new Asset("vw-polo");
 	}
 	
 	@Override
@@ -194,11 +163,8 @@ public class Carage extends AbstractSimpleBase {
 		// Clear dat screen!
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-		// Finally, render our simple test geometry!
-		//glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary?
-		glBindTexture(GL_TEXTURE_2D, textureManager.getId("vw-polo.png"));
-		
-		Renderer.renderVAO(vao);
+		// Finally, render our simple test geometry!		
+		Renderer.renderAsset(asset);
 	}
 	
 	private void modifyModelMatrix() {
@@ -216,7 +182,7 @@ public class Carage extends AbstractSimpleBase {
 			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
 		
 		
-		// TODO We need some pushing and popping here, otherwise rotating+translating doesn't work as expected
+		// TODO We need some pushing and popping here, otherwise rotating+translating doesn't work as expected (?)
 		modelMatrix.translate(new Vector3f(transX, transY, transZ));
 		//modelMatrix.rotate(-delta*0.03f, Z_AXIS);
 	}

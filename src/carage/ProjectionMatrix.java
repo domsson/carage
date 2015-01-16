@@ -2,6 +2,7 @@ package carage;
 
 import org.lwjgl.util.vector.Matrix4f;
 
+@SuppressWarnings("serial")
 public class ProjectionMatrix extends Matrix4f {
 	
 	private int viewportWidth;

@@ -1,14 +1,11 @@
 package carage;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Scanner;
 
 import org.lwjgl.util.vector.Vector2f;
@@ -171,6 +168,14 @@ public class OBJLoader {
 		System.out.println("Number of Indices: "+idx.size());
 		System.out.println("IBO savings      : "+(v.size() - vertexList.size()));
 		System.out.println("Object Dimensions: "+size.getX()+" x "+size.getY()+" x "+size.getZ());
+	}
+	
+	public boolean hasNormals() {
+		return (vn.size() > 0);
+	}
+	
+	public boolean hasUnwraps() {
+		return (vt.size() > 0);
 	}
 	
 	public Vector3f[] getPositions() {

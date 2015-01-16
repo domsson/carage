@@ -1,18 +1,23 @@
 package carage;
 
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.glBindTexture;
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
+// TODO make this static or singleton or something?
 public class Renderer {
-	
-	public Renderer() {
-		// TODO make this static or singleton? probably static, eh?
+		
+	public static void renderAsset(Asset asset) {
+		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
+		glBindTexture(GL_TEXTURE_2D, asset.getTextureId());
+		renderVAO(asset.getVAO());
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	
 	public static void renderVAO(VertexArrayObject vao) {

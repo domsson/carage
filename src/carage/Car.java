@@ -1,6 +1,5 @@
 package carage;
 
-import static org.lwjgl.opengl.GL11.*;
 
 // http://engineeringdotnet.blogspot.co.uk/2010/04/simple-2d-car-physics-in-games.html
 // http://de.wikipedia.org/wiki/Fahrwiderstand
