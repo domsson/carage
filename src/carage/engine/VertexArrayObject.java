@@ -9,14 +9,11 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 import java.util.EnumMap;
 
-
 public class VertexArrayObject {
 
-	private int id = 0;
-		
+	private int id = 0;	
 	private EnumMap<ShaderAttribute, VertexBufferObject> vbos = new EnumMap<>(ShaderAttribute.class); // TODO This might actually not be needed?
-	//private IndexBufferObject ibo = null;
-	
+
 	public VertexArrayObject() {
 		generateId();
 	}
@@ -47,24 +44,6 @@ public class VertexArrayObject {
 	public int getId() {
 		return id;
 	}
-	
-	/*
-	public void setIBO(IndexBufferObject ibo) {
-		this.ibo = ibo;
-	}
-	
-	public boolean hasIBO() {
-		return (ibo != null);
-	}
-	
-	public IndexBufferObject getIBO() {
-		return ibo;
-	}
-	
-	public int getIBOId() {
-		return (hasIBO()) ? ibo.getId() : 0;
-	}
-	*/
 		
 	public void delete() {
 		glDeleteVertexArrays(id);

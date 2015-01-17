@@ -1,12 +1,6 @@
-package carage;
+package carage.engine;
 
 import lenz.opengl.utils.Texture;
-import carage.engine.BoundingBox;
-import carage.engine.Geometry;
-import carage.engine.IndexBufferObject;
-import carage.engine.Renderable;
-import carage.engine.TextureManager;
-import carage.engine.VertexArrayObject;
 
 public class Asset extends Entity implements Renderable {
 	

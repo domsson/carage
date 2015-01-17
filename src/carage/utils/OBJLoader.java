@@ -5,13 +5,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
-import carage.Mesh;
 import carage.engine.Vertex;
 
 // http://www.martinreddy.net/gfx/3d/OBJ.spec
@@ -176,15 +174,6 @@ public class OBJLoader {
 		if (vnIndex >= 0) { vert.setNormal(vn.get(vnIndex)); }
 		
 		return vert;
-	}
-	
-	public void debugOutput() {
-		System.out.println("[OBJ Information]");
-		System.out.println("Number of v/vn/vt: "+v.size()+"/"+vn.size()+"/"+vt.size());
-		System.out.println("Unique Vertices  : "+vertexList.size());
-		System.out.println("Number of Indices: "+idx.size());
-		System.out.println("IBO savings      : "+(v.size() - vertexList.size()));
-		System.out.println("Object Dimensions: "+size.getX()+" x "+size.getY()+" x "+size.getZ());
 	}
 	
 	public boolean hasNormals() {

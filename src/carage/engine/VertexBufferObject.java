@@ -1,6 +1,5 @@
 package carage.engine;
 
-
 public class VertexBufferObject extends BufferObject {
 	
 	public static final int DEFAULT_CHUNK_SIZE = 3;	// Standard for Buffers holding vertices, texture vertices or vertex normals

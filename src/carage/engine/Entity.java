@@ -1,20 +1,24 @@
-package carage;
+package carage.engine;
 
+import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 public class Entity {
 	
 	public static final Vector3f DEFAULT_POSITION = new Vector3f(0f, 0f, 0f);
-	public static final Vector3f DEFAULT_DIRECTION = new Vector3f(1f, 0f, 0f);
+	public static final Vector3f DEFAULT_DIRECTION = new Vector3f(-1f, 0f, 0f);
+	public static final Vector3f DEFAULT_ROTATION = new Vector3f(0f, 0f, 0f);
 	public static final Vector3f DEFAULT_VELOCITY = new Vector3f(0f, 0f, 0f);
 	
 	protected Vector3f position;
-	protected Vector3f direction;
+	protected Vector3f direction; // TODO drop this in favor of rotation? Otherwise make sure both are consistent!!!
+	protected Vector3f rotation; 
 	protected Vector3f velocity;
 	
 	public Entity() {
 		setPosition(DEFAULT_POSITION);
 		setDirection(DEFAULT_DIRECTION);
+		setRotation(DEFAULT_ROTATION);
 		setVelocity(DEFAULT_VELOCITY);
 	}
 	
@@ -76,6 +80,11 @@ public class Entity {
 	public void setDirection(float[] xyz) {
 		if (xyz.length < 3) { return; } // TODO throw exception or something?
 		this.direction = (Vector3f) (new Vector3f(xyz[0], xyz[1], xyz[2])).normalise();
+	}
+	
+	// TODO drop direction in favor of rotation or synchronize both?!
+	public void setRotation(Vector3f rotation) {
+		this.rotation = rotation;
 	}
 	
 	/**
@@ -159,7 +168,8 @@ public class Entity {
 	 */
 	public Vector3f getRotation() {
 		// TODO  (see related methods)
-		return new Vector3f(getRotationX(), getRotationY(), getRotationZ());
+		// return new Vector3f(getRotationX(), getRotationY(), getRotationZ());
+		return rotation;
 	}
 	
 	/**
@@ -196,6 +206,25 @@ public class Entity {
 	 */
 	public float getSpeed() {
 		return velocity.length();
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public Matrix4f getModelMatrix() {
+		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
+		// What we want: SCALE, ROTATE, TRANS
+		// What we do  : TRANS, ROTATE, SCALE
+		
+		Matrix4f modelMatrix = new Matrix4f();
+		// TODO
+		modelMatrix.translate(position);
+		modelMatrix.rotate(rotation.getX(), new Vector3f(1, 0, 0));
+		modelMatrix.rotate(rotation.getY(), new Vector3f(0, 1, 0));
+		modelMatrix.rotate(rotation.getZ(), new Vector3f(0, 0, 1));
+		modelMatrix.scale(new Vector3f(1, 1, 1));
+		return modelMatrix;
 	}
 
 }

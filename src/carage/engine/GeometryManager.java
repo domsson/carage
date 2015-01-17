@@ -1,13 +1,7 @@
-package carage;
+package carage.engine;
 
 import java.util.HashMap;
 
-import carage.engine.BoundingBox;
-import carage.engine.Geometry;
-import carage.engine.IndexBufferObject;
-import carage.engine.ShaderAttribute;
-import carage.engine.VertexArrayObject;
-import carage.engine.VertexBufferObject;
 import carage.utils.OBJLoader;
 
 public class GeometryManager {

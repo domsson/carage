@@ -1,5 +1,7 @@
 package carage;
 
+import carage.engine.Asset;
+
 
 // http://engineeringdotnet.blogspot.co.uk/2010/04/simple-2d-car-physics-in-games.html
 // http://de.wikipedia.org/wiki/Fahrwiderstand

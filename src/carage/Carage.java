@@ -30,10 +30,11 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
+import carage.engine.Asset;
 import carage.engine.ProjectionMatrix;
 import carage.engine.Renderer;
 import carage.engine.ShaderAttribute;
-import carage.engine.TextureManager;
+import carage.engine.VertexBufferObject;
 
 // http://antongerdelan.net/opengl/
 // http://www.opengl-tutorial.org/beginners-tutorials/
@@ -99,6 +100,18 @@ public class Carage extends AbstractSimpleBase {
 		System.out.println("GLSL Version   : "+glGetString(GL_SHADING_LANGUAGE_VERSION));
 	}
 	
+	private void printAssetInfo(Asset asset) {
+		VertexBufferObject positionVBO = asset.getVAO().getVBO(ShaderAttribute.POSITION);
+		int numVertices = positionVBO.getSize() / positionVBO.getChunkSize();
+		int numIndices = asset.getIBO().getSize();
+		Vector3f size = asset.getBoundingBox().getSize();
+		
+		System.out.println("[OBJ Information]");
+		System.out.println("Num. of Vertices : "+numVertices);
+		System.out.println("Num. of Indices  : "+numIndices);
+		System.out.println("Object Dimensions: "+size.getX()+" x "+size.getY()+" x "+size.getZ());
+	}
+	
 	private void initViewport() {
 		glClearColor(0.4f, 0.6f, 1.0f, 1.0f);
 		glViewport(0, 0, WIDTH, HEIGHT);
@@ -151,6 +164,7 @@ public class Carage extends AbstractSimpleBase {
 
 	private void initTestMesh() {
 		asset = new Asset("vw-polo");
+		printAssetInfo(asset);
 	}
 	
 	@Override
@@ -187,11 +201,27 @@ public class Carage extends AbstractSimpleBase {
 			  
 		float transZ = buttonZoomIn  ? -0.02f * delta : 0;
 			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
+			  
+		float rotX = buttonRotUp   ? -5 * delta : 0;
+			  rotX = buttonRotDown ?  5 * delta : rotX;
+			  
+		float rotZ = buttonRotLeft  ? -5 * delta : 0;
+			  rotZ = buttonRotRight ?  5 * delta : rotZ;
+			  
+	    rotX = (float) Math.toRadians(rotX);
+	    rotZ = (float) Math.toRadians(rotZ);
 		
 		
 		// TODO We need some pushing and popping here, otherwise rotating+translating doesn't work as expected (?)
-		modelMatrix.translate(new Vector3f(transX, transY, transZ));
-		//modelMatrix.rotate(-delta*0.03f, Z_AXIS);
+		// modelMatrix.translate(new Vector3f(transX, transY, transZ));
+	    //modelMatrix.rotate(-delta*0.03f, Z_AXIS);
+
+	    Vector3f assetPos = asset.getPosition();
+		asset.setPosition(new Vector3f(assetPos.getX()+transX, assetPos.getY()+transY, assetPos.getZ()+transZ));
+		
+		Vector3f assetRot = asset.getRotation();
+		asset.setRotation(new Vector3f(assetRot.getX()+rotX, assetRot.getY(), assetRot.getZ()+rotZ));
+		modelMatrix = asset.getModelMatrix();
 	}
 	
 	private void matricesToShader() {
