@@ -5,7 +5,7 @@ package carage;
 // http://de.wikipedia.org/wiki/Fahrwiderstand
 // http://www.asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html
 
-public class Car extends Entity {
+public class Car extends Asset {
 	
 	// TODO these should be determined on initialization (via constructor)
 	public String chassisMeshResource = "vw-polo.obj";

@@ -30,6 +30,11 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
+import carage.engine.ProjectionMatrix;
+import carage.engine.Renderer;
+import carage.engine.ShaderAttribute;
+import carage.engine.TextureManager;
+
 // http://antongerdelan.net/opengl/
 // http://www.opengl-tutorial.org/beginners-tutorials/
 // http://wiki.lwjgl.org/wiki/Main_Page
@@ -52,8 +57,10 @@ public class Carage extends AbstractSimpleBase {
 	private boolean buttonDown = false;
 	private boolean buttonZoomIn = false;
 	private boolean buttonZoomOut = false;
-		
-	private TextureManager textureManager;
+	private boolean buttonRotUp = false;
+	private boolean buttonRotDown = false;
+	private boolean buttonRotLeft = false;
+	private boolean buttonRotRight = false;
 		
 	private ShaderProgram sp;
 	private int spId;
@@ -242,16 +249,16 @@ public class Carage extends AbstractSimpleBase {
 			        	buttonDown = true;	
 			        	break;
 			        case Keyboard.KEY_UP:
-			        	buttonUp = true;
+			        	buttonRotUp = true;
 			        	break;
 			        case Keyboard.KEY_RIGHT:
-			        	buttonRight = true;
+			        	buttonRotRight = true;
 			        	break;
 			        case Keyboard.KEY_DOWN:
-			        	buttonDown = true;
+			        	buttonRotDown = true;
 			        	break;
 			        case Keyboard.KEY_LEFT:
-			        	buttonLeft = true;
+			        	buttonRotLeft = true;
 			        	break;
 			        case Keyboard.KEY_I:
 			        	buttonZoomIn = true;
@@ -276,16 +283,16 @@ public class Carage extends AbstractSimpleBase {
 			        	buttonDown = false;	
 			        	break;
 			        case Keyboard.KEY_UP:
-			        	buttonUp = false;
+			        	buttonRotUp = false;
 			        	break;
 			        case Keyboard.KEY_RIGHT:
-			        	buttonRight = false;
+			        	buttonRotRight = false;
 			        	break;
 			        case Keyboard.KEY_DOWN:
-			        	buttonDown = false;
+			        	buttonRotDown = false;
 			        	break;
 			        case Keyboard.KEY_LEFT:
-			        	buttonLeft = false;
+			        	buttonRotLeft = false;
 			        	break;
 			        case Keyboard.KEY_I:
 			        	buttonZoomIn = false;

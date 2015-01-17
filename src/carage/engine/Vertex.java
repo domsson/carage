@@ -1,4 +1,4 @@
-package carage;
+package carage.engine;
 
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;

@@ -1,4 +1,5 @@
-package carage;
+package carage.engine;
+
 
 public class IndexBufferObject extends BufferObject {
 

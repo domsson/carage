@@ -1,8 +1,8 @@
 package carage;
 
-public class CarChassis extends Entity {
+public class CarChassis extends Asset {
 	
-	public CarChassis(Mesh mesh) {
+	public CarChassis(String resource) {
 		this.mesh = mesh;
 	}
 

@@ -1,52 +1,83 @@
 package carage;
 
-public class Asset {
+import lenz.opengl.utils.Texture;
+import carage.engine.BoundingBox;
+import carage.engine.Geometry;
+import carage.engine.IndexBufferObject;
+import carage.engine.Renderable;
+import carage.engine.TextureManager;
+import carage.engine.VertexArrayObject;
 
+public class Asset extends Entity implements Renderable {
+	
+	// TODO should this go into the TextureManager? But then we could only ever load png files...
+	public static final String TEXTURE_FORMAT = "png";
+	
 	private String name = "";
-	private int textureId = 0;
-	private VertexArrayObject vao = null;
+	private Texture texture = null;
+	private Geometry geometry = null;
 	
 	private TextureManager textureManager = TextureManager.getInstance();
+	private GeometryManager geometryManager = GeometryManager.getInstance();
 	
 	public Asset(String resource) {
+		super();
+		// TODO fail (throw exception?) if resource is empty string
 		this.name = resource;
-		loadModel(resource);
-		loadTexture(resource);
-	}
-	
-	private void loadModel(String resource) {
-		OBJLoader objectLoader = new OBJLoader(resource+".obj");
-		objectLoader.debugOutput();
-		vao = new VertexArrayObject();
-
-		// Positions
-		vao.addVBO(new VertexBufferObject(objectLoader.getExpandedPositions(), 3), ShaderAttribute.POSITION);
-		// Unwraps
-		if (objectLoader.hasUnwraps()) {
-			vao.addVBO(new VertexBufferObject(objectLoader.getExpandedUnwraps(), 2), ShaderAttribute.TEXTURE);
-		}
-		// Normals
-		if (objectLoader.hasNormals()) {
-			vao.addVBO(new VertexBufferObject(objectLoader.getExpandedNormals(), 3), ShaderAttribute.NORMALS);
-		}
-		// Indices
-		vao.setIBO(new IndexBufferObject(objectLoader.getIndices()));
-	}
-	
-	private void loadTexture(String resource) {
-		textureId = textureManager.getId(resource+".png");
+		loadGeometry(resource);
+		setTexture(resource);
 	}
 	
 	public String getName() {
 		return name;
 	}
+		
+	public boolean hasTexture() {
+		return (texture != null);
+	}
+	
+	public Texture getTexture() {
+		return textureManager.get(name);
+	}
 	
 	public int getTextureId() {
-		return textureId;
+		return texture.getId();
 	}
 	
 	public VertexArrayObject getVAO() {
-		return vao;
+		return geometry.getVAO();
 	}
 	
+	public int getVAOId() {
+		return geometry.getVAOId();
+	}
+	
+	public boolean hasIBO() {
+		return geometry.hasIBO();
+	}
+	
+	public IndexBufferObject getIBO() {
+		return geometry.getIBO();
+	}
+	
+	public int getIBOId() {
+		return geometry.getIBOId();
+	}
+	
+	public boolean hasBoundingBox() {
+		return geometry.hasBoundingBox();
+	}
+	
+	public BoundingBox getBoundingBox() {
+		return geometry.getBoundingBox();
+	}
+	
+	private void loadGeometry(String resource) {
+		geometry = geometryManager.get(resource);
+	}
+	
+	private void setTexture(String resource) {
+		texture = textureManager.get(resource+"."+TEXTURE_FORMAT);
+	}
+
 }

@@ -1,13 +1,12 @@
-package carage;
+package carage.engine;
 
 import java.util.HashMap;
 
 import lenz.opengl.utils.Texture;
 
 public final class TextureManager {
-	
+		
 	private static TextureManager instance = null;
-	
 	private HashMap<String, Texture> textures = new HashMap<>();
 
 	private TextureManager() {

@@ -1,4 +1,4 @@
-package carage;
+package carage.engine;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
@@ -9,12 +9,13 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 import java.util.EnumMap;
 
+
 public class VertexArrayObject {
 
 	private int id = 0;
 		
 	private EnumMap<ShaderAttribute, VertexBufferObject> vbos = new EnumMap<>(ShaderAttribute.class); // TODO This might actually not be needed?
-	private IndexBufferObject ibo = null;
+	//private IndexBufferObject ibo = null;
 	
 	public VertexArrayObject() {
 		generateId();
@@ -47,6 +48,7 @@ public class VertexArrayObject {
 		return id;
 	}
 	
+	/*
 	public void setIBO(IndexBufferObject ibo) {
 		this.ibo = ibo;
 	}
@@ -62,6 +64,7 @@ public class VertexArrayObject {
 	public int getIBOId() {
 		return (hasIBO()) ? ibo.getId() : 0;
 	}
+	*/
 		
 	public void delete() {
 		glDeleteVertexArrays(id);

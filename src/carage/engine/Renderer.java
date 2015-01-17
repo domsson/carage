@@ -1,4 +1,4 @@
-package carage;
+package carage.engine;
 
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
@@ -13,21 +13,13 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 // TODO make this static or singleton or something?
 public class Renderer {
 		
-	public static void renderAsset(Asset asset) {
+	public static void renderAsset(Renderable asset) {
 		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
 		glBindTexture(GL_TEXTURE_2D, asset.getTextureId());
-		renderVAO(asset.getVAO());
+		renderVAO(asset.getVAO(), asset.getIBO());
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	
-	public static void renderVAO(VertexArrayObject vao) {
-		if (vao.hasIBO()) {
-			renderVAO(vao, vao.getIBO());
-		}
-		else {
-			renderVAO(vao.getId());
-		}
-	}
 	
 	public static void renderVAO(int vaoId) {
 		glBindVertexArray(vaoId);
@@ -35,7 +27,15 @@ public class Renderer {
 		glBindVertexArray(0);
 	}
 	
+	public static void renderVAO(VertexArrayObject vao) {
+		renderVAO(vao.getId());
+	}
+	
 	public static void renderVAO(VertexArrayObject vao, IndexBufferObject ibo) {
+		if (ibo == null) {
+			renderVAO(vao);
+			return;
+		}
 		vao.bind();
 		ibo.bind();
 		glDrawElements(GL_TRIANGLES, ibo.getSize(), GL_UNSIGNED_INT, 0);

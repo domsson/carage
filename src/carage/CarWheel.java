@@ -5,7 +5,7 @@ import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.opengl.GL11.glRotatef;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 
-public class CarWheel extends Entity {
+public class CarWheel extends Asset {
 	
 	// spin when driving!
 	private int rot = 0;
@@ -58,24 +58,4 @@ public class CarWheel extends Entity {
 		// TODO rotate exactly as much as needed to "drive" distance meters
 	}
 	
-	public void draw() {
-		glPushMatrix();
-			glRotatef(angle, 0, 1, 0);
-			glRotatef(rot, 0, 0, 1);
-			super.draw();
-		glPopMatrix();
-	}
-	
-	public void draw(int textureId) {
-		glPushMatrix();
-			glTranslatef(position[0], position[1]+radius, position[2]);
-			// TODO Which axis to rotate around should be determined via code... or convention?
-			glRotatef(angle, 0, 1, 0);
-			glRotatef(rot, 0, 0, 1);
-			glRotatef((invert ? 180 : 0), 1, 0, 0);
-			// glScalef(1f, 1f, (invert ? -1f : 1f));
-			super.draw(textureId);
-		glPopMatrix();
-	}
-
 }

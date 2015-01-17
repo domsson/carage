@@ -1,126 +1,201 @@
 package carage;
 
+import org.lwjgl.util.vector.Vector3f;
+
 public class Entity {
 	
-	protected float[] position  = {0f, 0f, 0f};
-	protected float[] direction = {1f, 0f, 0f};
-	protected float[] velocity  = {0f, 0f, 0f}; 
+	public static final Vector3f DEFAULT_POSITION = new Vector3f(0f, 0f, 0f);
+	public static final Vector3f DEFAULT_DIRECTION = new Vector3f(1f, 0f, 0f);
+	public static final Vector3f DEFAULT_VELOCITY = new Vector3f(0f, 0f, 0f);
 	
-	protected Mesh mesh = null;
-	
-	protected int[] defaultColor = {1, 1, 1};
+	protected Vector3f position;
+	protected Vector3f direction;
+	protected Vector3f velocity;
 	
 	public Entity() {
-		
+		setPosition(DEFAULT_POSITION);
+		setDirection(DEFAULT_DIRECTION);
+		setVelocity(DEFAULT_VELOCITY);
 	}
 	
-	public Entity(Mesh mesh) {
-		this.mesh = mesh;
-	}
-	
-	public Entity(float[] position, float[] direction, float[] velocity) {
-		
-	}
-	
-	public void setMesh(Mesh mesh) {
-		this.mesh = mesh;
-	}
-	
-	public void setPosition(float[] position) {
-		this.position = position;
-	}
-	
-	public void setPosition(float x, float y, float z) {
-		this.position = new float[] {x, y, z};
-	}
-	
-	public void setDirection(float[] direction) {
-		this.direction = direction;
-	}
-	
-	public void setDirection(float x, float y, float z) {
-		this.direction = new float[] {x, y, z};
-	}
-	
-	public float[] getPosition() {
-		return position;
-	}
-	
-	public float getPositionX() {
-		return position[0];
-	}
-	
-	public float getPositionY() {
-		return position[1];
-	}
-	
-	public float getPositionZ() {
-		return position[2];
-	}
-	
-	public float[] getDirection() {
-		return direction;
-	}
-	
-	public float[] getVelocity() {
-		return velocity;
-	}
-	
-	public float[] getRotation() {
-		// TODO verify if this is correct (see related methods)
-		return new float[] {getRotationX(), getRotationY(), getRotationZ()};
-	}
-	
-	public float getRotationX() {
-		// TODO verify if this is correct (IT IS NOT)
-		// rotation around x axis -> z and y axis relevant, right?
-		return (float) Math.toDegrees(Math.atan2(direction[1], direction[2]));
-	}
-	
-	public float getRotationY() {
-		// TODO verify if this is correct (IT IS NOT)
-		// rotation around y axis -> z and x axis relevant, right?
-		return (float) Math.toDegrees(Math.atan2(direction[2], direction[0]));
-	}
-	
-	public float getRotationZ() {
-		// TODO verify if this is correct (IT IS NOT)
-		// rotation around z axis -> x and y axis relevant, right?
-		return (float) Math.toDegrees(Math.atan2(direction[1], direction[0]));
+	public Entity(Vector3f position, Vector3f direction, Vector3f velocity) {
+		setPosition(position);
+		setDirection(direction);
+		setVelocity(velocity);
 	}
 	
 	/**
-	 * Returns the Entitie's current speed in meters per second
+	 * Set this Entitie's position.
+	 * @param position A 3-dimensional vector representing the position
+	 */
+	public void setPosition(Vector3f position) {
+		this.position = position;
+	}
+	
+	/**
+	 * Set this Entitie's position.
+	 * @param x The position's x component
+	 * @param y The position's y component
+	 * @param z The position's z component
+	 */
+	public void setPosition(float x, float y, float z) {
+		this.position = new Vector3f(x, y, z);
+	}
+	
+	/**
+	 * Set this Entitie's position
+	 * @param xyz A float array holding the position's x, y and z components
+	 */
+	public void setPosition(float[] xyz) {
+		if (xyz.length < 3) { return; } // TODO throw exception or something?
+		this.position = new Vector3f(xyz[0], xyz[1], xyz[2]);
+	}
+	
+	/**
+	 * Set this Entitie's direction. The values will be normalized.
+	 * @param direction A 3-dimensional vector representing the direction
+	 */
+	public void setDirection(Vector3f direction) {
+		this.direction = (Vector3f) direction.normalise();
+	}
+	
+	/**
+	 * Set this Entitie's direction. The values will be normalized.
+	 * @param x The direction's x component
+	 * @param y The direction's y component
+	 * @param z The direction's z component
+	 */
+	public void setDirection(float x, float y, float z) {
+		this.direction = (Vector3f) (new Vector3f(x, y, z)).normalise();
+	}
+	
+	/**
+	 * Set this Entitie's direction. The values will be normalized.
+	 * @param xyz A float array holding the direction's x, y and z components
+	 */
+	public void setDirection(float[] xyz) {
+		if (xyz.length < 3) { return; } // TODO throw exception or something?
+		this.direction = (Vector3f) (new Vector3f(xyz[0], xyz[1], xyz[2])).normalise();
+	}
+	
+	/**
+	 * Set this Entitie's velocity.
+	 * @param velocity A 3-dimensional vector representing the velocity
+	 */
+	public void setVelocity(Vector3f velocity) {
+		this.velocity = velocity;
+	}
+	
+	/**
+	 * Set this Entitie's velocity.
+	 * @param x The velocitie's x component
+	 * @param y The velocitie's y component
+	 * @param z The velocitie's z component
+	 */
+	public void setVelocity(float x, float y, float z) {
+		this.velocity = new Vector3f(x, y, z);
+	}
+	
+	/**
+	 * Set this Entitie's velocity.
+	 * @param xyz A float array holding the velocitie's x, y and z components
+	 */
+	public void setVelocity(float[] xyz) {
+		if (xyz.length < 3) { return; } // TODO throw exception or something?
+		this.velocity = new Vector3f(xyz[0], xyz[1], xyz[2]);
+	}
+	
+	/**
+	 * Get this Entitie's position as 3-dimensional vector.
+	 * @return A 3-dimensional vector representing this entitie's position
+	 */
+	public Vector3f getPosition() {
+		return position;
+	}
+	
+	/**
+	 * Get this Entitie's position on the x-axis.
+	 * @return A float value representing this Entitie's position on the x-axis 
+	 */
+	public float getPositionX() {
+		return position.getX();
+	}
+	
+	/**
+	 * Get this Entitie's position on the y-axis.
+	 * @return A float value representing this Entitie's position on the y-axis 
+	 */
+	public float getPositionY() {
+		return position.getY();
+	}
+	
+	/**
+	 * Get this Entitie's position on the z-axis.
+	 * @return A float value representing this Entitie's position on the z-axis 
+	 */
+	public float getPositionZ() {
+		return position.getZ();
+	}
+	
+	/**
+	 * Get this Entitie's direction as normalized 3-dimensional vector.
+	 * @return A normalized 3-dimensional vector representing this entitie's direction
+	 */
+	public Vector3f getDirection() {
+		return direction;
+	}
+	
+	/**
+	 * Get this Entitie's velocity as 3-dimensional vector.
+	 * @return A 3-dimensional vector representing this entitie's velocity
+	 */
+	public Vector3f getVelocity() {
+		return velocity;
+	}
+	
+	/**
+	 * Get this Entitie's rotation (in degree) as 3-dimensional vector.
+	 * @return A 3-dimensional vector representing this entitie's rotation in degrees
+	 */
+	public Vector3f getRotation() {
+		// TODO  (see related methods)
+		return new Vector3f(getRotationX(), getRotationY(), getRotationZ());
+	}
+	
+	/**
+	 * Get this Entitie's rotation (in degree) around the x-axis.
+	 * @return A float value representing this Entitie's rotation around the x-axis in degrees
+	 */
+	public float getRotationX() {
+		// TODO use atan2 and toDegrees
+		// return (float) Math.toDegrees(Math.atan2(direction.getY(), direction.getZ()));
+		return 0f;
+	}
+	
+	/**
+	 * Get this Entitie's rotation (in degree) around the y-axis.
+	 * @return A float value representing this Entitie's rotation around the y-axis in degrees
+	 */
+	public float getRotationY() {
+		// TODO use atan2 and toDegrees
+		return 0f;
+	}
+	
+	/**
+	 * Get this Entitie's rotation (in degree) around the z-axis.
+	 * @return A float value representing this Entitie's rotation around the z-axis in degrees
+	 */
+	public float getRotationZ() {
+		// TODO use atan2 and toDegrees
+		return 0f;
+	}
+	
+	/**
+	 * Returns the Entitie's current speed in meters per second.
 	 * @return this entitie's current speed in m/s
 	 */
-	public double getSpeed() {
-		return Math.sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2]);
-	}
-		
-	public void draw() {
-		// TODO take diection into account!
-		// Or should that be done in the main class?!
-		// In other words: do the "glRotatef" here
-		// or let that be done by main class?
-		// I'd say main class... BUT there is one prob:
-		// the car is made up of several entities and
-		// when the car is being drawn, it calls the
-		// car parts draw methods. and the wheels, for example,
-		// need to be rotated individually, so the CAR has
-		// to take care of that, not the main class. therefore,
-		// it would be better if the entities took care of
-		// rotating themselves, no?
-		// but that might be in conflict with the transformations
-		// done within the main class... oh boy!
-		mesh.draw();
-	}
-	
-	public void draw(int textureId) {
-		mesh.draw(textureId);
-	}
-	
-	public Mesh getMesh() {
-		return mesh;
+	public float getSpeed() {
+		return velocity.length();
 	}
 
 }

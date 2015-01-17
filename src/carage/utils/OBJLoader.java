@@ -1,4 +1,4 @@
-package carage;
+package carage.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,12 +11,20 @@ import java.util.Scanner;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
-import carage.utils.ArrayUtils;
+import carage.Mesh;
+import carage.engine.Vertex;
 
 // http://www.martinreddy.net/gfx/3d/OBJ.spec
 public class OBJLoader {
-
-	private Mesh mesh = new Mesh();
+	
+	public static final String TOKEN_OBJECT = "o";
+	public static final String TOKEN_MATERIAL = "usemtl";
+	public static final String TOKEN_GEOMETRY_VERTEX = "v";
+	public static final String TOKEN_TEXTURE_VERTEX = "vt";
+	public static final String TOKEN_VERTEX_NORMAL = "vn";
+	public static final String TOKEN_POINT = "p";
+	public static final String TOKEN_LINE = "l";
+	public static final String TOKEN_FACE = "f";
 	
 	private ArrayList<Vector3f> v   = new ArrayList<>();		// geometry vertices
 	private ArrayList<Vector2f> vt  = new ArrayList<>();		// texture vertices
@@ -38,10 +46,6 @@ public class OBJLoader {
 		}
 	}
 	
-	public Mesh getMesh() {
-		return mesh;
-	}
-	
 	private void parseOBJ(String resourceName) throws IOException {
 	    Path path = Paths.get(resourceName);
 	    try (Scanner scanner = new Scanner(path, "UTF-8")) {
@@ -52,48 +56,61 @@ public class OBJLoader {
 	}
 	
 	private void parseLine(String line) {
-		String[] tokens = line.split(" ");
+		// String[] tokens = line.split(" ");
+		int firstSpace = line.indexOf(" ");
+		String dataType = line.substring(0, firstSpace);
+		String[] data = line.substring(firstSpace+1, line.length()).split(" ");
 		
-		switch (tokens[0]) {
-			case "v":
-				// eat: x y z; ignore: w
-				processGeometryVertex(tokens[1], tokens[2], tokens[3]); 
+		switch (dataType) {
+			case TOKEN_GEOMETRY_VERTEX:
+				// v x y z w (w is optional defaults to 1.0)
+				processGeometryVertex(data);
 				break;
-			case "vt":
-				// eat: u v; ignore: w
-				processTextureVertex(tokens[1], tokens[2]);
+			case TOKEN_TEXTURE_VERTEX:
+				// vt u v w (w is optional)
+				processTextureVertex(data);
 				break;
-			case "vn":
-				// eat: i j k
-				processVertexNormal(tokens[1], tokens[2], tokens[3]);
+			case TOKEN_VERTEX_NORMAL:
+				// vn i j k
+				processVertexNormal(data);
 				break;
-			case "f":
-				// hand over everything but the first element ("f")
-				// TODO fetch this from the passed line instead of copying the array?
-				processFace(Arrays.copyOfRange(tokens, 1, tokens.length));
+			case TOKEN_FACE:
+				// f v OR f v/vt OR f v//vn OR f v/vt/vn (3 or more times)
+				processFace(data);
 				break;
 			default:
 				// we ran into one of many thing we don't care about (yet)
 		}
 	}
 	
-	private void processGeometryVertex(String x, String y, String z) {
-		float xValue = Float.parseFloat(x);
-		float yValue = Float.parseFloat(y);
-		float zValue = Float.parseFloat(z);
-		
-		v.add(new Vector3f(xValue, yValue, zValue));
-		updateBoundingBox(xValue, yValue, zValue);
+	private void processGeometryVertex(String[] data) {
+		if (data.length < 3) { return; } // TODO throw exception or otherwise indicate malformed data?
+		processGeometryVertex(Float.parseFloat(data[0]), Float.parseFloat(data[1]), Float.parseFloat(data[2]));
 	}
 	
-	private void processTextureVertex(String u, String v) {
-		vt.add(new Vector2f(Float.parseFloat(u), 1 - Float.parseFloat(v)));
+	private void processGeometryVertex(float x, float y, float z) {		
+		v.add(new Vector3f(x, y, z));
+		updateBoundingBox(x, y, z);
 	}
 	
-	private void processVertexNormal(String x, String y, String z) {
-		vn.add(new Vector3f(Float.parseFloat(x), Float.parseFloat(y), Float.parseFloat(z)));
+	private void processTextureVertex(String[] data) {
+		if (data.length < 2) { return; } // TODO throw exception or otherwise indicate malformed data?
+		processTextureVertex(Float.parseFloat(data[0]), Float.parseFloat(data[1]));
 	}
 	
+	private void processTextureVertex(float u, float v) {
+		vt.add(new Vector2f(u, 1-v));
+	}
+
+	private void processVertexNormal(String[] data) {
+		if (data.length < 3) { return; } // TODO throw exception or otherwise indicate malformed data?
+		processVertexNormal(Float.parseFloat(data[0]), Float.parseFloat(data[1]), Float.parseFloat(data[2]));
+	}
+	
+	private void processVertexNormal(float x, float y, float z) {
+		vn.add(new Vector3f(x, y, z));
+	}
+
 	private void processFace(String[] polyPoints) {
 		int numPoints = polyPoints.length;
 		// tri
@@ -118,7 +135,7 @@ public class OBJLoader {
 	}
 	
 	private void processTri(Vertex[] vertices) {
-		if (vertices.length < 3) { return; } // We need at least 3 vertices. TODO: Better throw an exception here?
+		if (vertices.length < 3) { return; } // TODO throw exception or otherwise indicate malformed data?
 		
 		int vertexIndex;
 		for (int i=0; i<3; ++i) {
@@ -150,13 +167,13 @@ public class OBJLoader {
 		}
 		else if (numParts == 3) {
 			vIndex = Integer.parseInt(parts[0]) - 1;
-			vnIndex = (parts[1].equals("")) ? vnIndex : Integer.parseInt(parts[1]) - 1;
-			vtIndex = Integer.parseInt(parts[2]) - 1;
+			vtIndex = (parts[1].equals("")) ? vtIndex : Integer.parseInt(parts[1]) - 1;
+			vnIndex = Integer.parseInt(parts[2]) - 1;
 		}
 		
 		if (vIndex  >= 0) { vert.setPosition(v.get(vIndex)); }
-		if (vnIndex >= 0) { vert.setNormal(vn.get(vnIndex)); }
 		if (vtIndex >= 0) { vert.setUnwrap(vt.get(vtIndex)); }
+		if (vnIndex >= 0) { vert.setNormal(vn.get(vnIndex)); }
 		
 		return vert;
 	}
@@ -176,6 +193,38 @@ public class OBJLoader {
 	
 	public boolean hasUnwraps() {
 		return (vt.size() > 0);
+	}
+	
+	public int numberOfPositions() {
+		return v.size();
+	}
+	
+	public int numberOfUnwraps() {
+		return vt.size();
+	}
+	
+	public int numberOfNormals() {
+		return vn.size();
+	}
+	
+	public int numberOfIndices() {
+		return idx.size();
+	}
+	
+	public int numberOfUniqueVertices() {
+		return vertexList.size();
+	}
+	
+	public Vector3f getSize() {
+		return new Vector3f(size.getX(), size.getY(), size.getZ());
+	}
+	
+	public Vector3f getMinBoundaries() {
+		return new Vector3f(min.getX(), min.getY(), min.getZ());
+	}
+	
+	public Vector3f getMaxBoundaries() {
+		return new Vector3f(max.getX(), max.getY(), max.getZ());
 	}
 	
 	public Vector3f[] getPositions() {
@@ -248,9 +297,9 @@ public class OBJLoader {
 	}
 	
 	private void updateDimensions() {
-		size.setX(max.getX()- min.getX());	// width
-		size.setY(max.getY()- min.getY());	// height
-		size.setZ(max.getZ()- min.getZ());	// length
+		size.setX(max.getX() - min.getX());	// width
+		size.setY(max.getY() - min.getY());	// height
+		size.setZ(max.getZ() - min.getZ());	// length
 	}
 	
 }
