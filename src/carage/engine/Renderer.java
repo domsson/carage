@@ -8,17 +8,13 @@ import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL11.glDrawElements;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 import java.nio.FloatBuffer;
 
 import lenz.opengl.utils.ShaderProgram;
 
-import carage.engine.ProjectionMatrix;
-
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Matrix4f;
 
 // TODO make this static or singleton or something?
 public class Renderer {
@@ -30,10 +26,10 @@ public class Renderer {
 	public static final float DEFAULT_FAR_PLANE = 100f;
 	public static final float DEFAULT_FIELD_OF_VIEW = 60f;
 	
-	private int width = 0;
-	private int height = 0;
+	private int width;
+	private int height;
 	
-	private ShaderProgram shader; // TODO should the asset hold the shader it wants to use? probably? Do we need a ShaderManager?
+	private ShaderProgram shader; // TODO should the asset hold the shader it wants to use? probably? 
 
 	private RenderMatrix projectionMatrix;
 	private RenderMatrix viewMatrix;
@@ -85,6 +81,12 @@ public class Renderer {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	
+	public void renderAssetGroup(AssetGroup assetGroup) {
+		Asset[] assets = assetGroup.getAllAssets();
+		for (Asset asset : assets) {
+			renderAsset(asset);
+		}
+	}
 	
 	public static void renderVAO(int vaoId) {
 		glBindVertexArray(vaoId);
@@ -139,29 +141,10 @@ public class Renderer {
 	}
 	
 	private void matricesToShader() {
-		//glUseProgram(spId);
-		
-		/*
-		// Projection Matrix
-        projectionMatrix.store(matrixBuffer);
-        matrixBuffer.flip();
-        glUniformMatrix4(projectionMatrix.getLocation(), false, matrixBuffer);
-        
-        // View Matrix
-        viewMatrix.store(matrixBuffer);
-        matrixBuffer.flip();
-        glUniformMatrix4(viewMatrix.getLocation(), false, matrixBuffer);
-        
-        // Model Matrix
-        modelMatrix.store(matrixBuffer);
-        matrixBuffer.flip();
-        glUniformMatrix4(modelMatrix.getLocation(), false, matrixBuffer);
-		*/
-		
+		//glUseProgram(spId);	
 		projectionMatrix.toShader(matrixBuffer);
 		viewMatrix.toShader(matrixBuffer);
 		modelMatrix.toShader(matrixBuffer);
-		
         //glUseProgram(0);
 	}
 

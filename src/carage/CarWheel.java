@@ -5,7 +5,6 @@ import carage.engine.Asset;
 public class CarWheel extends Asset {
 	
 	// spin when driving!
-	private int rot = 0;
 	private float radius;
 	private double circumfence;
 	// here, angle should be easier then the direction vector, no?
@@ -17,14 +16,18 @@ public class CarWheel extends Asset {
 	// TODO should come from the wheel's or car's config, right?
 	private int maxSteeringAngle = 40;
 	
-	public CarWheel(Mesh mesh) {
-		this.mesh = mesh;
-		this.radius = (getMesh().getHeight()/2);
-		this.circumfence = Math.PI * getMesh().getHeight();
+	public CarWheel(String resource) {
+		super(resource);
+		this.radius = getBoundingBox().getHeight() * 0.5f;
+		this.circumfence = Math.PI * getBoundingBox().getHeight();
 	}
 	
 	public void invert() {
 		invert = !invert;
+	}
+	
+	public float getRadius() {
+		return radius;
 	}
 	
 	public int getMaxAngle() {
@@ -46,9 +49,9 @@ public class CarWheel extends Asset {
 	
 	public void spin(int amount) {
 		// rotate amount degrees
-		rot += amount;
-		rot = (rot > 360) ? rot-360 : rot;
-		rot = (rot <   0) ? 360-rot : rot;
+		rotation.x += amount;
+		rotation.x = (rotation.x > 360) ? rotation.x-360 : rotation.x;
+		rotation.x = (rotation.x <   0) ? 360-rotation.x : rotation.x;
 	}
 	
 	public void spin(float distance) {

@@ -12,7 +12,7 @@ public class Entity {
 	
 	protected Vector3f position;
 	protected Vector3f direction; // TODO drop this in favor of rotation? Otherwise make sure both are consistent!!!
-	protected Vector3f rotation; 
+	protected Vector3f rotation;
 	protected Vector3f velocity;
 	
 	public Entity() {
@@ -55,6 +55,12 @@ public class Entity {
 		this.position = new Vector3f(xyz[0], xyz[1], xyz[2]);
 	}
 	
+	public void alterPosition(Vector3f position) {
+		this.position.x += position.getX();
+		this.position.y += position.getY();
+		this.position.z += position.getZ();
+	}
+	
 	/**
 	 * Set this Entitie's direction. The values will be normalized.
 	 * @param direction A 3-dimensional vector representing the direction
@@ -85,6 +91,12 @@ public class Entity {
 	// TODO drop direction in favor of rotation or synchronize both?!
 	public void setRotation(Vector3f rotation) {
 		this.rotation = rotation;
+	}
+	
+	public void alterRotation(Vector3f rotation) {
+		this.rotation.x += rotation.getX();
+		this.rotation.y += rotation.getY();
+		this.rotation.z += rotation.getZ();
 	}
 	
 	/**

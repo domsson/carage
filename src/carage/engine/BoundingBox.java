@@ -6,7 +6,7 @@ public class BoundingBox {
 	
 	private Vector3f min  = new Vector3f();	// smallest position values (for example: -0.5 for a 'unit cube')
 	private Vector3f max  = new Vector3f(); // biggest position values (for example: +0.5 for a 'unit cube')
-	private Vector3f size = new Vector3f();	// x=width, y=height, z=length
+	private Vector3f size = new Vector3f();	// x=length, y=height, z=width
 	
 	public BoundingBox(Vector3f min, Vector3f max) {
 		this.min = min;
@@ -28,6 +28,18 @@ public class BoundingBox {
 	
 	public float getSizeZ() {
 		return size.getZ();
+	}
+	
+	public float getLength() {
+		return getSizeX();
+	}
+	
+	public float getWidth() {
+		return getSizeZ();
+	}
+	
+	public float getHeight() {
+		return getSizeY();
 	}
 	
 	public Vector3f getMinBoundaries() {

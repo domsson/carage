@@ -8,6 +8,7 @@ public class Asset extends Entity implements Renderable {
 	public static final String TEXTURE_FORMAT = "png";
 	
 	private String name = "";
+	private String resource = ""; // TODO maybe remember the resource name separately? this way, two assets with same resource can have different name
 	private Texture texture = null;
 	private Geometry geometry = null;
 	
@@ -31,6 +32,10 @@ public class Asset extends Entity implements Renderable {
 		super();
 		this.geometry = geometry;
 		this.texture = texture;
+	}
+	
+	public boolean hasName() {
+		return (!name.isEmpty());
 	}
 	
 	public String getName() {

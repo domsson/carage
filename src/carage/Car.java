@@ -1,13 +1,12 @@
 package carage;
 
-import carage.engine.Asset;
-
+import carage.engine.AssetGroup;
 
 // http://engineeringdotnet.blogspot.co.uk/2010/04/simple-2d-car-physics-in-games.html
 // http://de.wikipedia.org/wiki/Fahrwiderstand
 // http://www.asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html
 
-public class Car extends Asset {
+public class Car extends AssetGroup {
 	
 	// TODO these should be determined on initialization (via constructor)
 	public String chassisResource;
@@ -20,11 +19,6 @@ public class Car extends Asset {
 	private CarWheel rightFrontWheel = null;
 	private CarWheel leftRearWheel   = null;
 	private CarWheel rightRearWheel  = null;
-	
-	// Chassis Texture
-	private int chassisTextureId = 0;
-	// Wheel Texture
-	private int wheelTextureId = 0;
 	
 	// Wheel offsets (relative positions to chassis' center)
 	private float frontAxleOffset = 0.0f;
@@ -39,24 +33,25 @@ public class Car extends Asset {
 	// TODO some more values that should come from the config file!
 	private float weight = 780f;
 	private float acceleration = 3.31f;
-
+	
 	public Car(String chassisResource, String wheelResource) {
-		super(chassisResource);
 		this.chassisResource = chassisResource;
 		this.wheelResource = wheelResource;
-		initMeshes();
+		initParts();
 	}
 	
 	// TODO have a Car(CarProperties props) {} constructor which initializes a car from a config gile / config object
 	
 	public Car(float frontAxleOffset, float rearAxleOffset, float frontWheelTrack, float rearWheelTrack) {
-		super("vw-polo"); // TODO !!!
+		this.chassisResource = "vw-polo"; // TODO !!!
+		this.wheelResource = "vw-polo-wheel"; // TODO !!!
+		
 		this.frontAxleOffset = frontAxleOffset;
 		this.rearAxleOffset  = rearAxleOffset;
 		this.frontWheelClearance = frontWheelTrack * 0.5f;
 		this.rearWheelClearance  = rearWheelTrack * 0.5f;
 		
-		initMeshes();
+		initParts();
 		setWheelPositions();
 	}
 
@@ -123,7 +118,8 @@ public class Car extends Asset {
 	}
 	*/
 	
-	public void setChassisMesh(String resource) {
+	/*
+	public void setChassisGeometry(String resource) {
 		this.chassisResource = resource;
 		
 		WavefrontLoader chassisLoader = new WavefrontLoader(chassisResource);
@@ -146,12 +142,13 @@ public class Car extends Asset {
 		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelResource);
 		rightRearWheel.setMesh(rightRearWheelLoader.getMesh());
 	}
+	*/
 	
 	/**
 	 * Set the chassis' texture to the texture with the given id
 	 * 
 	 * @param chassisTextureId The id of the texture to use for the car's chassis
-	 */
+	 *
 	public void setChassisTexture(int chassisTextureId) {
 		this.chassisTextureId = chassisTextureId;
 	}
@@ -160,25 +157,15 @@ public class Car extends Asset {
 	 * Set the texture to use for the wheels to the texture with the given id
 	 * 
 	 * @param wheelTextureId The id of the texture to use for all four wheels
-	 */
+	 *
 	public void setWheelTexture(int wheelTextureId) {
 		this.wheelTextureId = wheelTextureId;
 	}
-	
-	/**
-	 * Draw (render) the car on screen
-	 */
-	public void draw() {
-		chassis.draw(chassisTextureId);
-		leftFrontWheel.draw(wheelTextureId);
-		rightFrontWheel.draw(wheelTextureId);
-		leftRearWheel.draw(wheelTextureId);
-		rightRearWheel.draw(wheelTextureId);
-	}
+	*/
 	
 	/**
 	 * Print some information about the car's geometry to the console
-	 */
+	 *
 	public void printInfo() {
 		System.out.println("Verts: " + (chassis.getMesh().getNumberOfVertices() + (leftFrontWheel.getMesh().getNumberOfVertices() * 4)));
 		System.out.println("UVs  : " + (chassis.getMesh().getNumberOfUVs() + (leftFrontWheel.getMesh().getNumberOfUVs() * 4)));
@@ -189,16 +176,7 @@ public class Car extends Asset {
 		System.out.println("Front track: " + getFrontTrack() + " m");
 		System.out.println("Rear track : " + getFrontTrack() + " m");
 	}
-	
-	// TODO this belongs elsewhere... we need to finally use the f0ckin Vector3f class!
-	private float[] getNormalizedVelocity(float currentSpeed) {
-		if (currentSpeed == 0) {
-			return direction;
-		}
-		else {
-			return new float[] { (velocity[0] / currentSpeed), (velocity[1] / currentSpeed), (velocity[2] / currentSpeed) };
-		}
-	}
+	*/
 	
 	/**
 	 * Trigger the car's calculations.
@@ -290,29 +268,24 @@ public class Car extends Asset {
 	/**
 	 * Load/request the meshes that make up this car: chassis and four wheels
 	 */
-	private void initMeshes() {
+	private void initParts() {
 		// TODO The Car's (or chassis'?) Configuration file (TODO!) should tell where the front is.
 		
-		// TODO Obviously, it'd be nicer if one WavefrontLoader could be used for all the loading
-		// TODO Also, it'd be nicer if once a mesh resource has been loaded, it could be cloned instead of loading it all over
-		
 		// Chassis
-		WavefrontLoader chassisLoader = new WavefrontLoader(chassisResource);
-		chassis = new CarChassis(chassisLoader.getMesh());
-		// Left Front Wheel
-		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(wheelResource);
-		leftFrontWheel = new CarWheel(leftFrontWheelLoader.getMesh());
-		// Right Front Wheel
-		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(wheelResource);
-		rightFrontWheel = new CarWheel(rightFrontWheelLoader.getMesh());
+		chassis = new CarChassis(chassisResource);
+		// Wheels
+		leftFrontWheel = new CarWheel(wheelResource);
+		rightFrontWheel = new CarWheel(wheelResource);
 		rightFrontWheel.invert();
-		// Left Rear Wheel
-		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(wheelResource);
-		leftRearWheel = new CarWheel(leftRearWheelLoader.getMesh());
-		// Right Rear Wheel
-		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelResource);
-		rightRearWheel = new CarWheel(rightRearWheelLoader.getMesh());
+		leftRearWheel = new CarWheel(wheelResource);
+		rightRearWheel = new CarWheel(wheelResource);
 		rightRearWheel.invert();
+		
+		addAsset(chassis, "chassis");
+		addAsset(leftFrontWheel, "left-front-wheel");
+		addAsset(rightFrontWheel, "right-front-wheel");
+		addAsset(leftRearWheel, "left-rear-wheel");
+		addAsset(rightRearWheel, "right-rear-wheel");
 	}
 	
 	/**
@@ -322,10 +295,10 @@ public class Car extends Asset {
 	private void setWheelPositions() {
 		// TODO Well, this should take the car's direction (where is the front?) into account! (A "problem" we have everywhere, really)
 		
-		leftFrontWheel.setPosition(-this.frontAxleOffset, 0, this.frontWheelClearance);		
-		rightFrontWheel.setPosition(-this.frontAxleOffset, 0, -this.frontWheelClearance);
-		leftRearWheel.setPosition(this.rearAxleOffset, 0, this.rearWheelClearance);
-		rightRearWheel.setPosition(this.rearAxleOffset, 0, -this.rearWheelClearance);
+		leftFrontWheel.setPosition(-this.frontAxleOffset, leftFrontWheel.getRadius(), this.frontWheelClearance);		
+		rightFrontWheel.setPosition(-this.frontAxleOffset, rightFrontWheel.getRadius(), -this.frontWheelClearance);
+		leftRearWheel.setPosition(this.rearAxleOffset, leftRearWheel.getRadius(), this.rearWheelClearance);
+		rightRearWheel.setPosition(this.rearAxleOffset, rightRearWheel.getRadius(), -this.rearWheelClearance);
 	}
 
 }

@@ -1,6 +1,5 @@
 package carage.engine;
 
-import org.lwjgl.util.vector.Matrix4f;
 
 @SuppressWarnings("serial")
 public class ProjectionMatrix extends RenderMatrix {

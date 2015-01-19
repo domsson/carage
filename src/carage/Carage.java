@@ -15,24 +15,18 @@ import static org.lwjgl.opengl.GL11.glFrontFace;
 import static org.lwjgl.opengl.GL11.glGetString;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import lenz.opengl.AbstractSimpleBase;
 import lenz.opengl.utils.ShaderProgram;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 import carage.engine.Asset;
-import carage.engine.ProjectionMatrix;
 import carage.engine.Renderer;
 import carage.engine.ShaderAttribute;
 import carage.engine.VertexBufferObject;
@@ -71,6 +65,7 @@ public class Carage extends AbstractSimpleBase {
 	private Asset asset = null;
 	private Asset asset2 = null;
 	private ArrayList<Asset> assets = null;
+	private Car car = null;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -135,6 +130,7 @@ public class Carage extends AbstractSimpleBase {
 		
 		assets = new ArrayList<>();
 		
+		car = new Car(1.15f, 1.23f, 1.3f, 1.3f);
 	}
 	
 	@Override
@@ -152,8 +148,9 @@ public class Carage extends AbstractSimpleBase {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 		// Finally, render our simple test geometry!		
-		renderer.renderAsset(asset);
-		renderer.renderAsset(asset2);
+		//renderer.renderAsset(asset);
+		//renderer.renderAsset(asset2);
+		renderer.renderAssetGroup(car);
 	}
 	
 	private void moveTestAsset() {
@@ -192,6 +189,9 @@ public class Carage extends AbstractSimpleBase {
 		// modelMatrix = asset.getModelMatrix();
 		
 		asset2.setPosition(0f, 0f, -4f);
+		
+		car.alterPosition(new Vector3f(transX, transY, transZ));
+		car.alterRotation(new Vector3f(rotX, 0, rotZ));
 	}
 			
 	/**
