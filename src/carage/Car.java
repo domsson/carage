@@ -10,8 +10,8 @@ import carage.engine.Asset;
 public class Car extends Asset {
 	
 	// TODO these should be determined on initialization (via constructor)
-	public String chassisMeshResource = "vw-polo.obj";
-	public String wheelMeshResource   = "vw-polo-wheel.obj";
+	public String chassisResource;
+	public String wheelResource;
 	
 	// Chassis Mesh
 	private CarChassis chassis = null;
@@ -40,13 +40,17 @@ public class Car extends Asset {
 	private float weight = 780f;
 	private float acceleration = 3.31f;
 
-	public Car() {
+	public Car(String chassisResource, String wheelResource) {
+		super(chassisResource);
+		this.chassisResource = chassisResource;
+		this.wheelResource = wheelResource;
 		initMeshes();
 	}
 	
 	// TODO have a Car(CarProperties props) {} constructor which initializes a car from a config gile / config object
 	
 	public Car(float frontAxleOffset, float rearAxleOffset, float frontWheelTrack, float rearWheelTrack) {
+		super("vw-polo"); // TODO !!!
 		this.frontAxleOffset = frontAxleOffset;
 		this.rearAxleOffset  = rearAxleOffset;
 		this.frontWheelClearance = frontWheelTrack * 0.5f;
@@ -104,6 +108,7 @@ public class Car extends Asset {
 	 * Indicates if the vehicle is driving forwards, backwards or neither of those.
 	 * @return 1 for forward movement, -1 for backwards movement, 0 for else (TODO what does 'else' mean, bitch?)
 	 */
+	/*
 	public int getDrivingDirection() {
 		float scalar = (direction[0]*velocity[0] + direction[1]*velocity[1] + direction[2]*velocity[2]);
 		if (scalar == 0) {
@@ -116,28 +121,29 @@ public class Car extends Asset {
 		System.out.println("Vehicle direction: "+direction[0]+" "+direction[1]+" "+direction[2]);
 		System.out.println("Vehicle velocity : "+velocity[0]+" "+velocity[1]+" "+velocity[2]);
 	}
+	*/
 	
 	public void setChassisMesh(String resource) {
-		this.chassisMeshResource = resource;
+		this.chassisResource = resource;
 		
-		WavefrontLoader chassisLoader = new WavefrontLoader(chassisMeshResource);
+		WavefrontLoader chassisLoader = new WavefrontLoader(chassisResource);
 		chassis.setMesh(chassisLoader.getMesh());
 	}
 	
 	public void setWheelMesh(String resource) {
-		this.wheelMeshResource = resource;
+		this.wheelResource = resource;
 		
 		// Left Front Wheel
-		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(wheelMeshResource);
+		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(wheelResource);
 		leftFrontWheel.setMesh(leftFrontWheelLoader.getMesh());
 		// Right Front Wheel
-		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(wheelMeshResource);
+		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(wheelResource);
 		rightFrontWheel.setMesh(rightFrontWheelLoader.getMesh());
 		// Left Rear Wheel
-		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(wheelMeshResource);
+		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(wheelResource);
 		leftRearWheel.setMesh(leftRearWheelLoader.getMesh());
 		// Right Rear Wheel
-		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelMeshResource);
+		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelResource);
 		rightRearWheel.setMesh(rightRearWheelLoader.getMesh());
 	}
 	
@@ -286,26 +292,25 @@ public class Car extends Asset {
 	 */
 	private void initMeshes() {
 		// TODO The Car's (or chassis'?) Configuration file (TODO!) should tell where the front is.
-		direction[0] = -1;
 		
 		// TODO Obviously, it'd be nicer if one WavefrontLoader could be used for all the loading
 		// TODO Also, it'd be nicer if once a mesh resource has been loaded, it could be cloned instead of loading it all over
 		
 		// Chassis
-		WavefrontLoader chassisLoader = new WavefrontLoader(chassisMeshResource);
+		WavefrontLoader chassisLoader = new WavefrontLoader(chassisResource);
 		chassis = new CarChassis(chassisLoader.getMesh());
 		// Left Front Wheel
-		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(wheelMeshResource);
+		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(wheelResource);
 		leftFrontWheel = new CarWheel(leftFrontWheelLoader.getMesh());
 		// Right Front Wheel
-		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(wheelMeshResource);
+		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(wheelResource);
 		rightFrontWheel = new CarWheel(rightFrontWheelLoader.getMesh());
 		rightFrontWheel.invert();
 		// Left Rear Wheel
-		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(wheelMeshResource);
+		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(wheelResource);
 		leftRearWheel = new CarWheel(leftRearWheelLoader.getMesh());
 		// Right Rear Wheel
-		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelMeshResource);
+		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelResource);
 		rightRearWheel = new CarWheel(rightRearWheelLoader.getMesh());
 		rightRearWheel.invert();
 	}

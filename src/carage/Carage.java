@@ -20,6 +20,7 @@ import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import lenz.opengl.AbstractSimpleBase;
 import lenz.opengl.utils.ShaderProgram;
@@ -42,8 +43,7 @@ import carage.engine.VertexBufferObject;
 public class Carage extends AbstractSimpleBase {
 		
 	public static final int FPS = 60;
-	
-	private String shader = "phong";
+	public static final String DEFAULT_SHADER = "phong";	
 	
 	public static final Vector3f X_AXIS = new Vector3f(1, 0, 0);
 	public static final Vector3f Y_AXIS = new Vector3f(0, 1, 0);
@@ -66,17 +66,11 @@ public class Carage extends AbstractSimpleBase {
 	private ShaderProgram sp;
 	private int spId;
 	
-	private Matrix4f projectionMatrix;
-	private Matrix4f viewMatrix;
-	private Matrix4f modelMatrix;
-	
-	private int projectionMatrixLocation;
-	private int viewMatrixLocation;
-	private int modelMatrixLocation;
-	
-	private FloatBuffer matrixBuffer;
+	private Renderer renderer;
 	
 	private Asset asset = null;
+	private Asset asset2 = null;
+	private ArrayList<Asset> assets = null;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -85,11 +79,13 @@ public class Carage extends AbstractSimpleBase {
 	@Override
 	protected void initOpenGL() {
 		printInfo();
-		initMatrices();
+		// initMatrices();
 		initViewport();
 		
 		initShaders();
 		initTestMesh();
+		
+		renderer = new Renderer(sp, WIDTH, HEIGHT);
 	}
 	
 	private void printInfo() {
@@ -115,56 +111,30 @@ public class Carage extends AbstractSimpleBase {
 	private void initViewport() {
 		glClearColor(0.4f, 0.6f, 1.0f, 1.0f);
 		glViewport(0, 0, WIDTH, HEIGHT);
-		glEnable(GL_DEPTH_TEST);
-		
-		// Do not render back sides
-		glEnable(GL_CULL_FACE);
-		glCullFace (GL_BACK); // cull back face - this is the default
-		glFrontFace (GL_CCW); // GL_CCW for counter clock-wise - default again
-		
+		glEnable(GL_DEPTH_TEST);	// Do not render hidden geometry
+		glEnable(GL_CULL_FACE);		// Do not render back sides
+		glCullFace (GL_BACK);		// cull back face - this is the default
+		glFrontFace (GL_CCW);		// GL_CCW for counter clock-wise - default again
 	}
 	
 	private void initShaders() {
-		sp = new ShaderProgram(shader);
+		sp = new ShaderProgram(DEFAULT_SHADER);
 		String[] attributeLocations = new String[] {ShaderAttribute.POSITION.getName(), ShaderAttribute.COLOR.getName(), ShaderAttribute.TEXTURE.getName()};
 		sp.bindAttributeLocations(attributeLocations);
 		
 		spId = sp.getId();
-		projectionMatrixLocation = glGetUniformLocation(spId, "projectionMatrix");
-		viewMatrixLocation       = glGetUniformLocation(spId, "viewMatrix");
-		modelMatrixLocation      = glGetUniformLocation(spId, "modelMatrix");
-		
 		glUseProgram(spId);
-	}
-	
-	private void initMatrices() {
-		initModelMatrix();
-		initViewMatrix();
-		initProjectionMatrix();
-		initMatrixBuffer();
-	}
-	
-	private void initProjectionMatrix() {
-		// width, height, near plane, far plane, field of view
-		projectionMatrix = new ProjectionMatrix(WIDTH, HEIGHT, 0.1f, 100f, 60f);
-	}
-	
-	private void initViewMatrix() {
-		viewMatrix = new Matrix4f();
-	}
-	
-	private void initModelMatrix() {
-		modelMatrix = new Matrix4f();
-	}
-	
-	private void initMatrixBuffer() {
-		// http://stackoverflow.com/questions/10697161/why-floatbuffer-instead-of-float
-		matrixBuffer = BufferUtils.createFloatBuffer(16);
 	}
 
 	private void initTestMesh() {
 		asset = new Asset("vw-polo");
 		printAssetInfo(asset);
+		
+		asset2 = new Asset("cardboardbox");
+		printAssetInfo(asset2);
+		
+		assets = new ArrayList<>();
+		
 	}
 	
 	@Override
@@ -175,20 +145,18 @@ public class Carage extends AbstractSimpleBase {
 		// User pressed any relevant keys?
 		processInput();
 		
-		// Let our Quad (or Tri or whatever) move a bit
-		modifyModelMatrix();
-		
-		// Hand over the matrices to the vertex shader
-		matricesToShader();
+		// Let our Quad (or Tri or whatever it currently is) move a bit
+		moveTestAsset();
 		
 		// Clear dat screen!
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 		// Finally, render our simple test geometry!		
-		Renderer.renderAsset(asset);
+		renderer.renderAsset(asset);
+		renderer.renderAsset(asset2);
 	}
 	
-	private void modifyModelMatrix() {
+	private void moveTestAsset() {
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
@@ -212,7 +180,7 @@ public class Carage extends AbstractSimpleBase {
 	    rotZ = (float) Math.toRadians(rotZ);
 		
 		
-		// TODO We need some pushing and popping here, otherwise rotating+translating doesn't work as expected (?)
+		// TODO We need some pushing and popping here, otherwise rotating+translating doesn't work as expected (really?)
 		// modelMatrix.translate(new Vector3f(transX, transY, transZ));
 	    //modelMatrix.rotate(-delta*0.03f, Z_AXIS);
 
@@ -221,28 +189,9 @@ public class Carage extends AbstractSimpleBase {
 		
 		Vector3f assetRot = asset.getRotation();
 		asset.setRotation(new Vector3f(assetRot.getX()+rotX, assetRot.getY(), assetRot.getZ()+rotZ));
-		modelMatrix = asset.getModelMatrix();
-	}
-	
-	private void matricesToShader() {
-		//glUseProgram(spId);
+		// modelMatrix = asset.getModelMatrix();
 		
-		// Projection Matrix
-        projectionMatrix.store(matrixBuffer);
-        matrixBuffer.flip();
-        glUniformMatrix4(projectionMatrixLocation, false, matrixBuffer);
-        
-        // View Matrix
-        viewMatrix.store(matrixBuffer);
-        matrixBuffer.flip();
-        glUniformMatrix4(viewMatrixLocation, false, matrixBuffer);
-        
-        // Model Matrix
-        modelMatrix.store(matrixBuffer);
-        matrixBuffer.flip();
-        glUniformMatrix4(modelMatrixLocation, false, matrixBuffer);
-
-        //glUseProgram(0);
+		asset2.setPosition(0f, 0f, -4f);
 	}
 			
 	/**

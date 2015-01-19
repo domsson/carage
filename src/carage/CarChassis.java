@@ -5,7 +5,7 @@ import carage.engine.Asset;
 public class CarChassis extends Asset {
 	
 	public CarChassis(String resource) {
-		this.mesh = mesh;
+		super(resource);
 	}
 
 }

@@ -19,7 +19,18 @@ public class Asset extends Entity implements Renderable {
 		// TODO fail (throw exception?) if resource is empty string
 		this.name = resource;
 		loadGeometry(resource);
-		setTexture(resource);
+		loadTexture(resource);
+	}
+	
+	public Asset(Geometry geometry) {
+		super();
+		this.geometry = geometry;
+	}
+	
+	public Asset(Geometry geometry, Texture texture) {
+		super();
+		this.geometry = geometry;
+		this.texture = texture;
 	}
 	
 	public String getName() {
@@ -36,6 +47,10 @@ public class Asset extends Entity implements Renderable {
 	
 	public int getTextureId() {
 		return texture.getId();
+	}
+	
+	public void loadTexture(String resource) {
+		texture = textureManager.get(resource+"."+TEXTURE_FORMAT);
 	}
 	
 	public VertexArrayObject getVAO() {
@@ -68,10 +83,6 @@ public class Asset extends Entity implements Renderable {
 	
 	private void loadGeometry(String resource) {
 		geometry = geometryManager.get(resource);
-	}
-	
-	private void setTexture(String resource) {
-		texture = textureManager.get(resource+"."+TEXTURE_FORMAT);
 	}
 
 }

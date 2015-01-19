@@ -212,19 +212,24 @@ public class Entity {
 	 * 
 	 * @return
 	 */
-	public Matrix4f getModelMatrix() {
+	public Matrix4f getModelMatrix() {		
+		Matrix4f modelMatrix = new Matrix4f();
+		fillModelMatrix(modelMatrix);
+		return modelMatrix;
+	}
+	
+	public void fillModelMatrix(Matrix4f modelMatrix) {		
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
 		
-		Matrix4f modelMatrix = new Matrix4f();
-		// TODO
+		// TODO is this all we need? is it correct?
+		modelMatrix.setIdentity();
 		modelMatrix.translate(position);
 		modelMatrix.rotate(rotation.getX(), new Vector3f(1, 0, 0));
 		modelMatrix.rotate(rotation.getY(), new Vector3f(0, 1, 0));
 		modelMatrix.rotate(rotation.getZ(), new Vector3f(0, 0, 1));
 		modelMatrix.scale(new Vector3f(1, 1, 1));
-		return modelMatrix;
 	}
 
 }

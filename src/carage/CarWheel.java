@@ -2,7 +2,6 @@ package carage;
 
 import carage.engine.Asset;
 
-
 public class CarWheel extends Asset {
 	
 	// spin when driving!
