@@ -15,6 +15,7 @@ import java.nio.FloatBuffer;
 import lenz.opengl.utils.ShaderProgram;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.vector.Matrix4f;
 
 // TODO make this static or singleton or something?
 public class Renderer {

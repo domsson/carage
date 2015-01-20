@@ -167,11 +167,11 @@ public class Carage extends AbstractSimpleBase {
 		float transZ = buttonZoomIn  ? -0.02f * delta : 0;
 			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
 			  
-		float rotX = buttonRotUp   ? -5 * delta : 0;
-			  rotX = buttonRotDown ?  5 * delta : rotX;
+		float rotX = buttonRotUp   ? -0.2f * delta : 0;
+			  rotX = buttonRotDown ?  0.2f * delta : rotX;
 			  
-		float rotZ = buttonRotLeft  ? -5 * delta : 0;
-			  rotZ = buttonRotRight ?  5 * delta : rotZ;
+		float rotZ = buttonRotLeft  ? -0.2f * delta : 0;
+			  rotZ = buttonRotRight ?  0.2f * delta : rotZ;
 			  
 	    rotX = (float) Math.toRadians(rotX);
 	    rotZ = (float) Math.toRadians(rotZ);

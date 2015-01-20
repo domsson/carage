@@ -1,5 +1,7 @@
 package carage;
 
+import org.lwjgl.util.vector.Vector3f;
+
 import carage.engine.AssetGroup;
 
 // http://engineeringdotnet.blogspot.co.uk/2010/04/simple-2d-car-physics-in-games.html
@@ -12,9 +14,9 @@ public class Car extends AssetGroup {
 	public String chassisResource;
 	public String wheelResource;
 	
-	// Chassis Mesh
+	// Chassis
 	private CarChassis chassis = null;
-	// Wheels Mesh
+	// Wheels
 	private CarWheel leftFrontWheel  = null;
 	private CarWheel rightFrontWheel = null;
 	private CarWheel leftRearWheel   = null;
@@ -111,37 +113,6 @@ public class Car extends AssetGroup {
 		}
 		return (scalar > 0) ? 1 : -1;
 	}
-	
-	public void debugDrivingDirection() {
-		System.out.println("Vehicle direction: "+direction[0]+" "+direction[1]+" "+direction[2]);
-		System.out.println("Vehicle velocity : "+velocity[0]+" "+velocity[1]+" "+velocity[2]);
-	}
-	*/
-	
-	/*
-	public void setChassisGeometry(String resource) {
-		this.chassisResource = resource;
-		
-		WavefrontLoader chassisLoader = new WavefrontLoader(chassisResource);
-		chassis.setMesh(chassisLoader.getMesh());
-	}
-	
-	public void setWheelMesh(String resource) {
-		this.wheelResource = resource;
-		
-		// Left Front Wheel
-		WavefrontLoader leftFrontWheelLoader = new WavefrontLoader(wheelResource);
-		leftFrontWheel.setMesh(leftFrontWheelLoader.getMesh());
-		// Right Front Wheel
-		WavefrontLoader rightFrontWheelLoader = new WavefrontLoader(wheelResource);
-		rightFrontWheel.setMesh(rightFrontWheelLoader.getMesh());
-		// Left Rear Wheel
-		WavefrontLoader leftRearWheelLoader = new WavefrontLoader(wheelResource);
-		leftRearWheel.setMesh(leftRearWheelLoader.getMesh());
-		// Right Rear Wheel
-		WavefrontLoader rightRearWheelLoader = new WavefrontLoader(wheelResource);
-		rightRearWheel.setMesh(rightRearWheelLoader.getMesh());
-	}
 	*/
 	
 	/**
@@ -177,7 +148,7 @@ public class Car extends AssetGroup {
 		System.out.println("Rear track : " + getFrontTrack() + " m");
 	}
 	*/
-	
+
 	/**
 	 * Trigger the car's calculations.
 	 * This method should be called every tick but not before any other methods that can

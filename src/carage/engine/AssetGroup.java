@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.lwjgl.util.vector.Vector3f;
 
+// TODO I have no idea what I'm doing...
 public class AssetGroup {
 	
 	public static final String DEFAULT_ASSET_NAME = "asset";
