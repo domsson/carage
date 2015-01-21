@@ -13,10 +13,10 @@ import org.lwjgl.util.vector.Matrix4f;
 @SuppressWarnings("serial")
 public class RenderMatrix extends Matrix4f {
 
-	private String name = "";
-	private int location = 0;
+	protected String name = "";
+	protected int location = 0;
 	
-	private FloatBuffer buffer = null;
+	protected FloatBuffer buffer = null;
 	
 	public RenderMatrix(String name) {
 		this.name = name;
@@ -51,6 +51,16 @@ public class RenderMatrix extends Matrix4f {
 		buffer.clear();
 //		glUseProgram(0);
 	}
+	
+	/*
+	public void toShader(FloatBuffer buffer, boolean transpose, boolean invert) {
+		if (invert) { invert(); }
+		store(buffer);
+        buffer.flip();
+        glUniformMatrix4(location, transpose, buffer);
+		buffer.clear();
+	}
+	*/
 	
 	public void toShader() {
 		if (!hasBuffer()) {

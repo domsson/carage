@@ -10,9 +10,10 @@ import carage.engine.AssetGroup;
 
 public class Car extends AssetGroup {
 	
-	// TODO these should be determined on initialization (via constructor)
-	public String chassisResource;
-	public String wheelResource;
+	private String chassisResource;
+	private String wheelResource;
+	
+	private AssetConfig config = null;
 	
 	// Chassis
 	private CarChassis chassis = null;
@@ -39,7 +40,21 @@ public class Car extends AssetGroup {
 	public Car(String chassisResource, String wheelResource) {
 		this.chassisResource = chassisResource;
 		this.wheelResource = wheelResource;
+		loadConfig();
 		initParts();
+		initChassisPosition();
+		initWheelPositions();
+	}
+	
+	private void loadConfig() {
+		config = new AssetConfig(chassisResource);
+		
+		weight = config.getFloatProperty("weight");
+		acceleration = config.getFloatProperty("acceleration");
+		frontAxleOffset = config.getFloatProperty("front-axle-offset");
+		rearAxleOffset = config.getFloatProperty("rear-axle-offset");
+		frontWheelClearance = config.getFloatProperty("front-wheel-track") * 0.5f;
+		rearWheelClearance = config.getFloatProperty("rear-wheel-track") * 0.5f;
 	}
 	
 	// TODO have a Car(CarProperties props) {} constructor which initializes a car from a config gile / config object
@@ -54,7 +69,7 @@ public class Car extends AssetGroup {
 		this.rearWheelClearance  = rearWheelTrack * 0.5f;
 		
 		initParts();
-		setWheelPositions();
+		initWheelPositions();
 	}
 
 	/**
@@ -71,7 +86,7 @@ public class Car extends AssetGroup {
 		this.frontWheelClearance = frontWheelClearance;
 		this.rearWheelClearance  = rearWheelClearance;
 		
-		setWheelPositions();
+		initWheelPositions();
 	}
 	
 	/**
@@ -128,26 +143,32 @@ public class Car extends AssetGroup {
 	 * Set the texture to use for the wheels to the texture with the given id
 	 * 
 	 * @param wheelTextureId The id of the texture to use for all four wheels
-	 *
-	public void setWheelTexture(int wheelTextureId) {
-		this.wheelTextureId = wheelTextureId;
+	 */
+	public void setWheelTexture(String wheelTexture) {
+		leftFrontWheel.loadTexture(wheelTexture);
+		rightFrontWheel.loadTexture(wheelTexture);
+		leftRearWheel.loadTexture(wheelTexture);
+		rightRearWheel.loadTexture(wheelTexture);
 	}
-	*/
 	
 	/**
 	 * Print some information about the car's geometry to the console
-	 *
+	 */
 	public void printInfo() {
-		System.out.println("Verts: " + (chassis.getMesh().getNumberOfVertices() + (leftFrontWheel.getMesh().getNumberOfVertices() * 4)));
-		System.out.println("UVs  : " + (chassis.getMesh().getNumberOfUVs() + (leftFrontWheel.getMesh().getNumberOfUVs() * 4)));
-		System.out.println("Tris : " + (chassis.getMesh().getNumberOfFaces() + (leftFrontWheel.getMesh().getNumberOfFaces() * 4)));
-		System.out.println();
-		System.out.println("Size       : " + (chassis.getMesh().getWidth() + " x " + chassis.getMesh().getLength() + " x " + chassis.getMesh().getHeight()) + " m");
+		//System.out.println("Verts: " + (chassis.getMesh().getNumberOfVertices() + (leftFrontWheel.getMesh().getNumberOfVertices() * 4)));
+		//System.out.println("UVs  : " + (chassis.getMesh().getNumberOfUVs() + (leftFrontWheel.getMesh().getNumberOfUVs() * 4)));
+		//System.out.println("Tris : " + (chassis.getMesh().getNumberOfFaces() + (leftFrontWheel.getMesh().getNumberOfFaces() * 4)));
+		//System.out.println();
+		
+		System.out.println("[Car Info]");
+		System.out.println("Size       : " + (chassis.getBoundingBox().getWidth() + " x " + chassis.getBoundingBox().getLength() + " x " + chassis.getBoundingBox().getHeight()) + " m");
 		System.out.println("Wheelbase  : " + getWheelbase() + " m");
 		System.out.println("Front track: " + getFrontTrack() + " m");
 		System.out.println("Rear track : " + getFrontTrack() + " m");
+		System.out.println("Axle height: " + leftFrontWheel.getRadius() + " m");
+		System.out.println("Wheel size : " + (leftFrontWheel.getBoundingBox().getWidth() + " x " + leftFrontWheel.getBoundingBox().getLength() + " x " + leftFrontWheel.getBoundingBox().getHeight()) + " m");
+		
 	}
-	*/
 
 	/**
 	 * Trigger the car's calculations.
@@ -259,11 +280,16 @@ public class Car extends AssetGroup {
 		addAsset(rightRearWheel, "right-rear-wheel");
 	}
 	
+	private void initChassisPosition() {
+//		System.out.println("Axle height:" + axleHeight);
+		chassis.setPosition(new Vector3f(0, leftFrontWheel.getRadius(), 0));
+	}
+	
 	/**
 	 * Set the all four wheels' positions relative to the chassis
 	 * using the axle offsets and wheel clearance values
 	 */
-	private void setWheelPositions() {
+	private void initWheelPositions() {
 		// TODO Well, this should take the car's direction (where is the front?) into account! (A "problem" we have everywhere, really)
 		
 		leftFrontWheel.setPosition(-this.frontAxleOffset, leftFrontWheel.getRadius(), this.frontWheelClearance);		

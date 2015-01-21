@@ -32,9 +32,10 @@ public class Renderer {
 	
 	private ShaderProgram shader; // TODO should the asset hold the shader it wants to use? probably? 
 
-	private RenderMatrix projectionMatrix;
-	private RenderMatrix viewMatrix;
-	private RenderMatrix modelMatrix;
+	private ProjectionMatrix projectionMatrix;
+	private ViewMatrix viewMatrix;
+	private ModelMatrix modelMatrix;
+	private NormalMatrix normalMatrix;
 	
 	private FloatBuffer matrixBuffer;
 	
@@ -57,7 +58,7 @@ public class Renderer {
 		initMatrices();
 	}
 	
-	public void setProjectionMatrix(RenderMatrix projectionMatrix) {
+	public void setProjectionMatrix(ProjectionMatrix projectionMatrix) {
 		this.projectionMatrix = projectionMatrix;
 		if (!projectionMatrix.hasLocation()) {
 			projectionMatrix.fetchLocation(shader);
@@ -74,6 +75,7 @@ public class Renderer {
 	
 	public void renderAsset(Renderable asset) {
 		asset.fillModelMatrix(modelMatrix);
+		normalMatrix.loadFromModelAndViewMatrices(modelMatrix, viewMatrix);
 		matricesToShader();
 		
 		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
@@ -115,7 +117,20 @@ public class Renderer {
 		initModelMatrix();
 		initViewMatrix();
 		initProjectionMatrix();
+		initNormalMatrix(); // needs model and view matrix, hence has to be called after their initialization
 		initMatrixBuffer();
+	}
+	
+	private void initNormalMatrix() {
+		/*
+		normalMatrix = new NormalMatrix();
+		normalMatrix.fetchLocation(shader);
+		Matrix4f.mul(viewMatrix, modelMatrix, normalMatrix);
+		normalMatrix.transpose();
+		normalMatrix.invert();
+		*/
+		normalMatrix = new NormalMatrix();
+		normalMatrix.fetchLocation(shader);		
 	}
 	
 	private void initProjectionMatrix() {
@@ -146,6 +161,7 @@ public class Renderer {
 		projectionMatrix.toShader(matrixBuffer);
 		viewMatrix.toShader(matrixBuffer);
 		modelMatrix.toShader(matrixBuffer);
+		normalMatrix.toShader(matrixBuffer);
         //glUseProgram(0);
 	}
 

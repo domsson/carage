@@ -1,4 +1,4 @@
-package carage;
+package carage.input;
 
 
 public class InputManager {

@@ -114,14 +114,17 @@ public class Carage extends AbstractSimpleBase {
 	
 	private void initShaders() {
 		sp = new ShaderProgram(DEFAULT_SHADER);
-		String[] attributeLocations = new String[] {ShaderAttribute.POSITION.getName(), ShaderAttribute.COLOR.getName(), ShaderAttribute.TEXTURE.getName()};
+		String[] attributeLocations = new String[] {ShaderAttribute.POSITION.getName(), ShaderAttribute.COLOR.getName(), ShaderAttribute.TEXTURE.getName(), ShaderAttribute.NORMALS.getName(), ShaderAttribute.LIGHT.getName()};
 		sp.bindAttributeLocations(attributeLocations);
+		
+		// NORMAL MATRIX = MODELVIEW MATRIX transponiert, invertiert (reihenfolge ist wurst)
 		
 		spId = sp.getId();
 		glUseProgram(spId);
 	}
 
 	private void initTestMesh() {
+		/*
 		asset = new Asset("vw-polo");
 		printAssetInfo(asset);
 		
@@ -129,8 +132,11 @@ public class Carage extends AbstractSimpleBase {
 		printAssetInfo(asset2);
 		
 		assets = new ArrayList<>();
+		*/
 		
-		car = new Car(1.15f, 1.23f, 1.3f, 1.3f);
+		//car = new Car(1.15f, 1.23f, 1.3f, 1.3f);
+		car = new Car("vw-polo", "vw-polo-wheel");
+		car.printInfo();
 	}
 	
 	@Override
@@ -181,6 +187,7 @@ public class Carage extends AbstractSimpleBase {
 		// modelMatrix.translate(new Vector3f(transX, transY, transZ));
 	    //modelMatrix.rotate(-delta*0.03f, Z_AXIS);
 
+	    /*
 	    Vector3f assetPos = asset.getPosition();
 		asset.setPosition(new Vector3f(assetPos.getX()+transX, assetPos.getY()+transY, assetPos.getZ()+transZ));
 		
@@ -189,6 +196,7 @@ public class Carage extends AbstractSimpleBase {
 		// modelMatrix = asset.getModelMatrix();
 		
 		asset2.setPosition(0f, 0f, -4f);
+		*/
 		
 		car.alterPosition(new Vector3f(transX, transY, transZ));
 		car.alterRotation(new Vector3f(rotX, 0, rotZ));
