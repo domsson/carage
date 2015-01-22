@@ -30,3 +30,4 @@ void main(void) {
 	
 	gl_Position = projectionMatrix * modelViewMatrix * in_Position;
 }
+

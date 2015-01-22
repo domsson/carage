@@ -28,7 +28,7 @@ float intensity(vec3 light, vec3 normal) {
 	float ambient = 0f; // TODO: what's a good value? get this from java?
 	float diffuse = 0f;
 	float specular = 0f;
-    float hardness = 2f;
+    float hardness = 2f; // TODO get this from the object/material (via java) somehow
     
     vec3 reflection = normalize(-reflect(light, normal));
     vec3 camera = normalize(-pass_Position);
@@ -47,5 +47,4 @@ void main(void) {
     vec3 light = lightDirectionFromVertex(lightSource, pass_Position);
     out_Color = texture(tex, pass_TextureCoord) * intensity(light, pass_Normal);
 }
-
 

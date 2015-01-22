@@ -209,9 +209,9 @@ public class BufferObject {
 	protected void createBuffer(int[] data) {
 		size = data.length;
 		generateId();
-		bind();
+//		bind();
 		sendBuffer(bufferFromData(data));
-		unbind();
+//		unbind();
 	}
 	
 	/**
@@ -223,9 +223,9 @@ public class BufferObject {
 	protected void createBuffer(float[] data) {
 		size = data.length;
 		generateId();
-		bind();
+//		bind();
 		sendBuffer(bufferFromData(data));
-		unbind();
+//		unbind();
 	}
 	
 	/**
@@ -257,7 +257,9 @@ public class BufferObject {
 	 * @param buffer An IntBuffer holding the actual data
 	 */
 	protected void sendBuffer(IntBuffer buffer) {
+		bind();
 		glBufferData(bufferType, buffer, drawType);
+		unbind();
 	}
 	
 	/**
@@ -265,7 +267,9 @@ public class BufferObject {
 	 * @param buffer A FloatBuffer holding the actual data
 	 */
 	protected void sendBuffer(FloatBuffer buffer) {
+		bind();
 		glBufferData(bufferType, buffer, drawType);
+		unbind();
 	}
 	
 	/**

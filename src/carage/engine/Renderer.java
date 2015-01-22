@@ -84,11 +84,29 @@ public class Renderer {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	
+	public void renderChildAsset(Renderable childAsset) {
+		
+		
+		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
+		glBindTexture(GL_TEXTURE_2D, childAsset.getTextureId());
+		renderVAO(childAsset.getVAO(), childAsset.getIBO());
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	
 	public void renderAssetGroup(AssetGroup assetGroup) {
-		Asset[] assets = assetGroup.getAllAssets();
+		/*
+		Asset[] assets = assetGroup.getAllChildAssets();
 		for (Asset asset : assets) {
 			renderAsset(asset);
 		}
+		*/
+		renderAsset(assetGroup.getParentAsset());
+		
+		Asset[] childAssets = assetGroup.getAllChildAssets();
+		for (Asset childAsset : childAssets) {
+			renderAsset(childAsset);
+		}
+		
 	}
 	
 	public static void renderVAO(int vaoId) {

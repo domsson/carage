@@ -74,7 +74,6 @@ public class Carage extends AbstractSimpleBase {
 	@Override
 	protected void initOpenGL() {
 		printInfo();
-		// initMatrices();
 		initViewport();
 		
 		initShaders();
@@ -108,16 +107,14 @@ public class Carage extends AbstractSimpleBase {
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glEnable(GL_DEPTH_TEST);	// Do not render hidden geometry
 		glEnable(GL_CULL_FACE);		// Do not render back sides
-		glCullFace (GL_BACK);		// cull back face - this is the default
-		glFrontFace (GL_CCW);		// GL_CCW for counter clock-wise - default again
+		glCullFace(GL_BACK);		// cull back face - this is the default
+		glFrontFace(GL_CCW);		// GL_CCW for counter clock-wise - default again
 	}
 	
 	private void initShaders() {
 		sp = new ShaderProgram(DEFAULT_SHADER);
 		String[] attributeLocations = new String[] {ShaderAttribute.POSITION.getName(), ShaderAttribute.COLOR.getName(), ShaderAttribute.TEXTURE.getName(), ShaderAttribute.NORMALS.getName(), ShaderAttribute.LIGHT.getName()};
 		sp.bindAttributeLocations(attributeLocations);
-		
-		// NORMAL MATRIX = MODELVIEW MATRIX transponiert, invertiert (reihenfolge ist wurst)
 		
 		spId = sp.getId();
 		glUseProgram(spId);

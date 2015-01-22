@@ -161,7 +161,7 @@ public class Car extends AssetGroup {
 		//System.out.println();
 		
 		System.out.println("[Car Info]");
-		System.out.println("Size       : " + (chassis.getBoundingBox().getWidth() + " x " + chassis.getBoundingBox().getLength() + " x " + chassis.getBoundingBox().getHeight()) + " m");
+		System.out.println("Size       : " + (chassis.getBoundingBox().getLength() + " x " + chassis.getBoundingBox().getWidth() + " x " + chassis.getBoundingBox().getHeight()) + " m");
 		System.out.println("Wheelbase  : " + getWheelbase() + " m");
 		System.out.println("Front track: " + getFrontTrack() + " m");
 		System.out.println("Rear track : " + getFrontTrack() + " m");
@@ -273,11 +273,11 @@ public class Car extends AssetGroup {
 		rightRearWheel = new CarWheel(wheelResource);
 		rightRearWheel.invert();
 		
-		addAsset(chassis, "chassis");
-		addAsset(leftFrontWheel, "left-front-wheel");
-		addAsset(rightFrontWheel, "right-front-wheel");
-		addAsset(leftRearWheel, "left-rear-wheel");
-		addAsset(rightRearWheel, "right-rear-wheel");
+		setParentAsset(chassis);
+		addChildAsset(leftFrontWheel, "left-front-wheel");
+		addChildAsset(rightFrontWheel, "right-front-wheel");
+		addChildAsset(leftRearWheel, "left-rear-wheel");
+		addChildAsset(rightRearWheel, "right-rear-wheel");
 	}
 	
 	private void initChassisPosition() {

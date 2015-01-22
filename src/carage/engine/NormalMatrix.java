@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 
 import org.lwjgl.util.vector.Matrix4f;
 
+// NORMAL MATRIX = MODELVIEW MATRIX transponiert, invertiert (reihenfolge ist wurst)
 public class NormalMatrix extends RenderMatrix {
 	
 	public static final String DEFAULT_NAME = "normalMatrix";
