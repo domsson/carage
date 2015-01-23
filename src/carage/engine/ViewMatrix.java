@@ -32,7 +32,11 @@ public class ViewMatrix extends RenderMatrix {
 	
 	public void update() {
 		setIdentity();
-		if (camera != null) { camera.applyTransformationsToMatrix(this); }
+		if (camera != null) {
+			// http://3dgep.com/understanding-the-view-matrix/
+			camera.applyTransformationsToMatrix(this);
+			invert(); // The View Matrix is the inverse of the Camera's Transformation Matrix
+		}
 	}
 	
 	public void update(Camera camera) {

@@ -69,6 +69,7 @@ public class Carage extends AbstractSimpleBase {
 	private Asset asset2 = null;
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
+	private Asset workshopFloor = null;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -83,6 +84,7 @@ public class Carage extends AbstractSimpleBase {
 		initTestMesh();
 		
 		camera = new Camera();
+		camera.setPosition(0f, 3f, 2f);
 		renderer = new Renderer(sp, WIDTH, HEIGHT, camera);
 	}
 	
@@ -138,7 +140,10 @@ public class Carage extends AbstractSimpleBase {
 		//car = new Car(1.15f, 1.23f, 1.3f, 1.3f);
 		car = new Car("vw-polo", "vw-polo-wheel");
 		car.printInfo();
-		car.setPosition(new Vector3f(0f, -1.2f, -3.5f));
+		//car.setPosition(new Vector3f(0f, -1.2f, -3.5f));
+		
+		workshopFloor = new Asset("workshop-floor");
+		//workshopFloor.setPosition(0f, -1.2f, -3.5f);
 	}
 	
 	@Override
@@ -159,6 +164,7 @@ public class Carage extends AbstractSimpleBase {
 		//renderer.renderAsset(asset);
 		//renderer.renderAsset(asset2);
 		renderer.renderAssetGroup(car);
+		renderer.renderAsset(workshopFloor);
 	}
 	
 	private void moveTestAsset() {

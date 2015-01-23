@@ -295,10 +295,10 @@ public class Entity {
 	 * 
 	 * @return
 	 */
-	public Matrix4f getModelMatrix() {		
-		Matrix4f modelMatrix = new Matrix4f();
-		applyTransformationsToMatrix(modelMatrix);
-		return modelMatrix;
+	public Matrix4f getTransformationMatrix() {		
+		Matrix4f transformationMatrix = new Matrix4f();
+		applyTransformationsToMatrix(transformationMatrix);
+		return transformationMatrix;
 	}
 	
 	public void applyTransformationsToMatrix(Matrix4f modelMatrix) {

@@ -17,7 +17,7 @@ public interface Renderable {
 	public Texture getTexture();
 	public int getTextureId();
 	
-	public Matrix4f getModelMatrix();
+	public Matrix4f getTransformationMatrix();
 	public void applyTransformationsToMatrix(Matrix4f modelMatrix);
 	
 }

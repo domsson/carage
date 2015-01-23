@@ -288,6 +288,7 @@ public class Car extends AssetGroup {
 	}
 	
 	private void initBodyPosition() {
+		// TODO BUG: once we call any of the "setPosition()" methods on the Car, it will not include the wheelRadius, hence the car will be sunk into the ground!
 		getParentAsset().setPosition(new Vector3f(0, leftFrontWheel.getRadius(), 0));
 	}
 	
