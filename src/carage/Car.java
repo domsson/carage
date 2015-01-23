@@ -89,6 +89,14 @@ public class Car extends AssetGroup {
 		initWheelPositions();
 	}
 	
+	public float getWeight() {
+		return weight;
+	}
+	
+	public float getAcceleration() {
+		return acceleration;
+	}
+	
 	/**
 	 * http://en.wikipedia.org/wiki/Wheelbase
 	 * 
@@ -167,7 +175,6 @@ public class Car extends AssetGroup {
 		System.out.println("Rear track : " + getFrontTrack() + " m");
 		System.out.println("Axle height: " + leftFrontWheel.getRadius() + " m");
 		System.out.println("Wheel size : " + (leftFrontWheel.getBoundingBox().getWidth() + " x " + leftFrontWheel.getBoundingBox().getLength() + " x " + leftFrontWheel.getBoundingBox().getHeight()) + " m");
-		
 	}
 
 	/**

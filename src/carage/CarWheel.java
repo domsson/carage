@@ -2,13 +2,14 @@ package carage;
 
 import carage.engine.Asset;
 
+// TODO the frickin degree-to-radians and radians-to-degree stuff, i don't like it. let's get degrees out of here?
 public class CarWheel extends Asset {
 	
 	public static final float TWO_PI = (float) (2 * Math.PI);
 	
 	// spin when driving!
 	private float radius;
-	private double circumfence;
+	private float circumfence;
 	
 	private boolean invert = false;
 	
@@ -19,7 +20,7 @@ public class CarWheel extends Asset {
 	public CarWheel(String resource) {
 		super(resource);
 		this.radius = getBoundingBox().getHeight() * 0.5f;
-		this.circumfence = Math.PI * getBoundingBox().getHeight();
+		this.circumfence = (float) Math.PI * getBoundingBox().getHeight();
 	}
 	
 	public void invert() {
@@ -28,6 +29,10 @@ public class CarWheel extends Asset {
 	
 	public float getRadius() {
 		return radius;
+	}
+	
+	public float getCircumfence() {
+		return circumfence;
 	}
 	
 	public int getMaxAngle() {

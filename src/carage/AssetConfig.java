@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+@SuppressWarnings("serial")
 public class AssetConfig extends Properties {
 	
 	public static final String ASSET_DIRECTORY = "/res/meshes/"; 

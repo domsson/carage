@@ -31,6 +31,8 @@ public class Renderer {
 	private int height;
 	
 	private ShaderProgram shader; // TODO should the asset hold the shader it wants to use? probably? 
+	
+	private Camera camera;
 
 	private ProjectionMatrix projectionMatrix;
 	private ViewMatrix viewMatrix;
@@ -55,6 +57,14 @@ public class Renderer {
 		this.width = width;
 		this.height = height;
 		this.shader = sp;
+		initMatrices();
+	}
+	
+	public Renderer(ShaderProgram sp, int width, int height, Camera camera) {
+		this.width = width;
+		this.height = height;
+		this.shader = sp;
+		this.camera = camera;
 		initMatrices();
 	}
 	
@@ -151,7 +161,8 @@ public class Renderer {
 	}
 	
 	private void initViewMatrix() {
-		viewMatrix = new ViewMatrix();
+		if (camera == null) { viewMatrix = new ViewMatrix(); }
+		else { viewMatrix = new ViewMatrix(camera); }		
 		viewMatrix.fetchLocation(shader);
 	}
 	

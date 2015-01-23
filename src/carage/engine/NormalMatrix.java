@@ -79,7 +79,7 @@ public class NormalMatrix extends RenderMatrix {
 	public void update(ModelMatrix modelMatrix, ViewMatrix viewMatrix) {
 		setModelMatrix(modelMatrix);
 		setViewMatrix(viewMatrix);
-		Matrix4f.mul(viewMatrix, modelMatrix, this);
+		update();
 	}
 	
 	/**

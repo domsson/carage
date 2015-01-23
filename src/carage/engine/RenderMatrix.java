@@ -67,11 +67,21 @@ public class RenderMatrix extends Matrix4f {
 	}
 	
 	/**
+	 * Place to update the matrix. Overwrite this if your matrix extends RenderMatrix
+	 * and needs certain operations done before this matrix is being send to the shader.
+	 * By default, this does nothing.
+	 */
+	public void update() {
+	
+	}
+	
+	/**
 	 * Sends a buffered version of this matrix to the active OpenGL shader program.
 	 * The provided buffer will be used, then cleared, allowing for buffer re-use.
 	 */
 	public void toShader(FloatBuffer buffer) {
 		//glUseProgram(sp);
+		update();
 		store(buffer);
         buffer.flip();
         glUniformMatrix4(location, false, buffer);

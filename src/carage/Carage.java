@@ -27,6 +27,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
 
 import carage.engine.Asset;
+import carage.engine.Camera;
 import carage.engine.Renderer;
 import carage.engine.ShaderAttribute;
 import carage.engine.VertexBufferObject;
@@ -62,6 +63,7 @@ public class Carage extends AbstractSimpleBase {
 	private int spId;
 	
 	private Renderer renderer;
+	private Camera camera;
 	
 	private Asset asset = null;
 	private Asset asset2 = null;
@@ -80,7 +82,8 @@ public class Carage extends AbstractSimpleBase {
 		initShaders();
 		initTestMesh();
 		
-		renderer = new Renderer(sp, WIDTH, HEIGHT);
+		camera = new Camera();
+		renderer = new Renderer(sp, WIDTH, HEIGHT, camera);
 	}
 	
 	private void printInfo() {
@@ -201,8 +204,12 @@ public class Carage extends AbstractSimpleBase {
 		asset2.setPosition(0f, 0f, -4f);
 		*/
 		
+	    /*
 		car.alterPosition(new Vector3f(transX, transY, transZ));
 		car.alterRotation(new Vector3f(rotX, 0, rotZ));
+		*/
+	    camera.alterPosition(new Vector3f(transX, transY, transZ));
+		camera.alterRotation(new Vector3f(rotX, 0, rotZ));
 		
 		car.tick(delta);
 		if (buttonLeft) { car.steerLeft(delta);	}
