@@ -70,6 +70,9 @@ public class Carage extends AbstractSimpleBase {
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
 	private Asset workshopFloor = null;
+	private Asset workshopWalls = null;
+	private Asset workshopColumns = null;
+	private Asset workshopCeiling = null;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -84,7 +87,11 @@ public class Carage extends AbstractSimpleBase {
 		initTestMesh();
 		
 		camera = new Camera();
-		camera.setPosition(0f, 3f, 2f);
+		camera.setPosition(-1.8f, 1.8f, 4f);
+		// Gimbal lock? Are you here to get us?
+		// http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2008.html
+		// http://gamedev.stackexchange.com/questions/45292/how-is-the-gimbal-locked-problem-solved-using-accumulative-matrix-transformation
+		camera.setRotation(new Vector3f(-0.5f, -0.4f, 0f));
 		renderer = new Renderer(sp, WIDTH, HEIGHT, camera);
 	}
 	
@@ -144,6 +151,11 @@ public class Carage extends AbstractSimpleBase {
 		
 		workshopFloor = new Asset("workshop-floor");
 		//workshopFloor.setPosition(0f, -1.2f, -3.5f);
+		
+		workshopWalls = new Asset("workshop-walls");
+		workshopColumns = new Asset("workshop-columns");
+		workshopCeiling = new Asset("workshop-ceiling");
+		
 	}
 	
 	@Override
@@ -165,6 +177,9 @@ public class Carage extends AbstractSimpleBase {
 		//renderer.renderAsset(asset2);
 		renderer.renderAssetGroup(car);
 		renderer.renderAsset(workshopFloor);
+		renderer.renderAsset(workshopWalls);
+		renderer.renderAsset(workshopColumns);
+		renderer.renderAsset(workshopCeiling);
 	}
 	
 	private void moveTestAsset() {
