@@ -17,7 +17,7 @@ import lenz.opengl.utils.ShaderProgram;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix4f;
 
-// TODO make this static or singleton or something?
+// TODO make this static or singleton or something? i guess? or maybe not?!
 public class Renderer {
 	
 	public static final String DEFAULT_SHADER = "phong";
@@ -74,8 +74,8 @@ public class Renderer {
 	}
 	
 	public void renderAsset(Renderable asset) {
-		asset.fillModelMatrix(modelMatrix);
-		normalMatrix.loadFromModelAndViewMatrices(modelMatrix, viewMatrix);
+		modelMatrix.setIdentity();
+		asset.applyTransformationsToMatrix(modelMatrix);
 		matricesToShader();
 		
 		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
@@ -84,29 +84,28 @@ public class Renderer {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	
-	public void renderChildAsset(Renderable childAsset) {
+	public void renderChildAsset(Renderable childAsset, Renderable parentAsset) {
+		Matrix4f modelMatrixBackup = (new Matrix4f()).load(modelMatrix); // glPushMatrix()
 		
+		childAsset.applyTransformationsToMatrix(modelMatrix);
+		matricesToShader();
 		
 		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
 		glBindTexture(GL_TEXTURE_2D, childAsset.getTextureId());
 		renderVAO(childAsset.getVAO(), childAsset.getIBO());
 		glBindTexture(GL_TEXTURE_2D, 0);
+		
+		modelMatrix.load(modelMatrixBackup); // glPopMatrix();
 	}
 	
 	public void renderAssetGroup(AssetGroup assetGroup) {
-		/*
-		Asset[] assets = assetGroup.getAllChildAssets();
-		for (Asset asset : assets) {
-			renderAsset(asset);
-		}
-		*/
-		renderAsset(assetGroup.getParentAsset());
+		Asset parentAsset = assetGroup.getParentAsset();
+		renderAsset(parentAsset);
 		
 		Asset[] childAssets = assetGroup.getAllChildAssets();
 		for (Asset childAsset : childAssets) {
-			renderAsset(childAsset);
+			renderChildAsset(childAsset, parentAsset);
 		}
-		
 	}
 	
 	public static void renderVAO(int vaoId) {
@@ -140,19 +139,11 @@ public class Renderer {
 	}
 	
 	private void initNormalMatrix() {
-		/*
-		normalMatrix = new NormalMatrix();
-		normalMatrix.fetchLocation(shader);
-		Matrix4f.mul(viewMatrix, modelMatrix, normalMatrix);
-		normalMatrix.transpose();
-		normalMatrix.invert();
-		*/
-		normalMatrix = new NormalMatrix();
+		normalMatrix = new NormalMatrix(modelMatrix, viewMatrix);
 		normalMatrix.fetchLocation(shader);		
 	}
 	
 	private void initProjectionMatrix() {
-		// width, height, near plane, far plane, field of view
 		int viewportWidth = (width > 0) ? width : DEFAULT_WIDTH;
 		int viewportHeight = (height > 0) ? height : DEFAULT_HEIGHT;
 		projectionMatrix = new ProjectionMatrix(viewportWidth, viewportHeight, DEFAULT_NEAR_PLANE, DEFAULT_FAR_PLANE, DEFAULT_FIELD_OF_VIEW);
@@ -175,7 +166,7 @@ public class Renderer {
 	}
 	
 	private void matricesToShader() {
-		//glUseProgram(spId);	
+		//glUseProgram(spId);
 		projectionMatrix.toShader(matrixBuffer);
 		viewMatrix.toShader(matrixBuffer);
 		modelMatrix.toShader(matrixBuffer);

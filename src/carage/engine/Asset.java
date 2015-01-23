@@ -8,7 +8,7 @@ public class Asset extends Entity implements Renderable {
 	public static final String TEXTURE_FORMAT = "png";
 	
 	private String name = "";
-	private String resource = ""; // TODO maybe remember the resource name separately? this way, two assets with same resource can have different name
+	//private String resource = ""; // TODO maybe remember the resource name separately? this way, two assets with same resource can have different names
 	private Texture texture = null;
 	private Geometry geometry = null;
 	

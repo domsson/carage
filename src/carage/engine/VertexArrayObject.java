@@ -53,7 +53,7 @@ public class VertexArrayObject {
 	/**
 	 * Unbind the currently bound VAO from the OpenGL state machine.
 	 */
-	public static void unbind() {
+	public void unbind() {
 		glBindVertexArray(0);
 	}
 	

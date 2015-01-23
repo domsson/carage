@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.lwjgl.util.vector.Vector3f;
 
-// TODO I have no idea what I'm doing...
+// TODO This is a horrible idea. It doesn't allow for child assets to have children themselves. What has the world come to!?
 public class AssetGroup {
 	
 	public static final String DEFAULT_ASSET_NAME = "asset";
@@ -50,12 +50,12 @@ public class AssetGroup {
 	}
 	
 	public Asset[] getAllChildAssets() {
-		Asset[] assetArray = new Asset[childAssets.size()];
+		Asset[] childAssetArray = new Asset[childAssets.size()];
 		int i = 0;
-		for (Asset asset : childAssets.values()) {
-			assetArray[i++] = asset;
+		for (Asset childAsset : childAssets.values()) {
+			childAssetArray[i++] = childAsset;
 		}
-		return assetArray;
+		return childAssetArray;
 	}
 	
 	public Asset[] getAllAssets() {
@@ -69,48 +69,53 @@ public class AssetGroup {
 	}
 	
 	public void setPosition(Vector3f position) {
-		/*
-		for (Map.Entry<String, Asset> entry : childAssets.entrySet()) {
-			entry.getValue().setPosition(position);
-		}
-		*/
 		parentAsset.setPosition(position);
 	}
 	
-	public void alterPosition(Vector3f position) {
-		/*
+	public void setChildPositions(Vector3f position) {
 		for (Map.Entry<String, Asset> entry : childAssets.entrySet()) {
-			entry.getValue().alterPosition(position);
+			entry.getValue().setPosition(position);
 		}
-		*/
+	}
+	
+	public void alterPosition(Vector3f position) {
 		parentAsset.alterPosition(position);
 	}
 	
-	public void setRotation(Vector3f rotation) {
-		/*
+	public void alterChildPositions(Vector3f position) {
 		for (Map.Entry<String, Asset> entry : childAssets.entrySet()) {
-			entry.getValue().setPosition(rotation);
+			entry.getValue().alterPosition(position);
 		}
-		*/
+	}
+	
+	public void setRotation(Vector3f rotation) {
 		parentAsset.setRotation(rotation);
 	}
 	
-	public void alterRotation(Vector3f rotation) {
-		/*
+	public void setChildRotations(Vector3f rotation) {
 		for (Map.Entry<String, Asset> entry : childAssets.entrySet()) {
-			entry.getValue().alterRotation(rotation);
+			entry.getValue().setPosition(rotation);
 		}
-		*/
+	}
+	
+	public void alterRotation(Vector3f rotation) {
 		parentAsset.alterRotation(rotation);
 	}
 	
+	public void alterChildRotations(Vector3f rotation) {
+		for (Map.Entry<String, Asset> entry : childAssets.entrySet()) {
+			entry.getValue().alterRotation(rotation);
+		}
+	}
+	
 	public void setVelocity(Vector3f velocity) {
-		/*
+		parentAsset.setVelocity(velocity);
+	}
+	
+	public void setChildVelocities(Vector3f velocity) {
 		for (Map.Entry<String, Asset> entry : childAssets.entrySet()) {
 			entry.getValue().setPosition(velocity);
 		}
-		*/
-		parentAsset.setVelocity(velocity);
 	}
 	
 	private String nextName() {

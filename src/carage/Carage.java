@@ -34,6 +34,7 @@ import carage.engine.VertexBufferObject;
 // http://antongerdelan.net/opengl/
 // http://www.opengl-tutorial.org/beginners-tutorials/
 // http://wiki.lwjgl.org/wiki/Main_Page
+// http://www.codinglabs.net/article_world_view_projection_matrix.aspx
 public class Carage extends AbstractSimpleBase {
 		
 	public static final int FPS = 60;
@@ -134,6 +135,7 @@ public class Carage extends AbstractSimpleBase {
 		//car = new Car(1.15f, 1.23f, 1.3f, 1.3f);
 		car = new Car("vw-polo", "vw-polo-wheel");
 		car.printInfo();
+		car.setPosition(new Vector3f(0f, -1.2f, -3.5f));
 	}
 	
 	@Override
@@ -161,12 +163,16 @@ public class Carage extends AbstractSimpleBase {
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
 		
+		/*
 		float transX = buttonLeft  ? -0.02f * delta : 0;
 			  transX = buttonRight ?  0.02f * delta : transX;
 			  
 		float transY = buttonUp    ?  0.02f * delta : 0;
 			  transY = buttonDown  ? -0.02f * delta : transY;
-			  
+		*/
+		float transX = 0f;
+		float transY = 0f;
+		
 		float transZ = buttonZoomIn  ? -0.02f * delta : 0;
 			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
 			  
@@ -197,6 +203,12 @@ public class Carage extends AbstractSimpleBase {
 		
 		car.alterPosition(new Vector3f(transX, transY, transZ));
 		car.alterRotation(new Vector3f(rotX, 0, rotZ));
+		
+		car.tick(delta);
+		if (buttonLeft) { car.steerLeft(delta);	}
+		if (buttonRight) { car.steerRight(delta); }
+		if (buttonUp) { car.accelerate(delta); }
+		if (buttonDown) { car.decelerate(delta); }
 	}
 			
 	/**

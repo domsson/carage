@@ -18,6 +18,6 @@ public interface Renderable {
 	public int getTextureId();
 	
 	public Matrix4f getModelMatrix();
-	public void fillModelMatrix(Matrix4f modelMatrix);
+	public void applyTransformationsToMatrix(Matrix4f modelMatrix);
 	
 }

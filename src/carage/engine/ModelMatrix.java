@@ -1,5 +1,6 @@
 package carage.engine;
 
+@SuppressWarnings("serial")
 public class ModelMatrix extends RenderMatrix {
 
 	public static final String DEFAULT_NAME = "modelMatrix";

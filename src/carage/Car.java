@@ -10,13 +10,13 @@ import carage.engine.AssetGroup;
 
 public class Car extends AssetGroup {
 	
-	private String chassisResource;
+	private String bodyResource;
 	private String wheelResource;
 	
 	private AssetConfig config = null;
 	
-	// Chassis
-	private CarChassis chassis = null;
+	// Body
+	private CarBody body = null;
 	// Wheels
 	private CarWheel leftFrontWheel  = null;
 	private CarWheel rightFrontWheel = null;
@@ -37,17 +37,17 @@ public class Car extends AssetGroup {
 	private float weight = 780f;
 	private float acceleration = 3.31f;
 	
-	public Car(String chassisResource, String wheelResource) {
-		this.chassisResource = chassisResource;
+	public Car(String bodyResource, String wheelResource) {
+		this.bodyResource = bodyResource;
 		this.wheelResource = wheelResource;
 		loadConfig();
 		initParts();
-		initChassisPosition();
+		initBodyPosition();
 		initWheelPositions();
 	}
 	
 	private void loadConfig() {
-		config = new AssetConfig(chassisResource);
+		config = new AssetConfig(bodyResource);
 		
 		weight = config.getFloatProperty("weight");
 		acceleration = config.getFloatProperty("acceleration");
@@ -60,7 +60,7 @@ public class Car extends AssetGroup {
 	// TODO have a Car(CarProperties props) {} constructor which initializes a car from a config gile / config object
 	
 	public Car(float frontAxleOffset, float rearAxleOffset, float frontWheelTrack, float rearWheelTrack) {
-		this.chassisResource = "vw-polo"; // TODO !!!
+		this.bodyResource = "vw-polo"; // TODO !!!
 		this.wheelResource = "vw-polo-wheel"; // TODO !!!
 		
 		this.frontAxleOffset = frontAxleOffset;
@@ -131,12 +131,12 @@ public class Car extends AssetGroup {
 	*/
 	
 	/**
-	 * Set the chassis' texture to the texture with the given id
+	 * Set the bodie's texture to the texture with the given id
 	 * 
-	 * @param chassisTextureId The id of the texture to use for the car's chassis
+	 * @param bodyTextureId The id of the texture to use for the car's body
 	 *
-	public void setChassisTexture(int chassisTextureId) {
-		this.chassisTextureId = chassisTextureId;
+	public void setBodyTexture(int bodyTextureId) {
+		this.bodyTextureId = bodyTextureId;
 	}
 	
 	/**
@@ -161,7 +161,7 @@ public class Car extends AssetGroup {
 		//System.out.println();
 		
 		System.out.println("[Car Info]");
-		System.out.println("Size       : " + (chassis.getBoundingBox().getLength() + " x " + chassis.getBoundingBox().getWidth() + " x " + chassis.getBoundingBox().getHeight()) + " m");
+		System.out.println("Size       : " + (body.getBoundingBox().getLength() + " x " + body.getBoundingBox().getWidth() + " x " + body.getBoundingBox().getHeight()) + " m");
 		System.out.println("Wheelbase  : " + getWheelbase() + " m");
 		System.out.println("Front track: " + getFrontTrack() + " m");
 		System.out.println("Rear track : " + getFrontTrack() + " m");
@@ -219,8 +219,8 @@ public class Car extends AssetGroup {
 		// TODO shouldn't the wheels angle be set according to
 		// the car's direction... or something?
 		// Or the other way round? In any case, one of those is missing here I guess?
-		leftFrontWheel.setAngle(leftFrontWheel.getAngle()+2);
-		rightFrontWheel.setAngle(rightFrontWheel.getAngle()+2);
+		leftFrontWheel.setAngle(leftFrontWheel.getAngle()+0.05f);
+		rightFrontWheel.setAngle(rightFrontWheel.getAngle()+0.05f);
 	}
 	
 	/**
@@ -230,8 +230,8 @@ public class Car extends AssetGroup {
 	 * @param delta
 	 */
 	public void steerRight(float delta) {
-		leftFrontWheel.setAngle(leftFrontWheel.getAngle()-2);
-		rightFrontWheel.setAngle(rightFrontWheel.getAngle()-2);
+		leftFrontWheel.setAngle(leftFrontWheel.getAngle()-0.05f);
+		rightFrontWheel.setAngle(rightFrontWheel.getAngle()-0.05f);
 	}
 	
 	/**
@@ -258,13 +258,13 @@ public class Car extends AssetGroup {
 	}
 	
 	/**
-	 * Load/request the meshes that make up this car: chassis and four wheels
+	 * Load/request the meshes that make up this car: body and four wheels
 	 */
 	private void initParts() {
-		// TODO The Car's (or chassis'?) Configuration file (TODO!) should tell where the front is.
+		// TODO The Car's (or bodie's?) Configuration file should tell where the front is.
 		
-		// Chassis
-		chassis = new CarChassis(chassisResource);
+		// Body
+		body = new CarBody(bodyResource);
 		// Wheels
 		leftFrontWheel = new CarWheel(wheelResource);
 		rightFrontWheel = new CarWheel(wheelResource);
@@ -273,29 +273,33 @@ public class Car extends AssetGroup {
 		rightRearWheel = new CarWheel(wheelResource);
 		rightRearWheel.invert();
 		
-		setParentAsset(chassis);
+		setParentAsset(body);
 		addChildAsset(leftFrontWheel, "left-front-wheel");
 		addChildAsset(rightFrontWheel, "right-front-wheel");
 		addChildAsset(leftRearWheel, "left-rear-wheel");
 		addChildAsset(rightRearWheel, "right-rear-wheel");
 	}
 	
-	private void initChassisPosition() {
-//		System.out.println("Axle height:" + axleHeight);
-		chassis.setPosition(new Vector3f(0, leftFrontWheel.getRadius(), 0));
+	private void initBodyPosition() {
+		getParentAsset().setPosition(new Vector3f(0, leftFrontWheel.getRadius(), 0));
 	}
 	
 	/**
-	 * Set the all four wheels' positions relative to the chassis
+	 * Set the all four wheels' positions relative to the body
 	 * using the axle offsets and wheel clearance values
 	 */
 	private void initWheelPositions() {
 		// TODO Well, this should take the car's direction (where is the front?) into account! (A "problem" we have everywhere, really)
 		
-		leftFrontWheel.setPosition(-this.frontAxleOffset, leftFrontWheel.getRadius(), this.frontWheelClearance);		
-		rightFrontWheel.setPosition(-this.frontAxleOffset, rightFrontWheel.getRadius(), -this.frontWheelClearance);
-		leftRearWheel.setPosition(this.rearAxleOffset, leftRearWheel.getRadius(), this.rearWheelClearance);
-		rightRearWheel.setPosition(this.rearAxleOffset, rightRearWheel.getRadius(), -this.rearWheelClearance);
+//		leftFrontWheel.setPosition(-this.frontAxleOffset, leftFrontWheel.getRadius(), this.frontWheelClearance);	
+//		rightFrontWheel.setPosition(-this.frontAxleOffset, rightFrontWheel.getRadius(), -this.frontWheelClearance);
+//		leftRearWheel.setPosition(this.rearAxleOffset, leftRearWheel.getRadius(), this.rearWheelClearance);
+//		rightRearWheel.setPosition(this.rearAxleOffset, rightRearWheel.getRadius(), -this.rearWheelClearance);
+		
+		leftFrontWheel.setPosition(-this.frontAxleOffset, 0, this.frontWheelClearance);	
+		rightFrontWheel.setPosition(-this.frontAxleOffset, 0, -this.frontWheelClearance);
+		leftRearWheel.setPosition(this.rearAxleOffset, 0, this.rearWheelClearance);
+		rightRearWheel.setPosition(this.rearAxleOffset, 0, -this.rearWheelClearance);
 	}
 
 }

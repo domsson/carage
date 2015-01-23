@@ -4,11 +4,11 @@ import carage.engine.Asset;
 
 public class CarWheel extends Asset {
 	
+	public static final float TWO_PI = (float) (2 * Math.PI);
+	
 	// spin when driving!
 	private float radius;
 	private double circumfence;
-	// here, angle should be easier then the direction vector, no?
-	private int angle = 0;
 	
 	private boolean invert = false;
 	
@@ -39,23 +39,29 @@ public class CarWheel extends Asset {
 		this.maxSteeringAngle = (maxAngle>=-80 && maxAngle<=80) ? maxAngle : this.maxSteeringAngle;
 	}
 	
-	public int getAngle() {
-		return angle;
+	public float getAngle() {
+		return rotation.getY();
 	}
 	
-	public void setAngle(int angle) {
-		this.angle = (angle>=-maxSteeringAngle && angle<=maxSteeringAngle) ? angle : this.angle;
+	public void setAngle(int angleDegrees) {
+		setAngle((float) Math.toRadians(angleDegrees));
 	}
 	
-	public void spin(int amount) {
+	public void setAngle(float angleRadians) {
+		float maxSteeringAngleRadians = (float) Math.toRadians(maxSteeringAngle);
+		rotation.y = (angleRadians>=-maxSteeringAngleRadians && angleRadians<=maxSteeringAngleRadians) ? angleRadians : rotation.y;
+	}
+	
+	public void spin(int amountDegrees) {
 		// rotate amount degrees
-		rotation.x += amount;
-		rotation.x = (rotation.x > 360) ? rotation.x-360 : rotation.x;
-		rotation.x = (rotation.x <   0) ? 360-rotation.x : rotation.x;
+		float amount = (float) Math.toRadians(amountDegrees);
+		rotation.z += amount;
+		rotation.z = (rotation.z > TWO_PI) ? rotation.z-TWO_PI : rotation.z;
+		rotation.z = (rotation.z <      0) ? TWO_PI-rotation.z : rotation.z;
 	}
 	
 	public void spin(float distance) {
 		// TODO rotate exactly as much as needed to "drive" distance meters
 	}
-	
+		
 }
