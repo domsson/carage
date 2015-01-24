@@ -29,28 +29,27 @@ public class Entity {
 		setRotation(DEFAULT_ROTATION);// TODO
 		setVelocity(velocity);
 	}
+		
+	/**
+	 * Set this Entitie's position.
+	 * This method will be called by all other setPosition(*) convenience methods.
+	 * Hence, this one is the one to override if a different behavior for setting the position is required.
+	 * @param x The position's x component
+	 * @param y The position's y component
+	 * @param z The position's z component
+	 */
+	public void setPosition(float x, float y, float z) {
+		position.x = x;
+		position.y = y;
+		position.z = z;
+	}
 	
 	/**
 	 * Set this Entitie's position.
 	 * @param position A 3-dimensional vector representing the position
 	 */
 	public void setPosition(Vector3f position) {
-		// Make sure to pass by value, not by reference!
-		this.position.x = position.getX();
-		this.position.y = position.getY();
-		this.position.z = position.getZ();
-	}
-	
-	/**
-	 * Set this Entitie's position.
-	 * @param x The position's x component
-	 * @param y The position's y component
-	 * @param z The position's z component
-	 */
-	public void setPosition(float x, float y, float z) {
-		this.position.x = x;
-		this.position.y = y;
-		this.position.z = z;
+		setPosition(position.getX(), position.getY(), position.getZ());
 	}
 	
 	/**
@@ -59,9 +58,7 @@ public class Entity {
 	 */
 	public void setPosition(float[] xyz) {
 		if (xyz.length < 3) { return; } // TODO throw exception or something?
-		this.position.x = xyz[0];
-		this.position.y = xyz[1];
-		this.position.z = xyz[2];
+		setPosition(xyz[0], xyz[1], xyz[2]);
 	}
 	
 	/**
@@ -69,7 +66,7 @@ public class Entity {
 	 * @param x The entitie's new x position
 	 */
 	public void setPositionX(float x) {
-		this.position.x = x;
+		setPosition(x, position.y, position.z);
 	}
 	
 	/**
@@ -77,7 +74,7 @@ public class Entity {
 	 * @param y The entitie's new y position
 	 */
 	public void setPositionY(float y) {
-		this.position.y = y;
+		setPosition(position.x, y, position.z);
 	}
 	
 	/**
@@ -85,7 +82,21 @@ public class Entity {
 	 * @param z The entitie's new z position
 	 */
 	public void setPositionZ(float z) {
-		this.position.z = z;
+		setPosition(position.x, position.y, z);
+	}
+	
+	/**
+	 * Change this Entitie's position by the given amounts.
+	 * This method will be called by all other alterPosition(*) convenience methods.
+	 * Hence, this one is the one to override if a different behavior for altering the position is required.
+	 * @param x The amount that should be added to the x position
+	 * @param y The amount that should be added to the y position
+	 * @param z The amount that should be added to the z position
+	 */
+	public void alterPosition(float x, float y, float z) {
+		position.x += x;
+		position.y += y;
+		position.z += z;
 	}
 	
 	/**
@@ -93,9 +104,16 @@ public class Entity {
 	 * @param position a 3-dimensional vector holding the changes for the x, y and z position
 	 */
 	public void alterPosition(Vector3f position) {
-		this.position.x += position.getX();
-		this.position.y += position.getY();
-		this.position.z += position.getZ();
+		alterPosition(position.getX(), position.getY(), position.getZ());
+	}
+	
+	/**
+	 * Change this Entitie's position by the given amounts.
+	 * @param xyz A float array holding the values to be added to the x, y and z positions
+	 */
+	public void alterPosition(float[] xyz) {
+		if (xyz.length < 3) { return; } // TODO throw exception or something?
+		alterPosition(xyz[0], xyz[1], xyz[2]);
 	}
 	
 	/**
@@ -103,7 +121,7 @@ public class Entity {
 	 * @param x The amount that should be added to the x position
 	 */
 	public void alterPositionX(float x) {
-		this.position.x += x;
+		alterPosition(x, 0f, 0f);
 	}
 	
 	/**
@@ -111,7 +129,7 @@ public class Entity {
 	 * @param y The amount that should be added to the y position
 	 */
 	public void alterPositionY(float y) {
-		this.position.y += y;
+		alterPosition(0f, y, 0f);
 	}
 	
 	/**
@@ -119,7 +137,7 @@ public class Entity {
 	 * @param z The amount that should be added to the z position
 	 */
 	public void alterPositionZ(float z) {
-		this.position.z += z;
+		alterPosition(0f, 0f, z);
 	}
 	
 	/**
@@ -317,6 +335,7 @@ public class Entity {
 		// http://www.songho.ca/opengl/gl_transform.html
 		// http://www.gamedev.net/topic/600819-matrix-rotation-order-in-opengl/
 		// http://www.gamasutra.com/view/feature/131686/rotating_objects_using_quaternions.php
+		// http://www.euclideanspace.com/maths/geometry/rotations/index.htm
 		// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
 		
 		modelMatrix.translate(position);		
