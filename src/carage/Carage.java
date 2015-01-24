@@ -65,14 +65,13 @@ public class Carage extends AbstractSimpleBase {
 	private Renderer renderer;
 	private Camera camera;
 	
-	private Asset asset = null;
-	private Asset asset2 = null;
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
 	private Asset workshopFloor = null;
 	private Asset workshopWalls = null;
 	private Asset workshopColumns = null;
 	private Asset workshopCeiling = null;
+	private Asset cardboardBox = null;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -88,10 +87,8 @@ public class Carage extends AbstractSimpleBase {
 		
 		camera = new Camera();
 		camera.setPosition(-1.8f, 1.8f, 4f);
-		// Gimbal lock? Are you here to get us?
-		// http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2008.html
-		// http://gamedev.stackexchange.com/questions/45292/how-is-the-gimbal-locked-problem-solved-using-accumulative-matrix-transformation
-		camera.setRotation(new Vector3f(-0.5f, -0.4f, 0f));
+		camera.setRotation(new Vector3f(-0.25f, -0.4f, 0f));
+		
 		renderer = new Renderer(sp, WIDTH, HEIGHT, camera);
 	}
 	
@@ -134,27 +131,19 @@ public class Carage extends AbstractSimpleBase {
 	}
 
 	private void initTestMesh() {
-		/*
-		asset = new Asset("vw-polo");
-		printAssetInfo(asset);
-		
-		asset2 = new Asset("cardboardbox");
-		printAssetInfo(asset2);
-		
 		assets = new ArrayList<>();
-		*/
 		
-		//car = new Car(1.15f, 1.23f, 1.3f, 1.3f);
 		car = new Car("vw-polo", "vw-polo-wheel");
 		car.printInfo();
-		//car.setPosition(new Vector3f(0f, -1.2f, -3.5f));
 		
 		workshopFloor = new Asset("workshop-floor");
-		//workshopFloor.setPosition(0f, -1.2f, -3.5f);
-		
 		workshopWalls = new Asset("workshop-walls");
 		workshopColumns = new Asset("workshop-columns");
 		workshopCeiling = new Asset("workshop-ceiling");
+		
+		cardboardBox = new Asset("cardboardbox");
+		cardboardBox.setPosition(-3.2f, 0, -3.8f);
+		cardboardBox.setRotation(new Vector3f(0f, 35f, 0f));
 		
 	}
 	
@@ -173,13 +162,12 @@ public class Carage extends AbstractSimpleBase {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 		// Finally, render our simple test geometry!		
-		//renderer.renderAsset(asset);
-		//renderer.renderAsset(asset2);
 		renderer.renderAssetGroup(car);
 		renderer.renderAsset(workshopFloor);
 		renderer.renderAsset(workshopWalls);
 		renderer.renderAsset(workshopColumns);
 		renderer.renderAsset(workshopCeiling);
+		renderer.renderAsset(cardboardBox);
 	}
 	
 	private void moveTestAsset() {
@@ -200,37 +188,21 @@ public class Carage extends AbstractSimpleBase {
 		float transZ = buttonZoomIn  ? -0.02f * delta : 0;
 			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
 			  
-		float rotX = buttonRotUp   ? -0.2f * delta : 0;
-			  rotX = buttonRotDown ?  0.2f * delta : rotX;
+		float rotX = buttonRotUp   ?  0.5f * delta : 0;
+			  rotX = buttonRotDown ? -0.5f * delta : rotX;
 			  
-		float rotZ = buttonRotLeft  ? -0.2f * delta : 0;
-			  rotZ = buttonRotRight ?  0.2f * delta : rotZ;
+		float rotY = buttonRotLeft  ?  0.5f * delta : 0;
+			  rotY = buttonRotRight ? -0.5f * delta : rotY;
 			  
 	    rotX = (float) Math.toRadians(rotX);
-	    rotZ = (float) Math.toRadians(rotZ);
-		
-		
-		// TODO We need some pushing and popping here, otherwise rotating+translating doesn't work as expected (really?)
-		// modelMatrix.translate(new Vector3f(transX, transY, transZ));
-	    //modelMatrix.rotate(-delta*0.03f, Z_AXIS);
-
-	    /*
-	    Vector3f assetPos = asset.getPosition();
-		asset.setPosition(new Vector3f(assetPos.getX()+transX, assetPos.getY()+transY, assetPos.getZ()+transZ));
-		
-		Vector3f assetRot = asset.getRotation();
-		asset.setRotation(new Vector3f(assetRot.getX()+rotX, assetRot.getY(), assetRot.getZ()+rotZ));
-		// modelMatrix = asset.getModelMatrix();
-		
-		asset2.setPosition(0f, 0f, -4f);
-		*/
+	    rotY = (float) Math.toRadians(rotY);
 		
 	    /*
 		car.alterPosition(new Vector3f(transX, transY, transZ));
 		car.alterRotation(new Vector3f(rotX, 0, rotZ));
 		*/
 	    camera.alterPosition(new Vector3f(transX, transY, transZ));
-		camera.alterRotation(new Vector3f(rotX, 0, rotZ));
+		camera.alterRotation(new Vector3f(rotX, rotY, 0));
 		
 		car.tick(delta);
 		if (buttonLeft) { car.steerLeft(delta);	}

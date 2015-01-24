@@ -307,10 +307,22 @@ public class Entity {
 		// What we do  : TRANS, ROTATE, SCALE
 		
 		// TODO is this all we need? is it correct?
-		modelMatrix.translate(position);
-		modelMatrix.rotate(rotation.getX(), new Vector3f(1, 0, 0));
+		
+		// Ugh... rotations...
+		// http://schabby.de/view-matrix/
+		// http://3dgep.com/understanding-the-view-matrix/
+		// http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2008.html
+		// http://gamedev.stackexchange.com/questions/45292/how-is-the-gimbal-locked-problem-solved-using-accumulative-matrix-transformation
+		// http://gamedev.stackexchange.com/questions/72565/3d-camera-rotation
+		// http://www.songho.ca/opengl/gl_transform.html
+		// http://www.gamedev.net/topic/600819-matrix-rotation-order-in-opengl/
+		// http://www.gamasutra.com/view/feature/131686/rotating_objects_using_quaternions.php
+		// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
+		
+		modelMatrix.translate(position);		
 		modelMatrix.rotate(rotation.getY(), new Vector3f(0, 1, 0));
 		modelMatrix.rotate(rotation.getZ(), new Vector3f(0, 0, 1));
+		modelMatrix.rotate(rotation.getX(), new Vector3f(1, 0, 0));
 		modelMatrix.scale(new Vector3f(1, 1, 1));	// TODO obviously...
 	}
 
