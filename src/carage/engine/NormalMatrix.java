@@ -68,6 +68,7 @@ public class NormalMatrix extends RenderMatrix {
 	 */
 	public void update() {
 		Matrix4f.mul(((viewMatrix == null) ? new Matrix4f() : viewMatrix), ((modelMatrix == null) ? new Matrix4f() : modelMatrix), this);
+		invert();
 	}
 	
 	/**
@@ -87,7 +88,6 @@ public class NormalMatrix extends RenderMatrix {
 	 */
 	public void toShader(FloatBuffer buffer) {
 		update();
-		invert();
 		store(buffer);
         buffer.flip();
         glUniformMatrix4(location, true, buffer);

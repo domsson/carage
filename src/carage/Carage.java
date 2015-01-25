@@ -82,9 +82,8 @@ public class Carage extends AbstractSimpleBase {
 	protected void initOpenGL() {
 		printInfo();
 		initViewport();
-		
 		initShaders();
-		initTestMesh();
+		initAssets();
 		
 		camera = new Camera();
 		camera.setPosition(-1.8f, 1.8f, 4f);
@@ -124,14 +123,14 @@ public class Carage extends AbstractSimpleBase {
 	
 	private void initShaders() {
 		sp = new ShaderProgram(DEFAULT_SHADER);
-		String[] attributeLocations = new String[] {ShaderAttribute.POSITION.getName(), ShaderAttribute.COLOR.getName(), ShaderAttribute.TEXTURE.getName(), ShaderAttribute.NORMALS.getName(), ShaderAttribute.LIGHT.getName()};
+		String[] attributeLocations = new String[] {ShaderAttribute.POSITION.getName(), ShaderAttribute.COLOR.getName(), ShaderAttribute.TEXTURE.getName(), ShaderAttribute.NORMALS.getName()};
 		sp.bindAttributeLocations(attributeLocations);
 		
 		spId = sp.getId();
 		glUseProgram(spId);
 	}
 
-	private void initTestMesh() {
+	private void initAssets() {
 		assets = new ArrayList<>();
 		
 		car = new Car("vw-polo", "vw-polo-wheel");

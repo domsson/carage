@@ -150,7 +150,7 @@ public class Renderer {
 	
 	private void initNormalMatrix() {
 		normalMatrix = new NormalMatrix(modelMatrix, viewMatrix);
-		normalMatrix.fetchLocation(shader);		
+		normalMatrix.fetchLocation(shader);
 	}
 	
 	private void initProjectionMatrix() {
@@ -161,8 +161,7 @@ public class Renderer {
 	}
 	
 	private void initViewMatrix() {
-		if (camera == null) { viewMatrix = new ViewMatrix(); }
-		else { viewMatrix = new ViewMatrix(camera); }		
+		viewMatrix = (camera == null) ? new ViewMatrix() : new ViewMatrix(camera);
 		viewMatrix.fetchLocation(shader);
 	}
 	
