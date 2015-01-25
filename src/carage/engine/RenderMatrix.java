@@ -22,6 +22,10 @@ public class RenderMatrix extends Matrix4f {
 		this.name = name;
 	}
 	
+	public String getName() {
+		return name;
+	}
+	
 	/**
 	 * Fetch and return this matrix' uniform location from within the given shader program.
 	 * @param sp The ShaderProgram to query for this matrix' uniform location

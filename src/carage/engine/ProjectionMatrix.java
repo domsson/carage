@@ -54,7 +54,7 @@ public class ProjectionMatrix extends RenderMatrix {
 		return fieldOfView;
 	}
 	
-	// TODO make it possible to change matrix paramters (FOV, width, height, ...) after creation ('on the fly')
+	// TODO make it possible to change matrix parameters (FOV, width, height, ...) after creation ('on the fly')
 	
 	private void initMatrix() {
 		// TODO Have a close look at the math here and why/how it works exactly (it's copied from a LWJGL wiki tutorial)
@@ -63,7 +63,8 @@ public class ProjectionMatrix extends RenderMatrix {
 		float yScale = (float) (1 / Math.tan(Math.toRadians(fieldOfView * 0.5)));
 		float xScale = yScale / aspectRatio;
 		float frustumLength = farPlane - nearPlane;
-		 
+		
+		// m<Column><Row> (yes, the opposite of what Prof. Lenz' slides say; but look at the LWJGL source, it really is column|row)
 		this.m00 = xScale;
 		this.m11 = yScale;
 		this.m22 = -((farPlane + nearPlane) / frustumLength);

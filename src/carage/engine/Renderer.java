@@ -178,10 +178,10 @@ public class Renderer {
 	
 	private void matricesToShader() {
 		//glUseProgram(spId);
-		projectionMatrix.toShader(matrixBuffer);
-		viewMatrix.toShader(matrixBuffer);
-		modelMatrix.toShader(matrixBuffer);
-		normalMatrix.toShader(matrixBuffer);
+		projectionMatrix.toShader(matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
+		viewMatrix.toShader(matrixBuffer); // same
+		modelMatrix.toShader(matrixBuffer); // same
+		normalMatrix.toShader(matrixBuffer); // same
         //glUseProgram(0);
 	}
 

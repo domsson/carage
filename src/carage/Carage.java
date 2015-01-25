@@ -36,6 +36,7 @@ import carage.engine.VertexBufferObject;
 // http://www.opengl-tutorial.org/beginners-tutorials/
 // http://wiki.lwjgl.org/wiki/Main_Page
 // http://www.codinglabs.net/article_world_view_projection_matrix.aspx
+// http://www.gamedev.net/page/resources/_/technical/opengl/the-basics-of-glsl-40-shaders-r2861
 public class Carage extends AbstractSimpleBase {
 		
 	public static final int FPS = 60;

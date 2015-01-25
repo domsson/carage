@@ -323,10 +323,9 @@ public class Entity {
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
+				
+		// ROTATION IS TRICKY!
 		
-		// TODO is this all we need? is it correct?
-		
-		// Ugh... rotations...
 		// http://schabby.de/view-matrix/
 		// http://3dgep.com/understanding-the-view-matrix/
 		// http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2008.html
@@ -337,6 +336,9 @@ public class Entity {
 		// http://www.gamasutra.com/view/feature/131686/rotating_objects_using_quaternions.php
 		// http://www.euclideanspace.com/maths/geometry/rotations/index.htm
 		// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
+		
+		// See the last link: order of rotation is important, YZX gives the desired result in *most* cases, not all!
+		// It seems to do the trick for our purposes. For now, at least. Let's roll with it until we run into problems.
 		
 		modelMatrix.translate(position);		
 		modelMatrix.rotate(rotation.getY(), new Vector3f(0, 1, 0));
