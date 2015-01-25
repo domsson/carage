@@ -33,3 +33,17 @@ Task Checklist
 - Nutzung weiterer OpenGL 3-Techniken (Modelle als VAO/VBO, GLSL ab Version 1.5) **CHECK**
 
 Die mit (1/2) gekennzeichneten Teile zählen halb so viel wie die anderen.
+
+
+To Do (Have to)
+---------------
+- Camera orbits around car ("zeitgesteuerte Animation")
+- Light parameters from Java instead of hardcoded in the shader
+- Procedural texture (new fragment/vertex shader)
+
+Nice to have (later)
+--------------------
+- More than one light source?
+- Switching parts of the car?
+- More assets (nicer Garage)
+- Driving car, bitches!
