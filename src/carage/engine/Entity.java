@@ -6,26 +6,26 @@ import org.lwjgl.util.vector.Vector3f;
 public class Entity {
 	
 	public static final Vector3f DEFAULT_POSITION = new Vector3f(0f, 0f, 0f);
-	public static final Vector3f DEFAULT_DIRECTION = new Vector3f(-1f, 0f, 0f);
+	// public static final Vector3f DEFAULT_DIRECTION = new Vector3f(-1f, 0f, 0f);
 	public static final Vector3f DEFAULT_ROTATION = new Vector3f(0f, 0f, 0f);
 	public static final Vector3f DEFAULT_VELOCITY = new Vector3f(0f, 0f, 0f);
 	
 	// Important to _initialize_ them here already, otherwise the setters will raise a NullPointerException
 	protected Vector3f position = new Vector3f(0f, 0f, 0f);
-	protected Vector3f direction = new Vector3f(0f, 0f, 0f); // TODO drop this in favor of rotation? Otherwise make sure both are consistent!!!
+	// protected Vector3f direction = new Vector3f(0f, 0f, 0f); // TODO drop this in favor of rotation? Otherwise make sure both are consistent!!!
 	protected Vector3f rotation = new Vector3f(0f, 0f, 0f);
 	protected Vector3f velocity = new Vector3f(0f, 0f, 0f);
 	
 	public Entity() {
 		setPosition(DEFAULT_POSITION);
-		setDirection(DEFAULT_DIRECTION);
+		// setDirection(DEFAULT_DIRECTION);
 		setRotation(DEFAULT_ROTATION);
 		setVelocity(DEFAULT_VELOCITY);
 	}
 	
 	public Entity(Vector3f position, Vector3f direction, Vector3f velocity) {
 		setPosition(position);
-		setDirection(direction);
+		// setDirection(direction);
 		setRotation(DEFAULT_ROTATION);// TODO
 		setVelocity(velocity);
 	}
@@ -143,7 +143,7 @@ public class Entity {
 	/**
 	 * Set this Entitie's direction. The values will be normalized.
 	 * @param direction A 3-dimensional vector representing the direction
-	 */
+	 *
 	public void setDirection(Vector3f direction) {
 		this.direction = (Vector3f) direction.normalise(); // TODO passed by reference? also, maybe drop direction entirely...
 	}
@@ -153,7 +153,7 @@ public class Entity {
 	 * @param x The direction's x component
 	 * @param y The direction's y component
 	 * @param z The direction's z component
-	 */
+	 *
 	public void setDirection(float x, float y, float z) {
 		this.direction = (Vector3f) (new Vector3f(x, y, z)).normalise();
 	}
@@ -161,11 +161,12 @@ public class Entity {
 	/**
 	 * Set this Entitie's direction. The values will be normalized.
 	 * @param xyz A float array holding the direction's x, y and z components
-	 */
+	 *
 	public void setDirection(float[] xyz) {
 		if (xyz.length < 3) { return; } // TODO throw exception or something?
 		this.direction = (Vector3f) (new Vector3f(xyz[0], xyz[1], xyz[2])).normalise();
 	}
+	*/
 	
 	// TODO drop direction in favor of rotation or synchronize both?!
 	public void setRotation(Vector3f rotation) {
@@ -250,10 +251,11 @@ public class Entity {
 	/**
 	 * Get this Entitie's direction as normalized 3-dimensional vector.
 	 * @return A normalized 3-dimensional vector representing this entitie's direction
-	 */
+	 *
 	public Vector3f getDirection() {
 		return new Vector3f(direction.getX(), direction.getY(), direction.getZ());
 	}
+	 */
 	
 	/**
 	 * Get this Entitie's velocity as 3-dimensional vector.

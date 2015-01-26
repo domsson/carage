@@ -38,7 +38,7 @@ Die mit (1/2) gekennzeichneten Teile zählen halb so viel wie die anderen.
 To Do (Have to)
 ---------------
 - Camera orbits around car ("zeitgesteuerte Animation")
-- Light parameters from Java instead of hardcoded in the shader
+- Light parameters from Java instead of hardcoded in the shader **AT WORK**
 - Procedural texture (new fragment/vertex shader); Ideas: TV screen asset or surveillance cam overlay
 - "Material" class for assets (to save/select ShaderProgram and "hardness")
 

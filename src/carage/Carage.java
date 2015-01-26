@@ -28,6 +28,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import carage.engine.Asset;
 import carage.engine.Camera;
+import carage.engine.LightSource;
 import carage.engine.Renderer;
 import carage.engine.ShaderAttribute;
 import carage.engine.VertexBufferObject;
@@ -59,12 +60,17 @@ public class Carage extends AbstractSimpleBase {
 	private boolean buttonRotDown = false;
 	private boolean buttonRotLeft = false;
 	private boolean buttonRotRight = false;
-		
+	
+	private boolean lightIncrease = false;
+	private boolean lightDecrease = false;
+	private boolean toggleLight = false;
+
 	private ShaderProgram sp;
 	private int spId;
 	
 	private Renderer renderer;
 	private Camera camera;
+	private LightSource light;
 	
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
@@ -90,6 +96,10 @@ public class Carage extends AbstractSimpleBase {
 		camera.setRotation(new Vector3f(-0.25f, -0.4f, 0f));
 		
 		renderer = new Renderer(sp, WIDTH, HEIGHT, camera);
+		
+		light = new LightSource();
+		light.setPosition(2f, 3f, 1f);
+		light.fetchLocations(sp);
 	}
 	
 	private void printInfo() {
@@ -161,6 +171,8 @@ public class Carage extends AbstractSimpleBase {
 		// Clear dat screen!
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
+		// Send light information to shader (in case it has moved, its intensity changed, ...)
+		light.toShader();
 		// Finally, render our simple test geometry!		
 		renderer.renderAssetGroup(car);
 		renderer.renderAsset(workshopFloor);
@@ -209,6 +221,10 @@ public class Carage extends AbstractSimpleBase {
 		if (buttonRight) { car.steerRight(delta); }
 		if (buttonUp) { car.accelerate(delta); }
 		if (buttonDown) { car.decelerate(delta); }
+		
+		if (lightIncrease) { light.setIntensity(light.getIntensity() + 0.1f); }
+		if (lightDecrease) { light.setIntensity(light.getIntensity() - 0.1f); }
+		if (toggleLight) { light.toggle(); }
 	}
 			
 	/**
@@ -262,6 +278,15 @@ public class Carage extends AbstractSimpleBase {
 			        case Keyboard.KEY_K:
 			        	buttonZoomOut = true;
 			        	break;
+			        case Keyboard.KEY_O:
+			        	lightIncrease = true;
+			        	break;
+			        case Keyboard.KEY_L:
+			        	lightDecrease = true;
+			        	break;
+			        case Keyboard.KEY_P:
+			        	toggleLight = true;
+			        	break;
 		        }
 		    }
 		    else {
@@ -295,6 +320,15 @@ public class Carage extends AbstractSimpleBase {
 			        	break;
 			        case Keyboard.KEY_K:
 			        	buttonZoomOut = false;
+			        	break;
+			        case Keyboard.KEY_O:
+			        	lightIncrease = false;
+			        	break;
+			        case Keyboard.KEY_L:
+			        	lightDecrease = false;
+			        	break;
+			        case Keyboard.KEY_P:
+			        	toggleLight = false;
 			        	break;
 		        }
 		    }
