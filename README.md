@@ -27,7 +27,7 @@ Task Checklist
 - Verwendung von Transformationen (translate, rotate, scale) für eine zeitgesteuerte Animation (z.B. fortlaufende Transformation) **CHECK**
 - Interaktionsmöglichkeit über Tastatur oder Maus (1/2) **CHECK**
 - Oberfläche mit Textur (Bilddatei im Projekt enthalten) (1/2) **CHECK**
-- Vertex- und Fragment-Shader für Phong-Schattierung **AT WORK**
+- Vertex- und Fragment-Shader für Phong-Schattierung **CHECK**
 - Vertex- und Fragment-Shader für eine einfache prozedurale Textur **TODO**
 - Verwendung einer "eigenen" Matrix-Klasse (z.B. Matrix4f) in Shadern a la OpenGL 3. **CHECK**
 - Nutzung weiterer OpenGL 3-Techniken (Modelle als VAO/VBO, GLSL ab Version 1.5) **CHECK**
@@ -38,9 +38,9 @@ Die mit (1/2) gekennzeichneten Teile zählen halb so viel wie die anderen.
 To Do (Have to)
 ---------------
 - Camera orbits around car ("zeitgesteuerte Animation")
-- Light parameters from Java instead of hardcoded in the shader **AT WORK**
+- Light parameters from Java instead of hardcoded in the shader **DONE**
 - Procedural texture (new fragment/vertex shader); Ideas: TV screen asset or surveillance cam overlay
-- "Material" class for assets (to save/select ShaderProgram and "hardness")
+- "Material" class for assets (to save/select ShaderProgram and "hardness") **DONE**
 
 Nice to have (later)
 --------------------
