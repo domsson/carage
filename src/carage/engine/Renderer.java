@@ -8,6 +8,7 @@ import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL11.glDrawElements;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 import java.nio.FloatBuffer;
@@ -86,7 +87,11 @@ public class Renderer {
 	public void renderAsset(Renderable asset) {
 		modelMatrix.setIdentity();
 		asset.applyTransformationsToMatrix(modelMatrix);
+
+		ensureAssetHasMaterial(asset);
+		glUseProgram(asset.getMaterial().getShader().getId()); // new
 		matricesToShader();
+		asset.getMaterial().toShader(); // new
 		
 		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
 		glBindTexture(GL_TEXTURE_2D, asset.getTextureId());
@@ -98,7 +103,11 @@ public class Renderer {
 		Matrix4f modelMatrixBackup = (new Matrix4f()).load(modelMatrix); // glPushMatrix()
 		
 		childAsset.applyTransformationsToMatrix(modelMatrix);
+		
+		ensureAssetHasMaterial(childAsset);
+		glUseProgram(childAsset.getMaterial().getShader().getId()); // new		
 		matricesToShader();
+		childAsset.getMaterial().toShader(); // new
 		
 		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
 		glBindTexture(GL_TEXTURE_2D, childAsset.getTextureId());
@@ -176,12 +185,26 @@ public class Renderer {
 	}
 	
 	private void matricesToShader() {
-		//glUseProgram(spId);
 		projectionMatrix.toShader(matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
 		viewMatrix.toShader(matrixBuffer); // same
 		modelMatrix.toShader(matrixBuffer); // same
 		normalMatrix.toShader(matrixBuffer); // same
-        //glUseProgram(0);
+	}
+	
+	/*
+	private void matricesToShader(ShaderProgram shader) {
+		glUseProgram(shader.getId());
+		projectionMatrix.toShader(matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
+		viewMatrix.toShader(matrixBuffer); // same
+		modelMatrix.toShader(matrixBuffer); // same
+		normalMatrix.toShader(matrixBuffer); // same
+        glUseProgram(0);
+	}
+	*/
+	
+	private void ensureAssetHasMaterial(Renderable asset) {
+		if (asset.hasMaterial()) { return; }
+		asset.setMaterial(new Material("", shader));
 	}
 
 }

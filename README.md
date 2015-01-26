@@ -58,6 +58,7 @@ Resources
 - [LWJGL Wiki / Tutorials](http://wiki.lwjgl.org/wiki/Main_Page)
 - [OpenGL Basic Tutorials](http://www.opengl-tutorial.org/beginners-tutorials/)
 - [OpenGL Intermediate Tutorials](http://www.opengl-tutorial.org/intermediate-tutorials/)
-- [Anton's OpenGL 4 Tutorials] (http://antongerdelan.net/opengl/)
+- [Anton's OpenGL 4 Tutorials](http://antongerdelan.net/opengl/)
+- [Phong Shader](https://www.opengl.org/sdk/docs/tutorials/ClockworkCoders/lighting.php)
 - [Basics of GLSL 4 shaders](http://www.gamedev.net/page/resources/_/technical/opengl/the-basics-of-glsl-40-shaders-r2861)
 - [songho: Projection Matrix Details](http://www.songho.ca/opengl/gl_projectionmatrix.html)

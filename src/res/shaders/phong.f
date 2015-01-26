@@ -6,10 +6,12 @@ in vec2 pass_TextureCoord;
 in vec3 pass_Normal;
 in vec3 pass_LightPosition;
 
+// uniform float lightPosition;
 uniform float lightIntensity;
 uniform float materialAmbientReflectivity;
 uniform float materialDiffuseReflectivity;
 uniform float materialSpecularReflectivity;
+uniform int   materialSpecularHardness;
 
 uniform sampler2D tex;
 
@@ -23,32 +25,24 @@ float specularComponent(vec3 reflection, vec3 camera, float hardness) {
 	return pow(max(dot(reflection, camera), 0f), hardness);
 }
 
-vec3 lightDirectionFromVertex(vec3 lightSource, vec3 position) {
+vec3 lightVector(vec3 lightSource, vec3 position) {
 	return normalize(lightSource - position);
 }
 
 float intensity(vec3 light, vec3 normal, float lightIntensity) {
-	float intensity = 0f;
-	float ambient = 0.2f; // TODO: what's a good value? get this from java?
-	float diffuse = 0f;
-	float specular = 0f;
-	float hardness = 2f; // TODO get this from the object/material (via java) somehow
+    vec3 reflection = normalize(-reflect(light, normal));
+	vec3 camera     = normalize(-pass_Position);
     
-	vec3 reflection = normalize(-reflect(light, normal));
-	vec3 camera = normalize(-pass_Position);
+    float ambient  = materialAmbientReflectivity;
+	float diffuse  = lightIntensity * materialDiffuseReflectivity  * diffuseComponent(light, normal);
+	float specular = lightIntensity * materialSpecularReflectivity * specularComponent(reflection, camera, materialSpecularHardness);
 	
-	diffuse = lightIntensity * diffuseComponent(light, normal);
-	specular = lightIntensity * specularComponent(reflection, camera, hardness);
-	
-	intensity = ambient + diffuse + specular;
+	float intensity = ambient + diffuse + specular;
 	return clamp(intensity, 0f, 1f);
 }
 
 // https://www.opengl.org/sdk/docs/tutorials/ClockworkCoders/lighting.php
 void main(void) {
-    
-	// vec3 lightSource = vec3(2f, 3f, 1f); // ugly hack because i forgot how to pass in a variable from java...
-	//vec3 light = lightDirectionFromVertex(lightSource, pass_Position);
-    vec3 light = lightDirectionFromVertex(pass_LightPosition, pass_Position);
-	out_Color = texture(tex, pass_TextureCoord) * intensity(light, pass_Normal, lightIntensity);
+    vec3 L = lightVector(pass_LightPosition, pass_Position);
+	out_Color = texture(tex, pass_TextureCoord) * intensity(L, pass_Normal, lightIntensity);
 }

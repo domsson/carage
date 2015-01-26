@@ -67,6 +67,8 @@ public class NormalMatrix extends RenderMatrix {
 	 * If no references to model and/or view matrices have been set, identity matrices will be used instead.
 	 */
 	public void update() {
+//		if (viewMatrix.m00 == 1 && viewMatrix.m11 == 1 && viewMatrix.m22 == 1) { System.out.println("viewmatrix has no rotation/scale!"); }
+//		if (modelMatrix.m00 == 1 && modelMatrix.m11 == 1 && modelMatrix.m22 == 1) { System.out.println("modelmatrix has no rotation/scale!"); }
 		Matrix4f.mul(((viewMatrix == null) ? new Matrix4f() : viewMatrix), ((modelMatrix == null) ? new Matrix4f() : modelMatrix), this);
 		invert();
 	}

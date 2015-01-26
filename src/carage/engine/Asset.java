@@ -11,6 +11,7 @@ public class Asset extends Entity implements Renderable {
 	//private String resource = ""; // TODO maybe remember the resource name separately? this way, two assets with same resource can have different names
 	private Texture texture = null;
 	private Geometry geometry = null;
+	private Material material = null;
 	
 	private TextureManager textureManager = TextureManager.getInstance();
 	private GeometryManager geometryManager = GeometryManager.getInstance();
@@ -23,6 +24,15 @@ public class Asset extends Entity implements Renderable {
 		loadTexture(resource);
 	}
 	
+	public Asset(String resource, Material material) {
+		super();
+		// TODO fail (throw exception?) if resource is empty string
+		this.name = resource;
+		loadGeometry(resource);
+		loadTexture(resource);
+		setMaterial(material);
+	}
+	
 	public Asset(Geometry geometry) {
 		super();
 		this.geometry = geometry;
@@ -32,6 +42,13 @@ public class Asset extends Entity implements Renderable {
 		super();
 		this.geometry = geometry;
 		this.texture = texture;
+	}
+	
+	public Asset(Geometry geometry, Texture texture, Material material) {
+		super();
+		this.geometry = geometry;
+		this.texture = texture;
+		this.material = material;
 	}
 	
 	public boolean hasName() {
@@ -56,6 +73,18 @@ public class Asset extends Entity implements Renderable {
 	
 	public void loadTexture(String resource) {
 		texture = textureManager.get(resource+"."+TEXTURE_FORMAT);
+	}
+	
+	public void setMaterial(Material material) {
+		this.material = material;
+	}
+	
+	public boolean hasMaterial() {
+		return (material != null);
+	}
+	
+	public Material getMaterial() {
+		return material;
 	}
 	
 	public VertexArrayObject getVAO() {

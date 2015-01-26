@@ -20,4 +20,8 @@ public interface Renderable {
 	public Matrix4f getTransformationMatrix();
 	public void applyTransformationsToMatrix(Matrix4f modelMatrix);
 	
+	public void setMaterial(Material material);
+	public boolean hasMaterial();
+	public Material getMaterial();
+	
 }

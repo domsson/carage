@@ -19,11 +19,11 @@ out vec3 pass_LightPosition;
 
 void main(void) {
 
-	mat4 modelViewMatrix = viewMatrix * modelMatrix;
+	mat4 modelViewMatrix = viewMatrix * modelMatrix; // TODO pre-calculate this in java
 	mat4 modelViewProjectionMatrix = projectionMatrix * modelViewMatrix;
 	
 	pass_Position = (modelViewMatrix * in_Position).xyz;
-	pass_LightPosition = (modelViewMatrix * vec4(lightPosition.x, lightPosition.y, lightPosition.z, 1.0)).xyz;
+	pass_LightPosition = (viewMatrix * vec4(lightPosition.x, lightPosition.y, lightPosition.z, 1.0)).xyz; // TODO pre-calculate this in java
 	pass_Color = vec4(in_Color, 1.0);
 	pass_TextureCoord = in_TextureCoord;	
 	pass_Normal = normalize((normalMatrix * vec4(in_Normal.x, in_Normal.y, in_Normal.z, 1.0)).xyz); // necessary in case of non-uniformly scaled objects (normals will change, too!)
