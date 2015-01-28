@@ -34,6 +34,7 @@ import carage.engine.Material;
 import carage.engine.PlaneGeometry;
 import carage.engine.Renderer;
 import carage.engine.ShaderAttribute;
+import carage.engine.ShaderManager;
 import carage.engine.VertexBufferObject;
 
 // http://antongerdelan.net/opengl/
@@ -68,7 +69,8 @@ public class Carage extends AbstractSimpleBase {
 	private boolean testValueUp = false;
 	private boolean testValueDown = false;
 
-	// TODO add procedural shader
+	// TODO get handling of multiple shaders to work...
+	private ShaderManager shaderManager;
 	private ShaderProgram phongShader;
 	private ShaderProgram proceduralShader;
 	
@@ -115,7 +117,6 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void initViewport() {
-//		glClearColor(0.4f, 0.6f, 1.0f, 1.0f);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glEnable(GL_DEPTH_TEST);	// Do not render hidden geometry
@@ -125,19 +126,19 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void initShaders() {
+		shaderManager = ShaderManager.getInstance();
+		
 		String[] attributeLocations = new String[] {
 				ShaderAttribute.POSITION.getName(),
 				ShaderAttribute.COLOR.getName(),
 				ShaderAttribute.TEXTURE.getName(),
 				ShaderAttribute.NORMALS.getName() };
 		
-		phongShader = new ShaderProgram("phong");
+		phongShader = shaderManager.get("phong");
 		phongShader.bindAttributeLocations(attributeLocations);
 		
-		proceduralShader = new ShaderProgram("procedural");
+		proceduralShader = shaderManager.get("procedural");
 		proceduralShader.bindAttributeLocations(attributeLocations);
-		
-		glUseProgram(phongShader.getId());
 	}
 	
 	private void initCamera() {
@@ -150,7 +151,7 @@ public class Carage extends AbstractSimpleBase {
 		light = new LightSource();
 		light.setPosition(0f, 1.8f, 2.0f);
 		light.setIntensity(1.0f);
-		light.fetchLocations(phongShader);
+		light.fetchLocations(phongShader);		
 	}
 	
 	private void initRenderer() {
@@ -204,14 +205,15 @@ public class Carage extends AbstractSimpleBase {
 		assets.add(cardboardBox);
 		
 		Asset cardboardBox2 = new Asset("cardboardbox");
+		cardboardBox2.setMaterial(new Material("", proceduralShader));
 		cardboardBox2.setPosition(3.0f, 0, 1.4f);
 		cardboardBox2.setRotation(new Vector3f(0f, 35f, 0f));
-		cardboardBox2.setMaterial(new Material("", proceduralShader));
 		assets.add(cardboardBox2);
 	}
 	
 	private void initCameraOverlay() {
 		Asset cameraOverlay = new Asset(new PlaneGeometry(), new Texture("cg.png"));
+		//cameraOverlay.setMaterial(new Material("", proceduralShader));
 		cameraOverlay.setPositionY(2.0f);
 		assets.add(cameraOverlay);
 	}
@@ -231,7 +233,7 @@ public class Carage extends AbstractSimpleBase {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 		// Send light information to shader (in case it has moved, its intensity changed, ...)
-		light.toShader(); // TODO I think light handling could be improved upon. Maybe?
+		light.sendToShader(); // TODO I think light handling could be improved upon. Maybe?
 		
 		// Finally, render our assets!
 		renderer.renderAssetGroup(car);

@@ -115,7 +115,7 @@ public class Material {
 		specularHardnessLocation     = glGetUniformLocation(shader.getId(), "materialSpecularHardness");
 	}
 
-	public void toShader() {
+	public void sendToShader() {
 		if (!locationsKnown()) {
 			fetchLocations(shader);
 		}

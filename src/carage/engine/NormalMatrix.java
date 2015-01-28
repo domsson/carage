@@ -88,7 +88,7 @@ public class NormalMatrix extends RenderMatrix {
 	/**
 	 * Updates and inverts this matrix, then sends a buffered and transposed version of it to the active OpenGL shader program.
 	 */
-	public void toShader(FloatBuffer buffer) {
+	public void sendToShader(FloatBuffer buffer) {
 		update();
 		store(buffer);
         buffer.flip();

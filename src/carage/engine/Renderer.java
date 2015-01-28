@@ -76,6 +76,7 @@ public class Renderer {
 		}
 	}
 	
+	/*
 	public ShaderProgram getShaderProgram() {
 		return shader;
 	}
@@ -83,6 +84,7 @@ public class Renderer {
 	public int getShaderProgramId() {
 		return shader.getId();
 	}
+	*/
 	
 	public void renderAsset(Renderable asset) {
 		modelMatrix.setIdentity();
@@ -90,8 +92,8 @@ public class Renderer {
 
 		ensureAssetHasMaterial(asset);
 		glUseProgram(asset.getMaterial().getShader().getId()); // new
-		matricesToShader();
-		asset.getMaterial().toShader(); // new
+		sendMatricesToShader();
+		asset.getMaterial().sendToShader(); // new
 		
 		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
 		glBindTexture(GL_TEXTURE_2D, asset.getTextureId());
@@ -102,14 +104,15 @@ public class Renderer {
 	public void renderChildAsset(Renderable childAsset, Renderable parentAsset) {
 		Matrix4f modelMatrixBackup = (new Matrix4f()).load(modelMatrix); // glPushMatrix()
 		
-		childAsset.applyTransformationsToMatrix(modelMatrix);
-		
+		childAsset.applyTransformationsToMatrix(modelMatrix);		
 		ensureAssetHasMaterial(childAsset);
-		glUseProgram(childAsset.getMaterial().getShader().getId()); // new		
-		matricesToShader();
-		childAsset.getMaterial().toShader(); // new
+		ShaderProgram assetShader = childAsset.getMaterial().getShader();
+		glUseProgram(assetShader.getId());
+		ensureMatricesHaveLocations(assetShader);
+		sendMatricesToShader();
+		childAsset.getMaterial().sendToShader();
 		
-		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, childAsset.getTextureId());
 		renderVAO(childAsset.getVAO(), childAsset.getIBO());
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -184,24 +187,20 @@ public class Renderer {
 		matrixBuffer = BufferUtils.createFloatBuffer(16);
 	}
 	
-	private void matricesToShader() {
-		projectionMatrix.toShader(matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
-		viewMatrix.toShader(matrixBuffer); // same
-		modelMatrix.toShader(matrixBuffer); // same
-		normalMatrix.toShader(matrixBuffer); // same
+	private void ensureMatricesHaveLocations(ShaderProgram shader) {
+		projectionMatrix.updateLocation(shader);
+		viewMatrix.updateLocation(shader);
+		modelMatrix.updateLocation(shader);
+		normalMatrix.updateLocation(shader);
 	}
 	
-	/*
-	private void matricesToShader(ShaderProgram shader) {
-		glUseProgram(shader.getId());
-		projectionMatrix.toShader(matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
-		viewMatrix.toShader(matrixBuffer); // same
-		modelMatrix.toShader(matrixBuffer); // same
-		normalMatrix.toShader(matrixBuffer); // same
-        glUseProgram(0);
+	private void sendMatricesToShader() {
+		projectionMatrix.sendToShader(matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
+		viewMatrix.sendToShader(matrixBuffer); // same
+		modelMatrix.sendToShader(matrixBuffer); // same
+		normalMatrix.sendToShader(matrixBuffer); // same
 	}
-	*/
-	
+		
 	private void ensureAssetHasMaterial(Renderable asset) {
 		if (asset.hasMaterial()) { return; }
 		asset.setMaterial(new Material("", shader));

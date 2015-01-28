@@ -59,18 +59,9 @@ public class LightSource extends Entity {
 		intensityLocation = glGetUniformLocation(shader.getId(), "lightIntensity");
 	}
 
-	public void toShader() {
+	public void sendToShader() {
 		glUniform3f(positionLocation, position.x, position.y, position.z);
 		glUniform1f(intensityLocation, ((isOn) ? intensity : 0f));
-	}
-	
-	public void toShader(ShaderProgram shaderProgram) {
-		// TODO
-		/*
-		glUseProgram(shaderProgram.getId());
-		
-		glUseProgram(0);
-		*/
 	}
 	
 }
