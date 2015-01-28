@@ -44,13 +44,10 @@ public class Carage extends AbstractSimpleBase {
 	public static final int FPS = 60;
 	public static final String DEFAULT_SHADER = "phong";	
 	
-	public static final Vector3f X_AXIS = new Vector3f(1, 0, 0);
-	public static final Vector3f Y_AXIS = new Vector3f(0, 1, 0);
-	public static final Vector3f Z_AXIS = new Vector3f(0, 0, 1);
-	
 	private long lastRender = 0;
 	private float delta = 0;
 	
+	// TODO Finally implement proper input handling, this is ugly
 	private boolean buttonUp = false;
 	private boolean buttonLeft = false;
 	private boolean buttonRight = false;
@@ -69,21 +66,16 @@ public class Carage extends AbstractSimpleBase {
 	private boolean testValueUp = false;
 	private boolean testValueDown = false;
 
-	private ShaderProgram sp;
-	private int spId;
+	// TODO add procedural shader
+	private ShaderProgram shader;
+	private int shaderId;
 	
-	private Renderer renderer;
-	private Camera camera;
-	private LightSource light;
+	private Renderer renderer;	// This guy is gonna take care of all the rendering
+	private Camera camera;		// We'll hand this to the Renderer, he needs it
+	private LightSource light;	// Only one single light is currently supported
 	
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
-	private Asset workshopFloor = null;
-	private Asset workshopWalls = null;
-	private Asset workshopColumns = null;
-	private Asset workshopCeiling = null;
-	private Asset cardboardBox = null;
-	private Asset hangingBulb = null;
 
 	public static void main(String[] args) {
 		new Carage().start();
@@ -94,19 +86,10 @@ public class Carage extends AbstractSimpleBase {
 		printInfo();
 		initViewport();
 		initShaders();
+		initCamera();
+		initLightSource();
+		initRenderer();
 		initAssets();
-		
-		camera = new Camera();
-		camera.setPosition(-1.8f, 1.8f, 4f);
-		camera.setRotation(new Vector3f(-0.25f, -0.4f, 0f));
-		
-		renderer = new Renderer(sp, WIDTH, HEIGHT, camera);
-		
-		light = new LightSource();
-		// light.setPosition(2f, 3f, 1f);
-		light.setPosition(0f, 1.8f, 2.0f);
-		light.setIntensity(1.0f);
-		light.fetchLocations(sp);
 	}
 	
 	private void printInfo() {
@@ -140,40 +123,79 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void initShaders() {
-		sp = new ShaderProgram(DEFAULT_SHADER);
-		String[] attributeLocations = new String[] {ShaderAttribute.POSITION.getName(), ShaderAttribute.COLOR.getName(), ShaderAttribute.TEXTURE.getName(), ShaderAttribute.NORMALS.getName()};
-		sp.bindAttributeLocations(attributeLocations);
+		shader = new ShaderProgram(DEFAULT_SHADER);
+		String[] attributeLocations = new String[] {
+				ShaderAttribute.POSITION.getName(),
+				ShaderAttribute.COLOR.getName(),
+				ShaderAttribute.TEXTURE.getName(),
+				ShaderAttribute.NORMALS.getName() };
+		shader.bindAttributeLocations(attributeLocations);
 		
-		spId = sp.getId();
-		glUseProgram(spId);
+		shaderId = shader.getId();
+		glUseProgram(shaderId);
+	}
+	
+	private void initCamera() {
+		camera = new Camera();
+		camera.setPosition(-1.8f, 1.8f, 4f);
+		camera.setRotation(new Vector3f(-0.25f, -0.4f, 0f));
+	}
+	
+	private void initLightSource() {
+		light = new LightSource();
+		light.setPosition(0f, 1.8f, 2.0f);
+		light.setIntensity(1.0f);
+		light.fetchLocations(shader);
+	}
+	
+	private void initRenderer() {
+		renderer = new Renderer(shader, WIDTH, HEIGHT, camera);
 	}
 
 	private void initAssets() {
 		assets = new ArrayList<>();
-		
-		Material defaultMaterial = new Material("", sp);
-		
+		initCar();
+		initWorkshop();
+	}
+	
+	private void initCar() {
 		car = new Car("vw-polo", "vw-polo-wheel");
-		car.getParentAsset().setMaterial(defaultMaterial);
+		car.getParentAsset().setMaterial(new Material("", shader));
+		car.getParentAsset().getMaterial().setSpecularHardness(80);
+		car.getParentAsset().getMaterial().setAmbientReflectivity(0.1f);
+		car.getParentAsset().getMaterial().setDiffuseReflectivity(1.4f);
+		car.getParentAsset().getMaterial().setSpecularReflectivity(0.5f); 
 		car.printInfo();
+	}
+	
+	private void initWorkshop() {
+		Asset workshopFloor = new Asset("workshop-floor");
+		workshopFloor.setMaterial(new Material("", shader));
+		workshopFloor.getMaterial().setSpecularHardness(40);
+		assets.add(workshopFloor);
 		
-		System.out.println("Ambi: "+car.getParentAsset().getMaterial().getAmbientReflectivity());
-		System.out.println("Diff: "+car.getParentAsset().getMaterial().getDiffuseReflectivity());
-		System.out.println("Spec: "+car.getParentAsset().getMaterial().getSpecularReflectivity());
+		Asset workshopWalls = new Asset("workshop-walls");
+		workshopWalls.setMaterial(new Material("", shader));
+		workshopWalls.getMaterial().setSpecularHardness(10);
+		assets.add(workshopWalls);
 		
-		workshopFloor = new Asset("workshop-floor");
-		workshopWalls = new Asset("workshop-walls");
-		workshopColumns = new Asset("workshop-columns");
-		workshopCeiling = new Asset("workshop-ceiling");
+		Asset workshopColumns = new Asset("workshop-columns");
+		workshopColumns.setMaterial(new Material("", shader));
+		assets.add(workshopColumns);		
 		
-		hangingBulb = new Asset("hanging-bulb");
+		Asset workshopCeiling = new Asset("workshop-ceiling");
+		workshopCeiling.setMaterial(new Material("", shader));
+		assets.add(workshopCeiling);
+		
+		Asset hangingBulb = new Asset("hanging-bulb");
 		hangingBulb.setMaterial(new Material("", null, 0.8f, 0.05f, 0.15f, 50));
 		hangingBulb.setPosition(0f, 2.0f, 2.0f);
+		assets.add(hangingBulb);
 		
-		cardboardBox = new Asset("cardboardbox");
+		Asset cardboardBox = new Asset("cardboardbox");
 		cardboardBox.setPosition(-3.2f, 0, -3.8f);
 		cardboardBox.setRotation(new Vector3f(0f, 35f, 0f));
-		
+		assets.add(cardboardBox);
 	}
 	
 	@Override
@@ -184,25 +206,23 @@ public class Carage extends AbstractSimpleBase {
 		// User pressed any relevant keys?
 		processInput();
 		
-		// Let our Quad (or Tri or whatever it currently is) move a bit
-		modifyTestAssets();
+		// Move/Rotate/Whatever some Assets according to User Input
+		modifyAssets();
 		
 		// Clear dat screen!
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 		// Send light information to shader (in case it has moved, its intensity changed, ...)
-		light.toShader();
-		// Finally, render our simple test geometry!		
+		light.toShader(); // TODO I think light handling could be improved upon
+		
+		// Finally, render our assets!
 		renderer.renderAssetGroup(car);
-		renderer.renderAsset(workshopFloor);
-		renderer.renderAsset(workshopWalls);
-		renderer.renderAsset(workshopColumns);
-		renderer.renderAsset(workshopCeiling);
-		renderer.renderAsset(hangingBulb);
-		renderer.renderAsset(cardboardBox);
+		for (Asset asset : assets) {
+			renderer.renderAsset(asset);
+		}
 	}
 	
-	private void modifyTestAssets() {
+	private void modifyAssets() {
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
@@ -231,21 +251,19 @@ public class Carage extends AbstractSimpleBase {
 		if (buttonUp) { car.accelerate(delta); }
 		if (buttonDown) { car.decelerate(delta); }
 		
-		if (lightIncrease) { light.setIntensity(light.getIntensity() + 0.1f); }
-		if (lightDecrease) { light.setIntensity(light.getIntensity() - 0.1f); }
+		if (lightIncrease) { light.setIntensity(light.getIntensity() + 0.1f * delta); }
+		if (lightDecrease) { light.setIntensity(light.getIntensity() - 0.1f * delta); }
 		if (toggleLight) { light.toggle(); }
 		
-		/*
 		Material carBodyMaterial = car.getParentAsset().getMaterial();
 		if (testValueUp)   { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()+1); }
 		if (testValueDown) { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()-1); }
-		System.out.println(carBodyMaterial.getSpecularHardness());
-		*/
+		
 	}
 			
 	/**
 	 * Get the time in milliseconds
-	 * http://ninjacave.com/lwjglbasics4
+	 * From: http://ninjacave.com/lwjglbasics4
 	 * 
 	 * @return The system time in milliseconds
 	 */
@@ -260,6 +278,7 @@ public class Carage extends AbstractSimpleBase {
 		return (FPS * delta / 1000f);
 	}
 	
+	// TODO Put this in some Input Handler Class(es)
 	private void processInput() {
 		while (Keyboard.next()) {
 		    if (Keyboard.getEventKeyState()) {

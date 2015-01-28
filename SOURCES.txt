@@ -1,0 +1,19 @@
+View Matrix and Rotations
+-------------------------
+
+http://schabby.de/view-matrix/
+http://3dgep.com/understanding-the-view-matrix/
+http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2008.html
+http://gamedev.stackexchange.com/questions/45292/how-is-the-gimbal-locked-problem-solved-using-accumulative-matrix-transformation
+http://gamedev.stackexchange.com/questions/72565/3d-camera-rotation
+http://www.songho.ca/opengl/gl_transform.html
+http://www.gamedev.net/topic/600819-matrix-rotation-order-in-opengl/
+http://www.gamasutra.com/view/feature/131686/rotating_objects_using_quaternions.php
+http://www.euclideanspace.com/maths/geometry/rotations/index.htm
+http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
+
+
+All Matrices / Matrix Transformations
+-------------------------------------
+
+http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/

@@ -6,27 +6,64 @@ import org.lwjgl.util.vector.Vector3f;
 public class Entity {
 	
 	public static final Vector3f DEFAULT_POSITION = new Vector3f(0f, 0f, 0f);
-	// public static final Vector3f DEFAULT_DIRECTION = new Vector3f(-1f, 0f, 0f);
 	public static final Vector3f DEFAULT_ROTATION = new Vector3f(0f, 0f, 0f);
+	public static final Vector3f DEFAULT_SCALE    = new Vector3f(1f, 1f, 1f);
 	public static final Vector3f DEFAULT_VELOCITY = new Vector3f(0f, 0f, 0f);
 	
 	// Important to _initialize_ them here already, otherwise the setters will raise a NullPointerException
 	protected Vector3f position = new Vector3f(0f, 0f, 0f);
-	// protected Vector3f direction = new Vector3f(0f, 0f, 0f); // TODO drop this in favor of rotation? Otherwise make sure both are consistent!!!
-	protected Vector3f rotation = new Vector3f(0f, 0f, 0f);
+	protected Vector3f rotation = new Vector3f(0f, 0f, 0f);	// TODO is this in degrees or radians? I guess radians? Or leave that to the 'user'?
+	protected Vector3f scale    = new Vector3f(0f, 0f, 0f);
 	protected Vector3f velocity = new Vector3f(0f, 0f, 0f);
 	
+	/**
+	 * Create a new Entity with default position, rotation, scale and velocity.
+	 */
 	public Entity() {
-		setPosition(DEFAULT_POSITION);
-		// setDirection(DEFAULT_DIRECTION);
-		setRotation(DEFAULT_ROTATION);
-		setVelocity(DEFAULT_VELOCITY);
+		this(DEFAULT_POSITION, DEFAULT_ROTATION, DEFAULT_SCALE, DEFAULT_VELOCITY);
 	}
 	
-	public Entity(Vector3f position, Vector3f direction, Vector3f velocity) {
+	/**
+	 * Create a new Entity with the given position.
+	 * Rotation, scale and velocity will be initialized with their respective defaults.
+	 * @param position The entitie's initial position as 3-dimensional vector
+	 */
+	public Entity(Vector3f position) {
+		this(position, DEFAULT_ROTATION, DEFAULT_SCALE, DEFAULT_VELOCITY);
+	}
+	
+	/**
+	 * Create a new Entity with the given position and rotation.
+	 * Scale and velocity will be initialized with their respective defaults.
+	 * @param position The entitie's initial position as 3-dimensional vector
+	 * @param rotation The entitie's initial rotation as 3-dimensional vector
+	 */
+	public Entity(Vector3f position, Vector3f rotation) {
+		this(position, rotation, DEFAULT_SCALE, DEFAULT_VELOCITY);
+	}
+	
+	/**
+	 * Create a new Entity with the given position, rotation and scale.
+	 * The entitie's velocity will be initialized with its default value.
+	 * @param position The entitie's initial position as 3-dimensional vector
+	 * @param rotation The entitie's initial rotation as 3-dimensional vector
+	 * @param scale    The entitie's initial scale
+	 */
+	public Entity(Vector3f position, Vector3f rotation, Vector3f scale) {
+		this(position, rotation, scale, DEFAULT_VELOCITY);
+	}
+	
+	/**
+	 * Create a new Entity and set its initial position, rotation, scale and velocity.
+	 * @param position The entitie's initial position as 3-dimensional vector
+	 * @param rotation The entitie's initial rotation as 3-dimensional vector
+	 * @param scale    The entitie's initial scale
+	 * @param velocity The entitie's initial velocity
+	 */
+	public Entity(Vector3f position, Vector3f rotation, Vector3f scale, Vector3f velocity) {
 		setPosition(position);
-		// setDirection(direction);
-		setRotation(DEFAULT_ROTATION);// TODO
+		setRotation(rotation);
+		setScale(scale);
 		setVelocity(velocity);
 	}
 		
@@ -46,19 +83,19 @@ public class Entity {
 	
 	/**
 	 * Set this Entitie's position.
-	 * @param position A 3-dimensional vector representing the position
-	 */
-	public void setPosition(Vector3f position) {
-		setPosition(position.getX(), position.getY(), position.getZ());
-	}
-	
-	/**
-	 * Set this Entitie's position.
 	 * @param xyz A float array holding the position's x, y and z components
 	 */
 	public void setPosition(float[] xyz) {
 		if (xyz.length < 3) { return; } // TODO throw exception or something?
 		setPosition(xyz[0], xyz[1], xyz[2]);
+	}
+	
+	/**
+	 * Set this Entitie's position.
+	 * @param position A 3-dimensional vector representing the position
+	 */
+	public void setPosition(Vector3f position) {
+		setPosition(position.getX(), position.getY(), position.getZ());
 	}
 	
 	/**
@@ -101,19 +138,19 @@ public class Entity {
 	
 	/**
 	 * Change this Entitie's position by the given amounts.
-	 * @param position a 3-dimensional vector holding the changes for the x, y and z position
-	 */
-	public void alterPosition(Vector3f position) {
-		alterPosition(position.getX(), position.getY(), position.getZ());
-	}
-	
-	/**
-	 * Change this Entitie's position by the given amounts.
 	 * @param xyz A float array holding the values to be added to the x, y and z positions
 	 */
 	public void alterPosition(float[] xyz) {
 		if (xyz.length < 3) { return; } // TODO throw exception or something?
 		alterPosition(xyz[0], xyz[1], xyz[2]);
+	}
+	
+	/**
+	 * Change this Entitie's position by the given amounts.
+	 * @param position a 3-dimensional vector holding the changes for the x, y and z position
+	 */
+	public void alterPosition(Vector3f position) {
+		alterPosition(position.getX(), position.getY(), position.getZ());
 	}
 	
 	/**
@@ -141,58 +178,86 @@ public class Entity {
 	}
 	
 	/**
-	 * Set this Entitie's direction. The values will be normalized.
-	 * @param direction A 3-dimensional vector representing the direction
-	 *
-	public void setDirection(Vector3f direction) {
-		this.direction = (Vector3f) direction.normalise(); // TODO passed by reference? also, maybe drop direction entirely...
+	 * Set this Entitie's rotation.
+	 * @param x The entitie's new rotation around the x axis
+	 * @param y The entitie's new rotation around the y axis
+	 * @param z The entitie's new rotation around the z axis
+	 */
+	public void setRotation(float x, float y, float z) {
+		rotation.x = x;
+		rotation.y = y;
+		rotation.z = z;
 	}
 	
 	/**
-	 * Set this Entitie's direction. The values will be normalized.
-	 * @param x The direction's x component
-	 * @param y The direction's y component
-	 * @param z The direction's z component
-	 *
-	public void setDirection(float x, float y, float z) {
-		this.direction = (Vector3f) (new Vector3f(x, y, z)).normalise();
-	}
-	
-	/**
-	 * Set this Entitie's direction. The values will be normalized.
-	 * @param xyz A float array holding the direction's x, y and z components
-	 *
-	public void setDirection(float[] xyz) {
+	 * Set this Entitie's rotation.
+	 * @param xyz A float array with the entitie's new rotations around x, y and z axis, respectively
+	 */
+	public void setRotation(float[] xyz) {
 		if (xyz.length < 3) { return; } // TODO throw exception or something?
-		this.direction = (Vector3f) (new Vector3f(xyz[0], xyz[1], xyz[2])).normalise();
+		setRotation(xyz[0], xyz[1], xyz[2]);
 	}
-	*/
 	
-	// TODO drop direction in favor of rotation or synchronize both?!
+	/**
+	 * Set this Entitie's rotation.
+	 * @param rotation A 3-dimensional vector with this entitie's new rotations around x, y and z axis, respectively
+	 */
 	public void setRotation(Vector3f rotation) {
 		// Make sure to pass by value, not by reference!
-		this.rotation.x = rotation.getX();
-		this.rotation.y = rotation.getY();
-		this.rotation.z = rotation.getZ();
+		setRotation(rotation.getX(), rotation.getY(), rotation.getZ());
+	}
+	
+	/**
+	 * Change TODO (description :)
+	 * @param x
+	 * @param y
+	 * @param z
+	 */
+	public void alterRotation(float x, float y, float z) {
+		rotation.x += x;
+		rotation.y += y;
+		rotation.z += z;
+	}
+	
+	public void alterRotation(float[] xyz) {
+		if (xyz.length < 3) { return; } // TODO throw exception or something?
+		alterRotation(xyz[0], xyz[1], xyz[2]);
 	}
 	
 	public void alterRotation(Vector3f rotation) {
-		this.rotation.x += rotation.getX();
-		this.rotation.y += rotation.getY();
-		this.rotation.z += rotation.getZ();
+		alterRotation(rotation.getX(), rotation.getY(), rotation.getZ());
 	}
 	
-	/**
-	 * Set this Entitie's velocity.
-	 * @param velocity A 3-dimensional vector representing the velocity
-	 */
-	public void setVelocity(Vector3f velocity) {
-		// Make sure to pass by value, not by reference!
-		this.velocity.x = velocity.getX();
-		this.velocity.y = velocity.getY();
-		this.velocity.z = velocity.getZ();
+	public void setScale(float x, float y, float z) {
+		scale.x = x;
+		scale.y = y;
+		scale.z = z;
 	}
 	
+	public void setScale(float[] xyz) {
+		if (xyz.length < 3) { return; } // TODO exception or something
+		setScale(xyz[0], xyz[1], xyz[2]);
+	}
+	
+	public void setScale(Vector3f scale) {
+		setScale(scale.getX(), scale.getY(), scale.getZ());
+	}
+	
+	public void alterScale(float x, float y, float z) {
+		scale.x += x;
+		scale.y += y;
+		scale.z += z;
+	}
+	
+	public void alterScale(float[] xyz) {
+		if (xyz.length < 3) { return; } // TODO exception or something
+		alterScale(xyz[0], xyz[1], xyz[2]);
+	}
+	
+	public void alterScale(Vector3f scale) {
+		alterScale(scale.getX(), scale.getY(), scale.getZ());
+	}
+		
 	/**
 	 * Set this Entitie's velocity.
 	 * @param x The velocitie's x component
@@ -200,9 +265,9 @@ public class Entity {
 	 * @param z The velocitie's z component
 	 */
 	public void setVelocity(float x, float y, float z) {
-		this.velocity.x = x;
-		this.velocity.y = y;
-		this.velocity.z = z;
+		velocity.x = x;
+		velocity.y = y;
+		velocity.z = z;
 	}
 	
 	/**
@@ -211,9 +276,31 @@ public class Entity {
 	 */
 	public void setVelocity(float[] xyz) {
 		if (xyz.length < 3) { return; } // TODO throw exception or something?
-		this.velocity.x = xyz[0];
-		this.velocity.y = xyz[1];
-		this.velocity.z = xyz[2];
+		setVelocity(xyz[0], xyz[1], xyz[2]);
+	}
+	
+	/**
+	 * Set this Entitie's velocity.
+	 * @param velocity A 3-dimensional vector representing the velocity
+	 */
+	public void setVelocity(Vector3f velocity) {
+		// Make sure to pass by value, not by reference!
+		setVelocity(velocity.getX(), velocity.getY(), velocity.getZ());
+	}
+	
+	public void alterVelocity(float x, float y, float z) {
+		velocity.x += x;
+		velocity.y += y;
+		velocity.z += z;
+	}
+	
+	public void alterVelocity(float[] xyz) {
+		if (xyz.length < 3) { return; } // TODO exception or something
+		alterVelocity(xyz[0], xyz[1], xyz[2]);
+	}
+	
+	public void alterVelocity(Vector3f velocity) {
+		alterVelocity(velocity.getX(), velocity.getY(), velocity.getZ());
 	}
 	
 	/**
@@ -253,9 +340,57 @@ public class Entity {
 	 * @return A normalized 3-dimensional vector representing this entitie's direction
 	 *
 	public Vector3f getDirection() {
-		return new Vector3f(direction.getX(), direction.getY(), direction.getZ());
+		// TODO calculate normalized direction from the three rotations
 	}
 	 */
+	
+	/**
+	 * Get this Entitie's rotation (in degree) as 3-dimensional vector.
+	 * @return A 3-dimensional vector representing this entitie's rotation in degrees
+	 */
+	public Vector3f getRotation() {
+		return new Vector3f(rotation.getX(), rotation.getY(), rotation.getZ());
+	}
+	
+	/**
+	 * Get this Entitie's rotation (in degree) around the x-axis.
+	 * @return A float value representing this Entitie's rotation around the x-axis in degrees
+	 */
+	public float getRotationX() {
+		return rotation.getX();
+	}
+	
+	/**
+	 * Get this Entitie's rotation (in degree) around the y-axis.
+	 * @return A float value representing this Entitie's rotation around the y-axis in degrees
+	 */
+	public float getRotationY() {
+		return rotation.getY();
+	}
+	
+	/**
+	 * Get this Entitie's rotation (in degree) around the z-axis.
+	 * @return A float value representing this Entitie's rotation around the z-axis in degrees
+	 */
+	public float getRotationZ() {
+		return rotation.getZ();
+	}
+	
+	public Vector3f getScale() {
+		return new Vector3f(scale.getX(), scale.getY(), scale.getZ());
+	}
+	
+	public float getScaleX() {
+		return scale.getX();
+	}
+	
+	public float getScaleY() {
+		return scale.getY();
+	}
+	
+	public float getScaleZ() {
+		return scale.getZ();
+	}
 	
 	/**
 	 * Get this Entitie's velocity as 3-dimensional vector.
@@ -265,42 +400,16 @@ public class Entity {
 		return new Vector3f(velocity.getX(), velocity.getY(), velocity.getZ());
 	}
 	
-	/**
-	 * Get this Entitie's rotation (in degree) as 3-dimensional vector.
-	 * @return A 3-dimensional vector representing this entitie's rotation in degrees
-	 */
-	public Vector3f getRotation() {
-		// TODO  (see related methods)
-		// return new Vector3f(getRotationX(), getRotationY(), getRotationZ());
-		return new Vector3f(rotation.getX(), rotation.getY(), rotation.getZ());
+	public float getVelocityX() {
+		return velocity.getX();
 	}
 	
-	/**
-	 * Get this Entitie's rotation (in degree) around the x-axis.
-	 * @return A float value representing this Entitie's rotation around the x-axis in degrees
-	 */
-	public float getRotationX() {
-		// TODO use atan2 and toDegrees
-		// return (float) Math.toDegrees(Math.atan2(direction.getY(), direction.getZ()));
-		return rotation.getX();
+	public float getVelocityY() {
+		return velocity.getY();
 	}
 	
-	/**
-	 * Get this Entitie's rotation (in degree) around the y-axis.
-	 * @return A float value representing this Entitie's rotation around the y-axis in degrees
-	 */
-	public float getRotationY() {
-		// TODO use atan2 and toDegrees
-		return rotation.getY();
-	}
-	
-	/**
-	 * Get this Entitie's rotation (in degree) around the z-axis.
-	 * @return A float value representing this Entitie's rotation around the z-axis in degrees
-	 */
-	public float getRotationZ() {
-		// TODO use atan2 and toDegrees
-		return rotation.getZ();
+	public float getVelocityZ() {
+		return velocity.getZ();
 	}
 	
 	/**
@@ -312,8 +421,8 @@ public class Entity {
 	}
 	
 	/**
-	 * 
-	 * @return
+	 * Creates a transformation matrix according to this Entitie's position, rotation and scale.
+	 * @return A Matrix that describes this model's transformations
 	 */
 	public Matrix4f getTransformationMatrix() {		
 		Matrix4f transformationMatrix = new Matrix4f();
@@ -321,32 +430,25 @@ public class Entity {
 		return transformationMatrix;
 	}
 	
+	/**
+	 * Applies this model's transformations to the given matrix. The supplied matrix will not be reset.
+	 * The effect will be the same as multiplying the given matrix with this entitie's transformation matrix.
+	 * @param modelMatrix Any 4x4 Matrix
+	 */
 	public void applyTransformationsToMatrix(Matrix4f modelMatrix) {
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
 				
-		// ROTATION IS TRICKY!
-		
-		// http://schabby.de/view-matrix/
-		// http://3dgep.com/understanding-the-view-matrix/
-		// http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2008.html
-		// http://gamedev.stackexchange.com/questions/45292/how-is-the-gimbal-locked-problem-solved-using-accumulative-matrix-transformation
-		// http://gamedev.stackexchange.com/questions/72565/3d-camera-rotation
-		// http://www.songho.ca/opengl/gl_transform.html
-		// http://www.gamedev.net/topic/600819-matrix-rotation-order-in-opengl/
-		// http://www.gamasutra.com/view/feature/131686/rotating_objects_using_quaternions.php
-		// http://www.euclideanspace.com/maths/geometry/rotations/index.htm
 		// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
-		
-		// See the last link: order of rotation is important, YZX gives the desired result in *most* cases, not all!
+		// The order of rotation is important, YZX gives the desired result in *most* cases, not all!
 		// It seems to do the trick for our purposes. For now, at least. Let's roll with it until we run into problems.
 		
 		modelMatrix.translate(position);		
 		modelMatrix.rotate(rotation.getY(), new Vector3f(0, 1, 0));
 		modelMatrix.rotate(rotation.getZ(), new Vector3f(0, 0, 1));
 		modelMatrix.rotate(rotation.getX(), new Vector3f(1, 0, 0));
-		modelMatrix.scale(new Vector3f(1, 1, 1));	// TODO obviously...
+		modelMatrix.scale(scale);
 	}
 
 }
