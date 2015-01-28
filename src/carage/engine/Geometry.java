@@ -2,9 +2,14 @@ package carage.engine;
 
 public class Geometry {
 
-	private VertexArrayObject vao = null;
-	private IndexBufferObject ibo = null;
-	private BoundingBox boundingBox = null;
+	protected VertexArrayObject vao = null;
+	protected IndexBufferObject ibo = null;
+	protected BoundingBox boundingBox = null;
+	
+	// This is dangerous... and only here for PlaneGeometry, CubeGeometry and so on
+	public Geometry() {
+		
+	}
 	
 	public Geometry(VertexArrayObject vao) {
 		this.vao = vao;
@@ -19,6 +24,15 @@ public class Geometry {
 		this.vao = vao;
 		this.ibo = ibo;
 		this.boundingBox = boundingBox;
+	}
+	
+	// Dangeroooooous
+	public void setVAO(VertexArrayObject vao) {
+		this.vao = vao;
+	}
+	
+	public boolean hasVAO() {
+		return (vao != null);
 	}
 	
 	public VertexArrayObject getVAO() {

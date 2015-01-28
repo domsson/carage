@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import lenz.opengl.AbstractSimpleBase;
 import lenz.opengl.utils.ShaderProgram;
+import lenz.opengl.utils.Texture;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -30,6 +31,7 @@ import carage.engine.Asset;
 import carage.engine.Camera;
 import carage.engine.LightSource;
 import carage.engine.Material;
+import carage.engine.PlaneGeometry;
 import carage.engine.Renderer;
 import carage.engine.ShaderAttribute;
 import carage.engine.VertexBufferObject;
@@ -159,6 +161,7 @@ public class Carage extends AbstractSimpleBase {
 		assets = new ArrayList<>();
 		initCar();
 		initWorkshop();
+		initCameraOverlay();
 	}
 	
 	private void initCar() {
@@ -205,6 +208,12 @@ public class Carage extends AbstractSimpleBase {
 		cardboardBox2.setRotation(new Vector3f(0f, 35f, 0f));
 		cardboardBox2.setMaterial(new Material("", proceduralShader));
 		assets.add(cardboardBox2);
+	}
+	
+	private void initCameraOverlay() {
+		Asset cameraOverlay = new Asset(new PlaneGeometry(), new Texture("cg.png"));
+		cameraOverlay.setPositionY(2.0f);
+		assets.add(cameraOverlay);
 	}
 	
 	@Override
