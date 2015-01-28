@@ -67,8 +67,8 @@ public class Carage extends AbstractSimpleBase {
 	private boolean testValueDown = false;
 
 	// TODO add procedural shader
-	private ShaderProgram shader;
-	private int shaderId;
+	private ShaderProgram phongShader;
+	private ShaderProgram proceduralShader;
 	
 	private Renderer renderer;	// This guy is gonna take care of all the rendering
 	private Camera camera;		// We'll hand this to the Renderer, he needs it
@@ -123,16 +123,19 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void initShaders() {
-		shader = new ShaderProgram(DEFAULT_SHADER);
 		String[] attributeLocations = new String[] {
 				ShaderAttribute.POSITION.getName(),
 				ShaderAttribute.COLOR.getName(),
 				ShaderAttribute.TEXTURE.getName(),
 				ShaderAttribute.NORMALS.getName() };
-		shader.bindAttributeLocations(attributeLocations);
 		
-		shaderId = shader.getId();
-		glUseProgram(shaderId);
+		phongShader = new ShaderProgram("phong");
+		phongShader.bindAttributeLocations(attributeLocations);
+		
+		proceduralShader = new ShaderProgram("procedural");
+		proceduralShader.bindAttributeLocations(attributeLocations);
+		
+		glUseProgram(phongShader.getId());
 	}
 	
 	private void initCamera() {
@@ -145,11 +148,11 @@ public class Carage extends AbstractSimpleBase {
 		light = new LightSource();
 		light.setPosition(0f, 1.8f, 2.0f);
 		light.setIntensity(1.0f);
-		light.fetchLocations(shader);
+		light.fetchLocations(phongShader);
 	}
 	
 	private void initRenderer() {
-		renderer = new Renderer(shader, WIDTH, HEIGHT, camera);
+		renderer = new Renderer(phongShader, WIDTH, HEIGHT, camera);
 	}
 
 	private void initAssets() {
@@ -160,7 +163,7 @@ public class Carage extends AbstractSimpleBase {
 	
 	private void initCar() {
 		car = new Car("vw-polo", "vw-polo-wheel");
-		car.getParentAsset().setMaterial(new Material("", shader));
+		car.getParentAsset().setMaterial(new Material("", phongShader));
 		car.getParentAsset().getMaterial().setSpecularHardness(80);
 		car.getParentAsset().getMaterial().setAmbientReflectivity(0.1f);
 		car.getParentAsset().getMaterial().setDiffuseReflectivity(1.4f);
@@ -170,21 +173,21 @@ public class Carage extends AbstractSimpleBase {
 	
 	private void initWorkshop() {
 		Asset workshopFloor = new Asset("workshop-floor");
-		workshopFloor.setMaterial(new Material("", shader));
+		workshopFloor.setMaterial(new Material("", phongShader));
 		workshopFloor.getMaterial().setSpecularHardness(40);
 		assets.add(workshopFloor);
 		
 		Asset workshopWalls = new Asset("workshop-walls");
-		workshopWalls.setMaterial(new Material("", shader));
+		workshopWalls.setMaterial(new Material("", phongShader));
 		workshopWalls.getMaterial().setSpecularHardness(10);
 		assets.add(workshopWalls);
 		
 		Asset workshopColumns = new Asset("workshop-columns");
-		workshopColumns.setMaterial(new Material("", shader));
+		workshopColumns.setMaterial(new Material("", phongShader));
 		assets.add(workshopColumns);		
 		
 		Asset workshopCeiling = new Asset("workshop-ceiling");
-		workshopCeiling.setMaterial(new Material("", shader));
+		workshopCeiling.setMaterial(new Material("", phongShader));
 		assets.add(workshopCeiling);
 		
 		Asset hangingBulb = new Asset("hanging-bulb");
@@ -196,6 +199,12 @@ public class Carage extends AbstractSimpleBase {
 		cardboardBox.setPosition(-3.2f, 0, -3.8f);
 		cardboardBox.setRotation(new Vector3f(0f, 35f, 0f));
 		assets.add(cardboardBox);
+		
+		Asset cardboardBox2 = new Asset("cardboardbox");
+		cardboardBox2.setPosition(3.0f, 0, 1.4f);
+		cardboardBox2.setRotation(new Vector3f(0f, 35f, 0f));
+		cardboardBox2.setMaterial(new Material("", proceduralShader));
+		assets.add(cardboardBox2);
 	}
 	
 	@Override
@@ -213,7 +222,7 @@ public class Carage extends AbstractSimpleBase {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 		// Send light information to shader (in case it has moved, its intensity changed, ...)
-		light.toShader(); // TODO I think light handling could be improved upon
+		light.toShader(); // TODO I think light handling could be improved upon. Maybe?
 		
 		// Finally, render our assets!
 		renderer.renderAssetGroup(car);
