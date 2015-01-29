@@ -11,9 +11,9 @@ uniform sampler2D tex;
 out vec4 out_Color;
 
 vec3 blackOrWhite() {
-	vec3 pixelColor = (0, 0, 0);
+	vec3 pixelColor = vec3(0, 0, 0);
 	if (pass_TextureCoord.u % 2 == 1)
-		pixelColor = (1, 1, 1);
+		pixelColor = vec3(1, 1, 1);
 	return pixelColor;
 }
 
