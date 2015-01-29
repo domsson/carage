@@ -12,7 +12,7 @@ out vec4 out_Color;
 
 vec3 blackOrWhite() {
 	vec3 pixelColor = vec3(0, 0, 0);
-	if (pass_TextureCoord.s % 2 == 1)
+	if (pass_TextureCoord.s > 0.5)
 		pixelColor = vec3(1, 1, 1);
 	return pixelColor;
 }
