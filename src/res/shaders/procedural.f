@@ -10,6 +10,13 @@ uniform sampler2D tex;
 
 out vec4 out_Color;
 
+vec3 blackOrWhite {
+	vec3 pixelColor = (0, 0, 0);
+	if (pass_TextureCoord.u % 2 == 1)
+		pixelColor = (1, 1, 1);
+	return pixelColor;
+}
+
 void main(void) {
-	out_Color = vec4(1,1,1,0);
+	out_Color = vec4(blackOrWhite, 0.5);
 }
