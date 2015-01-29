@@ -13,7 +13,7 @@ uniform int shaderTimer;
 
 const vec3 greenLight = vec3(0.27, 0.8, 0.27);
 const vec3 greenIntermediate = vec3(0.1, 0.7, 0.1);
-const vec3 greenDark = vec3(0, 0.68, 0)'
+const vec3 greenDark = vec3(0, 0.68, 0);
 
 out vec4 out_Color;
 
