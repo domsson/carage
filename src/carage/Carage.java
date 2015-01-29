@@ -14,7 +14,6 @@ import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.glCullFace;
-import static org.lwjgl.opengl.GL11.glDepthMask;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glFrontFace;
@@ -22,6 +21,9 @@ import static org.lwjgl.opengl.GL11.glGetString;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
 import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20.glUniform2i;
 
 import java.util.ArrayList;
 
@@ -52,6 +54,10 @@ public class Carage extends AbstractSimpleBase {
 		
 	public static final int FPS = 60;
 	public static final String DEFAULT_SHADER = "phong";	
+	
+	public static final float CAM_PAN_MIN =  5.0f;
+	public static final float CAM_PAN_MAX = 55.0f;
+	public static final float CAM_PAN_STEP = 0.25f;
 	
 	private long lastRender = 0;
 	private float delta = 0;
@@ -84,6 +90,10 @@ public class Carage extends AbstractSimpleBase {
 	private Camera camera;		// We'll hand this to the Renderer, he needs it
 	private LightSource light;	// Only one single light is currently supported
 	private Asset cameraOverlay;
+	
+	private boolean camPanningRight = true;
+	private int camPausedFor = 0;
+	private float scanlineTimer = 0;
 	
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
@@ -146,6 +156,12 @@ public class Carage extends AbstractSimpleBase {
 		
 		proceduralShader = shaderManager.get("procedural");
 		proceduralShader.bindAttributeLocations(attributeLocations);
+		// Pass in the viewport resolution. Do it again if the resolution changes!
+		
+		proceduralShader.bind();
+		glUniform1i(proceduralShader.getUniformLocation("viewportWidth"), WIDTH);
+		glUniform1i(proceduralShader.getUniformLocation("viewportHeight"), HEIGHT);
+		proceduralShader.unbind();
 	}
 	
 	private void initCamera() {
@@ -209,14 +225,6 @@ public class Carage extends AbstractSimpleBase {
 		cardboardBox.setPosition(-3.2f, 0, -3.8f);
 		cardboardBox.setRotation(new Vector3f(0f, 35f, 0f));
 		assets.add(cardboardBox);
-		
-		/*
-		Asset cardboardBox2 = new Asset("cardboardbox");
-		cardboardBox2.setMaterial(new Material("", proceduralShader));
-		cardboardBox2.setPosition(3.0f, 0, 1.4f);
-		cardboardBox2.setRotation(new Vector3f(0f, 35f, 0f));
-		assets.add(cardboardBox2);
-		*/
 	}
 	
 	private void initCameraOverlay() {
@@ -224,11 +232,32 @@ public class Carage extends AbstractSimpleBase {
 		cameraOverlay.setMaterial(new Material("", proceduralShader));
 		cameraOverlay.setPosition(0.0f, 0.0f, 0.11f);
 		cameraOverlay.setScale(2f, 2f, 1f);
-		// assets.add(cameraOverlay);
+	}
+	
+	private void increaseScanlineTimer() {
+		scanlineTimer = (scanlineTimer >= 360) ? scanlineTimer - 360f : scanlineTimer + (FPS * delta / 1000f);
+		
+		/*
+		for (int i=0; i<800; ++i) {
+			int time = (int) (scanlineTimer % 6);
+			int lineNumber = i % 6;
+
+			if (lineNumber == ((0 + time) % 6) || lineNumber == ((3 + time) % 6)) {
+				System.out.println("medium green, " + ((0 + time) % 6));
+			}
+			if (lineNumber == ((4 + time) % 6) || lineNumber == ((5 + time) % 6)) {
+				System.out.println("dark green");
+			}
+		}
+		*/
+		// medium - light - light - medium - dark - dark - ...
 	}
 	
 	@Override
 	protected void render() {
+		// Shader "delta"
+		increaseScanlineTimer();
+		
 		// Time shizzle
 		delta = getDelta();
 		
@@ -240,14 +269,15 @@ public class Carage extends AbstractSimpleBase {
 		
 		// Clear dat screen!
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+        		
 		// Send light information to shader (in case it has moved, its intensity changed, ...)
 		// TODO Light handling has to be improved... we're changing states (shader program) just to send the uniforms over...
-		glUseProgram(phongShader.getId());
+		phongShader.bind();
 		light.sendToShader(phongShader);
+		
 		// This shader doesn't need light, so...
 //		glUseProgram(proceduralShader.getId());
-//		light.sendToShader(proceduralShader);
+//		light.sendToShader(proceduralShader);		
 				
 		// Finally, render our assets!
 		renderer.renderAssetGroup(car);
@@ -255,6 +285,13 @@ public class Carage extends AbstractSimpleBase {
 			renderer.renderAsset(asset);
 		}
 		
+		// Procedural Shader needs the delta...
+		proceduralShader.bind();
+		glUniform1f(proceduralShader.getUniformLocation("shaderTimer"), scanlineTimer);
+		renderCameraOverlay();
+	}
+	
+	private void renderCameraOverlay() {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		renderer.renderAsset(cameraOverlay);
@@ -297,12 +334,41 @@ public class Carage extends AbstractSimpleBase {
 		Material carBodyMaterial = car.getParentAsset().getMaterial();
 		if (testValueUp)   { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()+1); }
 		if (testValueDown) { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()-1); }
-		
-		// TODO surveillance cam rotation (rotation around y between min and max angle)
+			
+		panCam();
+	}
+	
+	private void panCam() {
 		float camRotY = camera.getRotationY();
-		float camRotYMin = (float) Math.toRadians(-50); // right!
-		float camRotYMax = (float) Math.toRadians(10);  // left!
+		float camRotYDelta = (float)(Math.toRadians(CAM_PAN_STEP)) * delta;
+		float camRotYMin   = (float) Math.toRadians(-CAM_PAN_MAX); // right!
+		float camRotYMax   = (float) Math.toRadians(CAM_PAN_MIN);  // left!
 		
+		if (camPausedFor > 0) {
+			--camPausedFor;
+		}
+
+		if (camPausedFor > 0) {
+			return;
+		}
+		
+		if (camPanningRight) {
+			camRotY -= camRotYDelta;
+			if (camRotY <= camRotYMin) { // We're at the far right
+				camPanningRight = false;
+				camPausedFor = 120;
+				camRotY = camRotYMin;
+			}
+		}
+		else {
+			camRotY += camRotYDelta;
+			if (camRotY >= camRotYMax) { // We're at the far left
+				camPanningRight = true;
+				camPausedFor = 120;
+				camRotY = camRotYMax;
+			}
+		}
+		camera.setRotation(camera.getRotationX(), camRotY, camera.getRotationZ());
 	}
 			
 	/**
