@@ -18,5 +18,5 @@ vec3 blackOrWhite() {
 }
 
 void main(void) {
-	out_Color = vec4(blackOrWhite, 0.5);
+	out_Color = vec4(blackOrWhite(), 0.5);
 }
