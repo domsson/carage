@@ -14,7 +14,7 @@ out vec4 out_Color;
 
 vec3 blackOrWhite() {
 	vec3 pixelColor = vec3(0, 0, 1);
-	if (int(pass_TextureCoord.s * viewportWidth / 5) % 2 == 1) {
+	if (int(pass_TextureCoord.t * viewportHeight / 10) % 2 == 1) {
 		pixelColor = vec3(0, 1, 0);
 	}
 	return pixelColor;
