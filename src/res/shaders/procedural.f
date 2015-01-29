@@ -19,7 +19,7 @@ vec3 blackOrWhite() {
 		pixelColor = vec3(0, 0.68, 0);
 	}
 	if (int(pass_TextureCoord.t * viewportHeight) % 6 == 0 || int(pass_TextureCoord.t * viewportHeight) % 6 == 0) {
-		pixelColor = vec3(0.1, 0.7, 0.1)
+		pixelColor = vec3(0.1, 0.7, 0.1);
 	}
 	return pixelColor;
 }
