@@ -19,10 +19,10 @@ out vec4 out_Color;
 
 vec3 scanlines() {
 	vec3 pixelColor = greenLight;
-	if (int(pass_TextureCoord.t * viewportHeight) % 5 == 2 || int(pass_TextureCoord.t * viewportHeight) % 5 == 1) {
+	if (int(pass_TextureCoord.t * viewportHeight) % 6 == 0 || int(pass_TextureCoord.t * viewportHeight) % 6 == 3) {
 		pixelColor = greenIntermediate;
 	}
-	if (int(pass_TextureCoord.t * viewportHeight) % 5 == 3 || int(pass_TextureCoord.t * viewportHeight) % 5 == 4) {
+	if (int(pass_TextureCoord.t * viewportHeight) % 6 == 4 || int(pass_TextureCoord.t * viewportHeight) % 6 == 5) {
 		pixelColor = greenDark;
 	}
 	return pixelColor;
