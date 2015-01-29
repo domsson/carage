@@ -45,3 +45,4 @@ void main(void) {
     vec3 L = lightVector(pass_LightPosition, pass_Position);
 	out_Color = texture(tex, pass_TextureCoord) * intensity(L, pass_Normal, lightIntensity);
 }
+

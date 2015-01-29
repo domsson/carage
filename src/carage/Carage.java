@@ -7,9 +7,15 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.GL_RENDERER;
 import static org.lwjgl.opengl.GL11.GL_VERSION;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.glCullFace;
+import static org.lwjgl.opengl.GL11.glDepthMask;
+import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glFrontFace;
 import static org.lwjgl.opengl.GL11.glGetString;
@@ -77,6 +83,7 @@ public class Carage extends AbstractSimpleBase {
 	private Renderer renderer;	// This guy is gonna take care of all the rendering
 	private Camera camera;		// We'll hand this to the Renderer, he needs it
 	private LightSource light;	// Only one single light is currently supported
+	private Asset cameraOverlay;
 	
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
@@ -161,7 +168,7 @@ public class Carage extends AbstractSimpleBase {
 		assets = new ArrayList<>();
 		initCar();
 		initWorkshop();
-		// initCameraOverlay();
+		initCameraOverlay();
 	}
 	
 	private void initCar() {
@@ -213,11 +220,11 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void initCameraOverlay() {
-		Asset cameraOverlay = new Asset(new PlaneGeometry(), new Texture("cg.png"));
+		cameraOverlay = new Asset(new PlaneGeometry(), new Texture("cg.png"));
 		cameraOverlay.setMaterial(new Material("", proceduralShader));
 		cameraOverlay.setPosition(0.0f, 0.0f, 0.11f);
 		cameraOverlay.setScale(2f, 2f, 1f);
-		assets.add(cameraOverlay);
+		// assets.add(cameraOverlay);
 	}
 	
 	@Override
@@ -241,12 +248,17 @@ public class Carage extends AbstractSimpleBase {
 		// This shader doesn't need light, so...
 //		glUseProgram(proceduralShader.getId());
 //		light.sendToShader(proceduralShader);
-		
+				
 		// Finally, render our assets!
 		renderer.renderAssetGroup(car);
 		for (Asset asset : assets) {
 			renderer.renderAsset(asset);
 		}
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		renderer.renderAsset(cameraOverlay);
+		glDisable(GL_BLEND);
 	}
 	
 	private void modifyAssets() {
