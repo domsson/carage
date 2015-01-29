@@ -19,16 +19,19 @@ out vec4 out_Color;
 
 vec3 scanlines() {
 	int time = int(scanlineTimer) % 6;
+	int lineNumber = int(pass_TextureCoord.t * viewportHeight) % 6;
+
 	vec3 pixelColor = greenLight;
-	if (int(pass_TextureCoord.t * viewportHeight) % 6 == ((0 + time) % 6) || int(pass_TextureCoord.t * viewportHeight) % 6 == ((3 + time) % 6)) {
+	if (lineNumber == ((0 + time) % 6) || lineNumber == ((3 + time) % 6)) {
 		pixelColor = greenIntermediate;
 	}
-	if (int(pass_TextureCoord.t * viewportHeight) % 6 == ((4 + time) % 6) || int(pass_TextureCoord.t * viewportHeight) % 6 == ((5 + time) % 6)) {
+	if (lineNumber == ((4 + time) % 6) || lineNumber == ((5 + time) % 6)) {
 		pixelColor = greenDark;
 	}
+
 	return pixelColor;
 }
 
 void main(void) {
-	out_Color = vec4(scanlines(), 0.5);
+	out_Color = vec4(scanlines(), 0.35);
 }
