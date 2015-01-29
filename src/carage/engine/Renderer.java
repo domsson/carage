@@ -64,42 +64,35 @@ public class Renderer {
 		this.projectionMatrix = projectionMatrix;
 	}
 	
+	private void prepareAssetRendering(Renderable asset) {
+		asset.applyTransformationsToMatrix(modelMatrix);	// Fill ModelMatrix with Asset transforms
+		ensureAssetHasMaterial(asset);						// If Asset has no Material: assign default
+		ShaderProgram assetShader = asset.getShader();		// Get the Shader from the Asset's Material
+		assetShader.bind();									// Set the Shader as active in the state machine
+		sendMatricesToShader(assetShader);					// Send the Matrices as Uniforms to the Shader
+		asset.getMaterial().sendToShader();					// Send the Material's properties to the Shader
+	}
+	
+	private void performAssetRendering(Renderable asset) {
+		glActiveTexture(GL_TEXTURE0);						// This is the default and we're okay with it
+		glBindTexture(GL_TEXTURE_2D, asset.getTextureId());	// Bind the Asset's Texture to the state machine
+		renderVAO(asset.getVAO(), asset.getIBO());			// Render the Asset's Geometry via VAO & IBO
+		glBindTexture(GL_TEXTURE_2D, 0);					// Unbind the Texture to have a clean state
+	}
+	
 	public void renderAsset(Renderable asset) {
 		modelMatrix.setIdentity();
-		asset.applyTransformationsToMatrix(modelMatrix);
-
-		prepareRendering(asset);
-		
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, asset.getTextureId());
-		renderVAO(asset.getVAO(), asset.getIBO());
-		glBindTexture(GL_TEXTURE_2D, 0);
-		
-		glUseProgram(0);
+		prepareAssetRendering(asset);
+		performAssetRendering(asset);		
+		// glUseProgram(0);
 	}
 	
 	public void renderChildAsset(Renderable childAsset, Renderable parentAsset) {
-		Matrix4f modelMatrixBackup = (new Matrix4f()).load(modelMatrix); // glPushMatrix()
-		childAsset.applyTransformationsToMatrix(modelMatrix);
-		
-		prepareRendering(childAsset);
-		
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, childAsset.getTextureId());
-		renderVAO(childAsset.getVAO(), childAsset.getIBO());
-		glBindTexture(GL_TEXTURE_2D, 0);
-		
-		glUseProgram(0);
-		
-		modelMatrix.load(modelMatrixBackup); // glPopMatrix();
-	}
-	
-	private void prepareRendering(Renderable asset) {
-		ensureAssetHasMaterial(asset);
-		ShaderProgram assetShader = asset.getMaterial().getShader();
-		glUseProgram(assetShader.getId());
-		sendMatricesToShader(assetShader);
-		asset.getMaterial().sendToShader();
+		Matrix4f modelMatrixBackup = (new Matrix4f()).load(modelMatrix); 	// glPushMatrix
+		prepareAssetRendering(childAsset);
+		performAssetRendering(childAsset);
+		// glUseProgram(0);
+		modelMatrix.load(modelMatrixBackup);								// glPopMatrix
 	}
 	
 	public void renderAssetGroup(AssetGroup assetGroup) {
@@ -147,7 +140,7 @@ public class Renderer {
 	}
 	
 	private void initProjectionMatrix() {
-		int viewportWidth = (width > 0) ? width : DEFAULT_WIDTH;
+		int viewportWidth  = (width > 0)  ? width  : DEFAULT_WIDTH;
 		int viewportHeight = (height > 0) ? height : DEFAULT_HEIGHT;
 		projectionMatrix = new ProjectionMatrix(viewportWidth, viewportHeight, DEFAULT_NEAR_PLANE, DEFAULT_FAR_PLANE, DEFAULT_FIELD_OF_VIEW);
 	}
