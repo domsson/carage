@@ -9,7 +9,7 @@ in vec3 pass_LightPosition;
 uniform sampler2D tex;
 uniform int viewportWidth;
 uniform int viewportHeight;
-uniform int shaderTimer;
+uniform float shaderTimer;
 
 const vec3 greenLight = vec3(0.27, 0.8, 0.27);
 const vec3 greenIntermediate = vec3(0.1, 0.7, 0.1);
@@ -18,7 +18,7 @@ const vec3 greenDark = vec3(0, 0.68, 0);
 out vec4 out_Color;
 
 vec3 scanlines() {
-	int time = shaderTimer % 6;
+	int time = int(shaderTimer) % 6;
 	vec3 pixelColor = greenLight;
 	if (int(pass_TextureCoord.t * viewportHeight) % 6 == (0 + time % 6) || int(pass_TextureCoord.t * viewportHeight) % 6 == (3 + time % 6)) {
 		pixelColor = greenIntermediate;
