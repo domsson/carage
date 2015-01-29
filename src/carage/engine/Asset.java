@@ -1,5 +1,6 @@
 package carage.engine;
 
+import lenz.opengl.utils.ShaderProgram;
 import lenz.opengl.utils.Texture;
 
 public class Asset extends Entity implements Renderable {
@@ -85,6 +86,10 @@ public class Asset extends Entity implements Renderable {
 	
 	public Material getMaterial() {
 		return material;
+	}
+	
+	public ShaderProgram getShader() {
+		return (hasMaterial()) ? getMaterial().getShader() : null;
 	}
 	
 	public VertexArrayObject getVAO() {

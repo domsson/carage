@@ -26,7 +26,6 @@ public class Material {
 	protected int specularReflectivityLocation = -1;
 	protected int specularHardnessLocation     = -1;
 	
-	// TODO Should the material hold the shader it wants to be rendered with? This is how it works in Blender!
 	// TODO diffuseColor, specularColor? Not for the time being, though...	
 	
 	public Material() {
@@ -105,37 +104,20 @@ public class Material {
 		return specularHardness;
 	}
 	
-	public void fetchLocations(ShaderProgram shader) {
-		if (this.shader.getId() != shader.getId()) {
-			setShader(shader);
-		}
-		ambientReflectivityLocation  = glGetUniformLocation(shader.getId(), "materialAmbientReflectivity");
-		diffuseReflectivityLocation  = glGetUniformLocation(shader.getId(), "materialDiffuseReflectivity");
-		specularReflectivityLocation = glGetUniformLocation(shader.getId(), "materialSpecularReflectivity");
-		specularHardnessLocation     = glGetUniformLocation(shader.getId(), "materialSpecularHardness");
-	}
-
 	public void sendToShader() {
-		if (!locationsKnown()) {
-			fetchLocations(shader);
-		}
+		sendToShader(shader);
+	}
+	
+	public void sendToShader(ShaderProgram shader) {
 		update();
-		glUniform1f(ambientReflectivityLocation, ambientReflectivity);
-		glUniform1f(diffuseReflectivityLocation, diffuseReflectivity);
-		glUniform1f(specularReflectivityLocation, specularReflectivity);
-		glUniform1i(specularHardnessLocation, specularHardness);
+		glUniform1f(shader.getUniformLocation("materialAmbientReflectivity"), ambientReflectivity);
+		glUniform1f(shader.getUniformLocation("materialDiffuseReflectivity"), diffuseReflectivity);
+		glUniform1f(shader.getUniformLocation("materialSpecularReflectivity"), specularReflectivity);
+		glUniform1i(shader.getUniformLocation("materialSpecularHardness"), specularHardness);
 	}
 	
 	private void update() {
 		normalizeReflectivities();
-	}
-	
-	private boolean locationsKnown() {
-		if (ambientReflectivityLocation == -1) { return false; }
-		if (diffuseReflectivityLocation == -1) { return false; }
-		if (specularReflectivityLocation == -1) { return false; }
-		if (specularHardnessLocation == -1) { return false; }
-		return true;
 	}
 	
 	private void initShader(String shaderName) {

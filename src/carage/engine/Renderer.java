@@ -31,8 +31,6 @@ public class Renderer {
 	private int width;
 	private int height;
 	
-	private ShaderProgram shader; // TODO should the asset hold the shader it wants to use? probably? 
-	
 	private Camera camera;
 
 	private ProjectionMatrix projectionMatrix;
@@ -40,6 +38,7 @@ public class Renderer {
 	private ModelMatrix modelMatrix;
 	private NormalMatrix normalMatrix;
 	
+	private ShaderManager shaderManager = ShaderManager.getInstance();
 	private FloatBuffer matrixBuffer;
 	
 	public Renderer() {
@@ -50,74 +49,57 @@ public class Renderer {
 	public Renderer(int width, int height) {
 		this.width = width;
 		this.height = height;
-		this.shader = new ShaderProgram(DEFAULT_SHADER);
 		initMatrices();
 	}
 	
-	public Renderer(ShaderProgram sp, int width, int height) {
-		this.width = width;
-		this.height = height;
-		this.shader = sp;
-		initMatrices();
-	}
 	
-	public Renderer(ShaderProgram sp, int width, int height, Camera camera) {
+	public Renderer(int width, int height, Camera camera) {
 		this.width = width;
 		this.height = height;
-		this.shader = sp;
 		this.camera = camera;
 		initMatrices();
 	}
 	
 	public void setProjectionMatrix(ProjectionMatrix projectionMatrix) {
 		this.projectionMatrix = projectionMatrix;
-		if (!projectionMatrix.hasLocation()) {
-			projectionMatrix.fetchLocation(shader);
-		}
 	}
-	
-	/*
-	public ShaderProgram getShaderProgram() {
-		return shader;
-	}
-	
-	public int getShaderProgramId() {
-		return shader.getId();
-	}
-	*/
 	
 	public void renderAsset(Renderable asset) {
 		modelMatrix.setIdentity();
 		asset.applyTransformationsToMatrix(modelMatrix);
 
-		ensureAssetHasMaterial(asset);
-		glUseProgram(asset.getMaterial().getShader().getId()); // new
-		sendMatricesToShader();
-		asset.getMaterial().sendToShader(); // new
+		prepareRendering(asset);
 		
-		glActiveTexture(GL_TEXTURE0); // Why is this (apparently not) necessary? - Because GL_TEXTURE0 is the default!
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, asset.getTextureId());
 		renderVAO(asset.getVAO(), asset.getIBO());
 		glBindTexture(GL_TEXTURE_2D, 0);
+		
+		glUseProgram(0);
 	}
 	
 	public void renderChildAsset(Renderable childAsset, Renderable parentAsset) {
 		Matrix4f modelMatrixBackup = (new Matrix4f()).load(modelMatrix); // glPushMatrix()
+		childAsset.applyTransformationsToMatrix(modelMatrix);
 		
-		childAsset.applyTransformationsToMatrix(modelMatrix);		
-		ensureAssetHasMaterial(childAsset);
-		ShaderProgram assetShader = childAsset.getMaterial().getShader();
-		glUseProgram(assetShader.getId());
-		ensureMatricesHaveLocations(assetShader);
-		sendMatricesToShader();
-		childAsset.getMaterial().sendToShader();
+		prepareRendering(childAsset);
 		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, childAsset.getTextureId());
 		renderVAO(childAsset.getVAO(), childAsset.getIBO());
 		glBindTexture(GL_TEXTURE_2D, 0);
 		
+		glUseProgram(0);
+		
 		modelMatrix.load(modelMatrixBackup); // glPopMatrix();
+	}
+	
+	private void prepareRendering(Renderable asset) {
+		ensureAssetHasMaterial(asset);
+		ShaderProgram assetShader = asset.getMaterial().getShader();
+		glUseProgram(assetShader.getId());
+		sendMatricesToShader(assetShader);
+		asset.getMaterial().sendToShader();
 	}
 	
 	public void renderAssetGroup(AssetGroup assetGroup) {
@@ -162,48 +144,37 @@ public class Renderer {
 	
 	private void initNormalMatrix() {
 		normalMatrix = new NormalMatrix(modelMatrix, viewMatrix);
-		normalMatrix.fetchLocation(shader);
 	}
 	
 	private void initProjectionMatrix() {
 		int viewportWidth = (width > 0) ? width : DEFAULT_WIDTH;
 		int viewportHeight = (height > 0) ? height : DEFAULT_HEIGHT;
 		projectionMatrix = new ProjectionMatrix(viewportWidth, viewportHeight, DEFAULT_NEAR_PLANE, DEFAULT_FAR_PLANE, DEFAULT_FIELD_OF_VIEW);
-		projectionMatrix.fetchLocation(shader);
 	}
 	
 	private void initViewMatrix() {
 		viewMatrix = (camera == null) ? new ViewMatrix() : new ViewMatrix(camera);
-		viewMatrix.fetchLocation(shader);
 	}
 	
 	private void initModelMatrix() {
 		modelMatrix = new ModelMatrix();
-		modelMatrix.fetchLocation(shader);
 	}
 	
 	private void initMatrixBuffer() {
 		// http://stackoverflow.com/questions/10697161/why-floatbuffer-instead-of-float
 		matrixBuffer = BufferUtils.createFloatBuffer(16);
 	}
-	
-	private void ensureMatricesHaveLocations(ShaderProgram shader) {
-		projectionMatrix.updateLocation(shader);
-		viewMatrix.updateLocation(shader);
-		modelMatrix.updateLocation(shader);
-		normalMatrix.updateLocation(shader);
-	}
-	
-	private void sendMatricesToShader() {
-		projectionMatrix.sendToShader(matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
-		viewMatrix.sendToShader(matrixBuffer); // same
-		modelMatrix.sendToShader(matrixBuffer); // same
-		normalMatrix.sendToShader(matrixBuffer); // same
+		
+	private void sendMatricesToShader(ShaderProgram shader) {
+		projectionMatrix.sendToShader(shader, matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
+		viewMatrix.sendToShader(shader, matrixBuffer); // same
+		modelMatrix.sendToShader(shader, matrixBuffer); // same
+		normalMatrix.sendToShader(shader, matrixBuffer); // same
 	}
 		
 	private void ensureAssetHasMaterial(Renderable asset) {
 		if (asset.hasMaterial()) { return; }
-		asset.setMaterial(new Material("", shader));
+		asset.setMaterial(new Material("", shaderManager.get(DEFAULT_SHADER)));
 	}
 
 }

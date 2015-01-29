@@ -151,11 +151,10 @@ public class Carage extends AbstractSimpleBase {
 		light = new LightSource();
 		light.setPosition(0f, 1.8f, 2.0f);
 		light.setIntensity(1.0f);
-		light.fetchLocations(phongShader);		
 	}
 	
 	private void initRenderer() {
-		renderer = new Renderer(phongShader, WIDTH, HEIGHT, camera);
+		renderer = new Renderer(WIDTH, HEIGHT, camera);
 	}
 
 	private void initAssets() {
@@ -233,7 +232,11 @@ public class Carage extends AbstractSimpleBase {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 		// Send light information to shader (in case it has moved, its intensity changed, ...)
-		light.sendToShader(); // TODO I think light handling could be improved upon. Maybe?
+		// TODO Light handling has to be improved... we're changing states (shader program) just to send the uniforms over...
+		glUseProgram(phongShader.getId());
+		light.sendToShader(phongShader);
+		glUseProgram(proceduralShader.getId());
+		light.sendToShader(proceduralShader);
 		
 		// Finally, render our assets!
 		renderer.renderAssetGroup(car);

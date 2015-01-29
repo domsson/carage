@@ -15,15 +15,20 @@ import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
 import static org.lwjgl.opengl.GL20.glGetProgrami;
 import static org.lwjgl.opengl.GL20.glGetShaderInfoLog;
 import static org.lwjgl.opengl.GL20.glGetShaderi;
+import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glLinkProgram;
 import static org.lwjgl.opengl.GL20.glShaderSource;
+import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class ShaderProgram {
+	
 	private int id;
+	private HashMap<String, Integer> uniformLocations = new HashMap<>();
 
 	public ShaderProgram(String resourceNameWithoutExtension) {
 		this(resourceNameWithoutExtension + ".v", resourceNameWithoutExtension + ".g", resourceNameWithoutExtension + ".f");
@@ -47,6 +52,14 @@ public class ShaderProgram {
 
 	public int getId() {
 		return id;
+	}
+	
+	public void bind() {
+		glUseProgram(id);
+	}
+	
+	public void unbind() {
+		glUseProgram(0);
 	}
 
 	private InputStream getInputStreamFromResourceName(String resourceName) {
@@ -79,6 +92,7 @@ public class ShaderProgram {
 		}
 	}
 
+	// http://stackoverflow.com/questions/3158730/java-3-dots-in-parameters
 	public void bindAttributeLocations(String... variableNames) {
 		int i = 0;
 		for (String var : variableNames) {
@@ -89,5 +103,18 @@ public class ShaderProgram {
 		if (glGetProgrami(id, GL_LINK_STATUS) == GL_FALSE) {
 			throw new RuntimeException(glGetProgramInfoLog(id, glGetProgrami(id, GL_INFO_LOG_LENGTH)));
 		}
+	}
+	
+	public int getUniformLocation(String name) {
+		if (!uniformLocations.containsKey(name)) {
+			return fetchUniformLocation(name);
+		}
+		return uniformLocations.get(name);
+	}
+	
+	private int fetchUniformLocation(String name) {
+		int location = glGetUniformLocation(this.id, name);
+		if (location != -1) { uniformLocations.put(name, location); }
+		return location;
 	}
 }

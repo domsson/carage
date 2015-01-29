@@ -13,8 +13,6 @@ public class LightSource extends Entity {
 	public static final float MAXIMUM_INTENSITY = 10f;
 	
 	private float intensity; // or should we call it 'brightness'?
-	private int intensityLocation = 0;
-	private int positionLocation = 0;
 	// TODO what else? fall-off? color? something?
 	
 	private boolean isOn = true;
@@ -54,14 +52,9 @@ public class LightSource extends Entity {
 		isOn = !isOn;
 	}
 	
-	public void fetchLocations(ShaderProgram shader) {
-		positionLocation = glGetUniformLocation(shader.getId(), "lightPosition");
-		intensityLocation = glGetUniformLocation(shader.getId(), "lightIntensity");
-	}
-
-	public void sendToShader() {
-		glUniform3f(positionLocation, position.x, position.y, position.z);
-		glUniform1f(intensityLocation, ((isOn) ? intensity : 0f));
+	public void sendToShader(ShaderProgram shader) {
+		glUniform3f(shader.getUniformLocation("lightPosition"), position.x, position.y, position.z);
+		glUniform1f(shader.getUniformLocation("lightIntensity"), ((isOn) ? intensity : 0f));
 	}
 	
 }

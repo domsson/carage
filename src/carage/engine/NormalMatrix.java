@@ -1,6 +1,8 @@
 package carage.engine;
 
 import java.nio.FloatBuffer;
+
+import lenz.opengl.utils.ShaderProgram;
 import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 
 import org.lwjgl.util.vector.Matrix4f;
@@ -22,16 +24,19 @@ public class NormalMatrix extends RenderMatrix {
 		super(DEFAULT_NAME);
 		setModelMatrix(modelMatrix);
 		setViewMatrix(viewMatrix);
+		setTranspose(true);
 	}
 	
 	public NormalMatrix(String name) {
 		super(name);
+		setTranspose(true);
 	}
 	
 	public NormalMatrix(String name, ModelMatrix modelMatrix, ViewMatrix viewMatrix) {
 		super(name);
 		setModelMatrix(modelMatrix);
 		setViewMatrix(viewMatrix);
+		setTranspose(true);
 	}
 	
 	/**
@@ -67,8 +72,6 @@ public class NormalMatrix extends RenderMatrix {
 	 * If no references to model and/or view matrices have been set, identity matrices will be used instead.
 	 */
 	public void update() {
-//		if (viewMatrix.m00 == 1 && viewMatrix.m11 == 1 && viewMatrix.m22 == 1) { System.out.println("viewmatrix has no rotation/scale!"); }
-//		if (modelMatrix.m00 == 1 && modelMatrix.m11 == 1 && modelMatrix.m22 == 1) { System.out.println("modelmatrix has no rotation/scale!"); }
 		Matrix4f.mul(((viewMatrix == null) ? new Matrix4f() : viewMatrix), ((modelMatrix == null) ? new Matrix4f() : modelMatrix), this);
 		invert();
 	}
@@ -83,16 +86,5 @@ public class NormalMatrix extends RenderMatrix {
 		setModelMatrix(modelMatrix);
 		setViewMatrix(viewMatrix);
 		update();
-	}
-	
-	/**
-	 * Updates and inverts this matrix, then sends a buffered and transposed version of it to the active OpenGL shader program.
-	 */
-	public void sendToShader(FloatBuffer buffer) {
-		update();
-		store(buffer);
-        buffer.flip();
-        glUniformMatrix4(location, true, buffer);
-		buffer.clear();
 	}
 }
