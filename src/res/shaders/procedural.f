@@ -9,13 +9,17 @@ in vec3 pass_LightPosition;
 uniform sampler2D tex;
 uniform int viewportWidth;
 uniform int viewportHeight;
+uniform int shaderTimer;
 
 out vec4 out_Color;
 
 vec3 blackOrWhite() {
-	vec3 pixelColor = vec3(0, 0, 1);
-	if (int(pass_TextureCoord.t * viewportHeight / 10) % 2 == 1) {
-		pixelColor = vec3(0, 1, 0);
+	vec3 pixelColor = vec3(0.27, 0.8, 0.27);
+	if (int(pass_TextureCoord.t * viewportHeight / 6) % 2 == 1) {
+		pixelColor = vec3(0, 0.68, 0);
+	}
+	if (int(pass_TextureCoord.t * viewportHeight) % 6 == 0 || int(pass_TextureCoord.t * viewportHeight) % 6 == 0) {
+		pixelColor = vec3(0.1, 0.7, 0.1)
 	}
 	return pixelColor;
 }
