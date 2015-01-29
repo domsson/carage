@@ -26,6 +26,7 @@ import static org.lwjgl.opengl.GL20.glUniform1f;
 import static org.lwjgl.opengl.GL20.glUniform2i;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import lenz.opengl.AbstractSimpleBase;
 import lenz.opengl.utils.ShaderProgram;
@@ -55,16 +56,20 @@ public class Carage extends AbstractSimpleBase {
 	public static final int FPS = 60;
 	public static final String DEFAULT_SHADER = "phong";	
 	
-	public static final float CAM_PAN_MIN =  5.0f;
-	public static final float CAM_PAN_MAX = 55.0f;
+	public static final float CAM_PAN_MIN =  0.0f;
+	public static final float CAM_PAN_MAX = 65.0f;
 	public static final float CAM_PAN_STEP = 0.25f;
+	
+	public static final float CAM_PITCH_MIN = 5.0f;
+	public static final float CAM_PITCH_MAX = 5.0f;
+	public static final float CAM_PITCH_STEP = 0.25f;
 	
 	private long lastRender = 0;
 	private float delta = 0;
 	
 	// TODO Finally implement proper input handling, this is ugly
-	private boolean buttonUp = false;
-	private boolean buttonLeft = false;
+	private boolean buttonForward   = false;
+	private boolean buttonBackwards = false;
 	private boolean buttonRight = false;
 	private boolean buttonDown = false;
 	private boolean buttonZoomIn = false;
@@ -91,6 +96,7 @@ public class Carage extends AbstractSimpleBase {
 	private LightSource light;	// Only one single light is currently supported
 	private Asset cameraOverlay;
 	
+	private int lightFlickers = 0;
 	private boolean camPanningRight = true;
 	private int camPausedFor = 0;
 	private float scanlineTimer = 0;
@@ -166,8 +172,8 @@ public class Carage extends AbstractSimpleBase {
 	
 	private void initCamera() {
 		camera = new Camera();
-		camera.setPosition(-1.8f, 1.8f, 4f);
-		camera.setRotation(new Vector3f(-0.25f, -0.4f, 0f));
+		camera.setPosition(-2.8f, 2.2f, 4f);
+		camera.setRotation(new Vector3f(-0.3f, -0.4f, 0f));
 	}
 	
 	private void initLightSource() {
@@ -216,15 +222,15 @@ public class Carage extends AbstractSimpleBase {
 		workshopCeiling.setMaterial(new Material("", phongShader));
 		assets.add(workshopCeiling);
 		
-		Asset hangingBulb = new Asset("hanging-bulb");
-		hangingBulb.setMaterial(new Material("", null, 0.8f, 0.05f, 0.15f, 50));
-		hangingBulb.setPosition(0f, 2.0f, 2.0f);
-		assets.add(hangingBulb);
-		
 		Asset cardboardBox = new Asset("cardboardbox");
 		cardboardBox.setPosition(-3.2f, 0, -3.8f);
 		cardboardBox.setRotation(new Vector3f(0f, 35f, 0f));
 		assets.add(cardboardBox);
+		
+		Asset hangingBulb = new Asset("hanging-bulb");
+		hangingBulb.setMaterial(new Material("", null, 0.8f, 0.05f, 0.15f, 50));
+		hangingBulb.setPosition(0f, 2.0f, 2.0f);
+		assets.add(hangingBulb);		
 	}
 	
 	private void initCameraOverlay() {
@@ -265,7 +271,7 @@ public class Carage extends AbstractSimpleBase {
 		processInput();
 		
 		// Move/Rotate/Whatever some Assets according to User Input
-		modifyAssets();
+		adjustScene();		
 		
 		// Clear dat screen!
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -273,11 +279,7 @@ public class Carage extends AbstractSimpleBase {
 		// Send light information to shader (in case it has moved, its intensity changed, ...)
 		// TODO Light handling has to be improved... we're changing states (shader program) just to send the uniforms over...
 		phongShader.bind();
-		light.sendToShader(phongShader);
-		
-		// This shader doesn't need light, so...
-//		glUseProgram(proceduralShader.getId());
-//		light.sendToShader(proceduralShader);		
+		light.sendToShader(phongShader);	
 				
 		// Finally, render our assets!
 		renderer.renderAssetGroup(car);
@@ -285,30 +287,43 @@ public class Carage extends AbstractSimpleBase {
 			renderer.renderAsset(asset);
 		}
 		
-		// Procedural Shader needs the delta...
-		proceduralShader.bind();
-		glUniform1f(proceduralShader.getUniformLocation("shaderTimer"), scanlineTimer);
+		// This guy is using a different shader, so let's draw him last
 		renderCameraOverlay();
 	}
 	
 	private void renderCameraOverlay() {
+		// Procedural Shader needs input in order to move the scanlines...
+		proceduralShader.bind();
+		glUniform1f(proceduralShader.getUniformLocation("shaderTimer"), scanlineTimer);
+		// We have to enable alpha blending, otherwise the overlay would be opaque
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		renderer.renderAsset(cameraOverlay);
 		glDisable(GL_BLEND);
 	}
 	
-	private void modifyAssets() {
+	private void flickerLight() {
+		// TODO make this less ugly and link it with the FPS
+		Random rand = new Random();
+		if (lightFlickers > 0) {
+			if (rand.nextFloat() > 0.5) {
+				light.toggle();
+				--lightFlickers;
+			}
+		}
+		if (lightFlickers == 0) {
+			light.turnOn();
+		}
+		if (rand.nextFloat() > 0.99) {
+			lightFlickers += rand.nextInt(7);
+		}
+	}
+	
+	private void adjustScene() {
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
-		
-		float transX = 0f;
-		float transY = 0f;
-		
-		float transZ = buttonZoomIn  ? -0.02f * delta : 0;
-			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
-			  
+				
 		float rotX = buttonRotUp   ?  0.5f * delta : 0;
 			  rotX = buttonRotDown ? -0.5f * delta : rotX;
 			  
@@ -317,15 +332,8 @@ public class Carage extends AbstractSimpleBase {
 			  
 	    rotX = (float) Math.toRadians(rotX);
 	    rotY = (float) Math.toRadians(rotY);
-			
-	    camera.alterPosition(new Vector3f(transX, transY, transZ));
-		camera.alterRotation(new Vector3f(rotX, rotY, 0));
 		
-		car.tick(delta);
-		if (buttonLeft) { car.steerLeft(delta);	}
-		if (buttonRight) { car.steerRight(delta); }
-		if (buttonUp) { car.accelerate(delta); }
-		if (buttonDown) { car.decelerate(delta); }
+	    adjustCarWheels();
 		
 		if (lightIncrease) { light.setIntensity(light.getIntensity() + 0.1f * delta); }
 		if (lightDecrease) { light.setIntensity(light.getIntensity() - 0.1f * delta); }
@@ -334,8 +342,28 @@ public class Carage extends AbstractSimpleBase {
 		Material carBodyMaterial = car.getParentAsset().getMaterial();
 		if (testValueUp)   { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()+1); }
 		if (testValueDown) { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()-1); }
-			
+		
+		flickerLight();
+		adjustBulbAmbient();
 		panCam();
+	}
+	
+	private void adjustCarWheels() {
+		if (buttonBackwards)  { car.steerLeft(delta); }
+		if (buttonRight) { car.steerRight(delta); }
+		if (buttonForward)    { car.accelerate(delta); }
+		if (buttonDown)  { car.decelerate(delta); }
+		car.tick(delta);
+	}
+	
+	private void adjustBulbAmbient() {
+		Asset hangingBulb = assets.get(assets.size()-1);
+		if (light.isOn()) {		
+			hangingBulb.getMaterial().setAmbientReflectivity(0.8f);
+		}
+		else {
+			hangingBulb.getMaterial().setAmbientReflectivity(0.0f);
+		}
 	}
 	
 	private void panCam() {
@@ -394,13 +422,13 @@ public class Carage extends AbstractSimpleBase {
 		    if (Keyboard.getEventKeyState()) {
 		        switch (Keyboard.getEventKey()) {
 			        case Keyboard.KEY_A:
-			        	buttonLeft = true;	
+			        	buttonBackwards = true;	
 			        	break;
 			        case Keyboard.KEY_D:
 			        	buttonRight = true;	
 			        	break;
 			        case Keyboard.KEY_W:
-			        	buttonUp = true;	
+			        	buttonForward = true;	
 			        	break;
 			        case Keyboard.KEY_S:
 			        	buttonDown = true;	
@@ -443,13 +471,13 @@ public class Carage extends AbstractSimpleBase {
 		    else {
 		    	switch (Keyboard.getEventKey()) {
 			        case Keyboard.KEY_A:
-			        	buttonLeft = false;	
+			        	buttonBackwards = false;	
 			        	break;
 			        case Keyboard.KEY_D:
 			        	buttonRight = false;	
 			        	break;
 			        case Keyboard.KEY_W:
-			        	buttonUp = false;	
+			        	buttonForward = false;	
 			        	break;
 			        case Keyboard.KEY_S:
 			        	buttonDown = false;	
