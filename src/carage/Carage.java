@@ -235,8 +235,9 @@ public class Carage extends AbstractSimpleBase {
 		// TODO Light handling has to be improved... we're changing states (shader program) just to send the uniforms over...
 		glUseProgram(phongShader.getId());
 		light.sendToShader(phongShader);
-		glUseProgram(proceduralShader.getId());
-		light.sendToShader(proceduralShader);
+		// This shader doesn't need light, so...
+//		glUseProgram(proceduralShader.getId());
+//		light.sendToShader(proceduralShader);
 		
 		// Finally, render our assets!
 		renderer.renderAssetGroup(car);

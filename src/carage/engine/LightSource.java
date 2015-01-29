@@ -1,6 +1,5 @@
 package carage.engine;
 
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glUniform1f;
 import static org.lwjgl.opengl.GL20.glUniform3f;
 import lenz.opengl.utils.ShaderProgram;
@@ -53,8 +52,13 @@ public class LightSource extends Entity {
 	}
 	
 	public void sendToShader(ShaderProgram shader) {
-		glUniform3f(shader.getUniformLocation("lightPosition"), position.x, position.y, position.z);
-		glUniform1f(shader.getUniformLocation("lightIntensity"), ((isOn) ? intensity : 0f));
+		int location = -1;
+		if ((location = shader.getUniformLocation("lightPosition")) != -1) {
+			glUniform3f(location, position.x, position.y, position.z);
+		}
+		if ((location = shader.getUniformLocation("lightIntensity")) != -1) {
+			glUniform1f(location, ((isOn) ? intensity : 0f));
+		}
 	}
 	
 }

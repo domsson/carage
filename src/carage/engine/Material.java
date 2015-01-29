@@ -1,6 +1,5 @@
 package carage.engine;
 
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glUniform1f;
 import static org.lwjgl.opengl.GL20.glUniform1i;
 import lenz.opengl.utils.ShaderProgram;
@@ -110,10 +109,19 @@ public class Material {
 	
 	public void sendToShader(ShaderProgram shader) {
 		update();
-		glUniform1f(shader.getUniformLocation("materialAmbientReflectivity"), ambientReflectivity);
-		glUniform1f(shader.getUniformLocation("materialDiffuseReflectivity"), diffuseReflectivity);
-		glUniform1f(shader.getUniformLocation("materialSpecularReflectivity"), specularReflectivity);
-		glUniform1i(shader.getUniformLocation("materialSpecularHardness"), specularHardness);
+		int location = -1;
+		if ((location = shader.getUniformLocation("materialAmbientReflectivity")) != -1) {
+			glUniform1f(location, ambientReflectivity);
+		}
+		if ((location = shader.getUniformLocation("materialDiffuseReflectivity")) != -1) {
+			glUniform1f(location, diffuseReflectivity);
+		}
+		if ((location = shader.getUniformLocation("materialSpecularReflectivity")) != -1) {
+			glUniform1f(location, specularReflectivity);
+		}
+		if ((location = shader.getUniformLocation("materialSpecularHardness")) != -1) {
+			glUniform1i(location, specularHardness);
+		}
 	}
 	
 	private void update() {

@@ -114,7 +114,7 @@ public class ShaderProgram {
 	
 	private int fetchUniformLocation(String name) {
 		int location = glGetUniformLocation(this.id, name);
-		if (location != -1) { uniformLocations.put(name, location); }
+		uniformLocations.put(name, location);
 		return location;
 	}
 }

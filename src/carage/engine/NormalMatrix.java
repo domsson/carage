@@ -1,10 +1,5 @@
 package carage.engine;
 
-import java.nio.FloatBuffer;
-
-import lenz.opengl.utils.ShaderProgram;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4;
-
 import org.lwjgl.util.vector.Matrix4f;
 
 // Normal Matrix = Transponierte und invertierte (Reihenfolge egal) ModelView Matrix!
