@@ -7,12 +7,13 @@ in vec3 pass_Normal;
 in vec3 pass_LightPosition;
 
 uniform sampler2D tex;
+uniform vec2 viewportResolution;
 
 out vec4 out_Color;
 
 vec3 blackOrWhite() {
 	vec3 pixelColor = vec3(0, 0, 0);
-	if (pass_TextureCoord.s > 0.5)
+	if ((int)(pass_TextureCoord.s * viewportResolution.x / 5) % 2 == 1)
 		pixelColor = vec3(1, 1, 1);
 	return pixelColor;
 }
