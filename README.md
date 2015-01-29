@@ -37,13 +37,14 @@ Die mit (1/2) gekennzeichneten Teile zählen halb so viel wie die anderen.
 
 To Do (Have to)
 ---------------
-- Camera orbits around car ("zeitgesteuerte Animation")
+- Camera orbits around car OR moves like a surveillance cam ("zeitgesteuerte Animation")
 - Light parameters from Java instead of hardcoded in the shader **DONE**
 - Procedural texture (new fragment/vertex shader); Ideas: TV screen asset or surveillance cam overlay
 - "Material" class for assets (to save/select ShaderProgram and "hardness") **DONE**
 
 Nice to have (later)
 --------------------
+- Camera orientation via mouse
 - More than one light source?
 - Switching parts of the car?
 - More assets (nicer Garage)

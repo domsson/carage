@@ -161,7 +161,7 @@ public class Carage extends AbstractSimpleBase {
 		assets = new ArrayList<>();
 		initCar();
 		initWorkshop();
-		initCameraOverlay();
+		// initCameraOverlay();
 	}
 	
 	private void initCar() {
@@ -203,17 +203,20 @@ public class Carage extends AbstractSimpleBase {
 		cardboardBox.setRotation(new Vector3f(0f, 35f, 0f));
 		assets.add(cardboardBox);
 		
+		/*
 		Asset cardboardBox2 = new Asset("cardboardbox");
 		cardboardBox2.setMaterial(new Material("", proceduralShader));
 		cardboardBox2.setPosition(3.0f, 0, 1.4f);
 		cardboardBox2.setRotation(new Vector3f(0f, 35f, 0f));
 		assets.add(cardboardBox2);
+		*/
 	}
 	
 	private void initCameraOverlay() {
 		Asset cameraOverlay = new Asset(new PlaneGeometry(), new Texture("cg.png"));
-		//cameraOverlay.setMaterial(new Material("", proceduralShader));
-		cameraOverlay.setPositionY(2.0f);
+		cameraOverlay.setMaterial(new Material("", proceduralShader));
+		cameraOverlay.setPosition(0.0f, 0.0f, 0.11f);
+		cameraOverlay.setScale(2f, 2f, 1f);
 		assets.add(cameraOverlay);
 	}
 	
@@ -282,6 +285,11 @@ public class Carage extends AbstractSimpleBase {
 		Material carBodyMaterial = car.getParentAsset().getMaterial();
 		if (testValueUp)   { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()+1); }
 		if (testValueDown) { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()-1); }
+		
+		// TODO surveillance cam rotation (rotation around y between min and max angle)
+		float camRotY = camera.getRotationY();
+		float camRotYMin = (float) Math.toRadians(-50); // right!
+		float camRotYMax = (float) Math.toRadians(10);  // left!
 		
 	}
 			
