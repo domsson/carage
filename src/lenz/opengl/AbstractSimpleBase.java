@@ -19,12 +19,11 @@ public abstract class AbstractSimpleBase {
 			throw new RuntimeException("Unable to intialize display", e);
 		}
 
-		// hier Initialisieren
 		initOpenGL();
 
 		while (!Display.isCloseRequested()) {
-
-			// hier Zeichnen
+			
+			update();
 			render();
 
 			Display.update();
@@ -36,7 +35,7 @@ public abstract class AbstractSimpleBase {
 	}
 
 	protected abstract void initOpenGL();
-
+	protected abstract void update();
 	protected abstract void render();
 
 }

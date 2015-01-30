@@ -11,6 +11,7 @@ uniform int viewportWidth;
 uniform int viewportHeight;
 uniform float scanlineTimer;
 
+const float scanlineAlpha = 0.3;
 const vec3 greenLight = vec3(0.27, 0.8, 0.27);
 const vec3 greenIntermediate = vec3(0.1, 0.7, 0.1);
 const vec3 greenDark = vec3(0, 0.68, 0);
@@ -33,5 +34,7 @@ vec3 scanlines() {
 }
 
 void main(void) {
-	out_Color = vec4(scanlines(), 0.35);
+	vec4 texColor = texture(tex, pass_TextureCoord);
+    vec4 scanlineColor = vec4(scanlines(), scanlineAlpha);
+	out_Color = (texColor.a == 0) ? scanlineColor : 0.8 * texColor + 0.2 * scanlineColor;
 }
