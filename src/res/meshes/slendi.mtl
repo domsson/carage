@@ -1,4 +1,4 @@
-# Blender MTL File: 'vw-polo-super-simple-2.blend'
+# Blender MTL File: 'slendi.blend'
 # Material Count: 1
 
 newmtl None
@@ -8,4 +8,4 @@ Kd 0.8 0.8 0.8
 Ks 0.8 0.8 0.8
 d 1
 illum 2
-map_Kd /mnt/readynas/work/htw/cg/vw-polo/tex/ao.png
+map_Kd /home/julien/Dropbox/htw CG/carage/src/res/textures/slendi.png

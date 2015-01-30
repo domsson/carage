@@ -7,17 +7,26 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.GL_RENDERER;
 import static org.lwjgl.opengl.GL11.GL_VERSION;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.glCullFace;
+import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glFrontFace;
 import static org.lwjgl.opengl.GL11.glGetString;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
 import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20.glUniform2i;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import lenz.opengl.AbstractSimpleBase;
 import lenz.opengl.utils.ShaderProgram;
@@ -47,40 +56,60 @@ public class Carage extends AbstractSimpleBase {
 	public static final int FPS = 60;
 	public static final String DEFAULT_SHADER = "phong";	
 	
+	public static final float CAM_PAN_MIN   = -65.00f; // Smaller angle = Panning right
+	public static final float CAM_PAN_MAX   =   0.00f; // Bigger angle  = Panning left 
+	public static final float CAM_PAN_STEP  =   0.25f;
+	
+	public static final float CAM_PITCH_MIN  = -45.00f; // Smaller angle = Looking down
+	public static final float CAM_PITCH_MAX  =  -5.00f; // Bigger angle  = Looking up
+	public static final float CAM_PITCH_STEP =   0.25f;
+	
+	public static final int CAM_PAN_NONE  =  0;
+	public static final int CAM_PAN_LEFT  =  1;
+	public static final int CAM_PAN_RIGHT = -1;
+	
 	private long lastRender = 0;
 	private float delta = 0;
 	
 	// TODO Finally implement proper input handling, this is ugly
-	private boolean buttonUp = false;
+	private boolean buttonForward  = false;
+	private boolean buttonBackward = false;
 	private boolean buttonLeft = false;
 	private boolean buttonRight = false;
-	private boolean buttonDown = false;
-	private boolean buttonZoomIn = false;
-	private boolean buttonZoomOut = false;
 	private boolean buttonRotUp = false;
 	private boolean buttonRotDown = false;
 	private boolean buttonRotLeft = false;
 	private boolean buttonRotRight = false;
-	
 	private boolean lightIncrease = false;
 	private boolean lightDecrease = false;
 	private boolean toggleLight = false;
-	
-	private boolean testValueUp = false;
-	private boolean testValueDown = false;
+	private boolean toggleCameraPan = false;
+	private boolean toggleCameraOverlay = false;
+	private boolean toggleSlendiMode = false;
 
-	// TODO get handling of multiple shaders to work...
 	private ShaderManager shaderManager;
 	private ShaderProgram phongShader;
 	private ShaderProgram proceduralShader;
 	
-	private Renderer renderer;	// This guy is gonna take care of all the rendering
-	private Camera camera;		// We'll hand this to the Renderer, he needs it
-	private LightSource light;	// Only one single light is currently supported
+	private Renderer renderer;		// This guy is gonna take care of all the rendering
+	private Camera camera;			// We'll hand this to the Renderer, he needs it
+	private LightSource light;		// Only one single light is currently supported
 	
+	private Asset cameraOverlay;	// This is where we render our procedural onto
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
-
+	private Asset hangingBulb = null;
+	private Asset slendi = null;
+	
+	private int lightFlickers = 0;
+	private int cameraIsPanning = CAM_PAN_NONE;
+	private int cameraWasPanning = CAM_PAN_NONE;
+	private int cameraPausedFor = 0;
+	private float scanlineTimer = 0;
+	private boolean renderSlendi = false;
+	private boolean renderCameraOverlay = true;
+	private boolean slendiMode = true;
+	
 	public static void main(String[] args) {
 		new Carage().start();
 	}
@@ -103,19 +132,7 @@ public class Carage extends AbstractSimpleBase {
 		System.out.println("OpenGL Version : "+glGetString(GL_VERSION));
 		System.out.println("GLSL Version   : "+glGetString(GL_SHADING_LANGUAGE_VERSION));
 	}
-	
-	private void printAssetInfo(Asset asset) {
-		VertexBufferObject positionVBO = asset.getVAO().getVBO(ShaderAttribute.POSITION);
-		int numVertices = positionVBO.getSize() / positionVBO.getChunkSize();
-		int numIndices = asset.getIBO().getSize();
-		Vector3f size = asset.getBoundingBox().getSize();
 		
-		System.out.println("[OBJ Information]");
-		System.out.println("Num. of Vertices : "+numVertices);
-		System.out.println("Num. of Indices  : "+numIndices);
-		System.out.println("Object Dimensions: "+size.getX()+" x "+size.getY()+" x "+size.getZ());
-	}
-	
 	private void initViewport() {
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glViewport(0, 0, WIDTH, HEIGHT);
@@ -139,12 +156,19 @@ public class Carage extends AbstractSimpleBase {
 		
 		proceduralShader = shaderManager.get("procedural");
 		proceduralShader.bindAttributeLocations(attributeLocations);
+		
+		// Pass in the viewport resolution. Do it again if the resolution changes!
+		proceduralShader.bind();
+		glUniform1i(proceduralShader.getUniformLocation("viewportWidth"), WIDTH);
+		glUniform1i(proceduralShader.getUniformLocation("viewportHeight"), HEIGHT);
+		proceduralShader.unbind();
 	}
 	
 	private void initCamera() {
 		camera = new Camera();
-		camera.setPosition(-1.8f, 1.8f, 4f);
-		camera.setRotation(new Vector3f(-0.25f, -0.4f, 0f));
+		camera.setPosition(-2.8f, 2.2f, 4f);
+		camera.setRotation(new Vector3f(-0.3f, 0f, 0f));
+		cameraIsPanning = CAM_PAN_RIGHT;
 	}
 	
 	private void initLightSource() {
@@ -193,96 +217,247 @@ public class Carage extends AbstractSimpleBase {
 		workshopCeiling.setMaterial(new Material("", phongShader));
 		assets.add(workshopCeiling);
 		
-		Asset hangingBulb = new Asset("hanging-bulb");
+		Asset cardboardBox1 = new Asset("cardboardbox");
+		cardboardBox1.setPosition(-3.2f, 0f, -3.8f);
+		cardboardBox1.setRotation(0f, (float)Math.toRadians(35), 0f);
+		assets.add(cardboardBox1);
+		
+		Asset cardboardBox2 = new Asset("cardboardbox");
+		cardboardBox2.setPosition(-4.1f, 0f, -2.6f);
+		cardboardBox2.setRotation(0f, (float)Math.toRadians(-15), 0f);
+		assets.add(cardboardBox2);
+		
+		Asset genericWheel1 = new Asset("generic-wheel");
+		genericWheel1.setPosition(3.9f, 0.13f, 3.0f);
+		genericWheel1.setRotation((float)Math.toRadians(-90), 0f, 0f);
+		assets.add(genericWheel1);
+		
+		Asset genericWheel2 = new Asset("generic-wheel");
+		genericWheel2.setPosition(3.8f, 0.39f, 2.95f);
+		genericWheel2.setRotation((float)Math.toRadians(-90), 0f, 0f);
+		assets.add(genericWheel2);
+		
+		Asset genericWheel3 = new Asset("generic-wheel");
+		genericWheel3.setPosition(3.85f, 0.65f, 2.97f);
+		genericWheel3.setRotation((float)Math.toRadians(-90), 0f, 0f);
+		assets.add(genericWheel3);
+		
+		Asset genericWheel4 = new Asset("generic-wheel");
+		genericWheel4.setPosition(-4.6f, 0.3f, 0.9f);
+		genericWheel4.setRotation((float)Math.toRadians(20), (float)Math.toRadians(-90), 0f);
+		assets.add(genericWheel4);
+		
+		Asset ladder = new Asset("ladder");
+		ladder.setPosition(0.8f, 0f, 4.2f);
+		ladder.setRotation((float)Math.toRadians(15), 0f , 0f);
+		assets.add(ladder);
+				
+		hangingBulb = new Asset("hanging-bulb");
 		hangingBulb.setMaterial(new Material("", null, 0.8f, 0.05f, 0.15f, 50));
 		hangingBulb.setPosition(0f, 2.0f, 2.0f);
 		assets.add(hangingBulb);
 		
-		Asset cardboardBox = new Asset("cardboardbox");
-		cardboardBox.setPosition(-3.2f, 0, -3.8f);
-		cardboardBox.setRotation(new Vector3f(0f, 35f, 0f));
-		assets.add(cardboardBox);
-		
-		Asset cardboardBox2 = new Asset("cardboardbox");
-		cardboardBox2.setMaterial(new Material("", proceduralShader));
-		cardboardBox2.setPosition(3.0f, 0, 1.4f);
-		cardboardBox2.setRotation(new Vector3f(0f, 35f, 0f));
-		assets.add(cardboardBox2);
+		slendi = new Asset("slendi");
+		slendi.setRotation(0f, (float)Math.toRadians(10), 0f);
+		slendi.setPosition(1.3f, 0.4f, -0.6f);
 	}
 	
 	private void initCameraOverlay() {
-		Asset cameraOverlay = new Asset(new PlaneGeometry(), new Texture("cg.png"));
-		//cameraOverlay.setMaterial(new Material("", proceduralShader));
-		cameraOverlay.setPositionY(2.0f);
-		assets.add(cameraOverlay);
+		cameraOverlay = new Asset(new PlaneGeometry(), new Texture("camera-overlay.png"));
+		cameraOverlay.setMaterial(new Material("", proceduralShader));
+		cameraOverlay.setPosition(0.0f, 0.0f, 0.11f);
+		cameraOverlay.setScale(2f, 2f, 1f);
+	}
+		
+	@Override
+	protected void update() {
+		updateDelta();
+		increaseScanlineTimer();
+		processInput();
+		updateLightSource();
+		updateCameraOverlay();
+		updateScene();
 	}
 	
-	@Override
-	protected void render() {
-		// Time shizzle
+	private void updateDelta() {
 		delta = getDelta();
-		
-		// User pressed any relevant keys?
-		processInput();
-		
-		// Move/Rotate/Whatever some Assets according to User Input
-		modifyAssets();
-		
-		// Clear dat screen!
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+	}
+	
+	private void increaseScanlineTimer() {
+		scanlineTimer = (scanlineTimer >= 360) ? scanlineTimer - 360f : scanlineTimer + (FPS * delta / 1000f);
+	}
+	
+	private void updateLightSource() {
 		// Send light information to shader (in case it has moved, its intensity changed, ...)
 		// TODO Light handling has to be improved... we're changing states (shader program) just to send the uniforms over...
-		glUseProgram(phongShader.getId());
+		phongShader.bind();
 		light.sendToShader(phongShader);
-		// This shader doesn't need light, so...
-//		glUseProgram(proceduralShader.getId());
-//		light.sendToShader(proceduralShader);
-		
-		// Finally, render our assets!
-		renderer.renderAssetGroup(car);
-		for (Asset asset : assets) {
-			renderer.renderAsset(asset);
-		}
 	}
 	
-	private void modifyAssets() {
+	private void updateCameraOverlay() {
+		if (toggleCameraOverlay) { toggleCameraOverlay(); }
+	}
+	
+	private void updateScene() {
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
 		// What we do  : TRANS, ROTATE, SCALE
 		
-		float transX = 0f;
-		float transY = 0f;
+	    adjustCarWheels();
+	    adjustLightSource();
+		flickerLight(slendiMode);
+		adjustBulbAmbient();
+		panCam();
+		pitchCam();
+	}
+	
+	@Override
+	protected void render() {
+		clearScreen();
+		// Render Car first
+		renderer.renderAssetGroup(car);
+		// Render Workshop and the props inside of it
+		for (Asset asset : assets) {
+			renderer.renderAsset(asset);
+		}
+		renderSlendi();
+		// Camera overlay is using a different shader, so let's draw it last
+		renderCameraOverlay(); 
+	}
+	
+	private void renderSlendi() {
+		if (renderSlendi) {
+			renderer.renderAsset(slendi);
+		}
+	}
+	
+	private void renderCameraOverlay() {
+		if (!renderCameraOverlay) { return; }
 		
-		float transZ = buttonZoomIn  ? -0.02f * delta : 0;
-			  transZ = buttonZoomOut ?  0.02f * delta : transZ;
-			  
-		float rotX = buttonRotUp   ?  0.5f * delta : 0;
-			  rotX = buttonRotDown ? -0.5f * delta : rotX;
-			  
-		float rotY = buttonRotLeft  ?  0.5f * delta : 0;
-			  rotY = buttonRotRight ? -0.5f * delta : rotY;
-			  
-	    rotX = (float) Math.toRadians(rotX);
-	    rotY = (float) Math.toRadians(rotY);
-			
-	    camera.alterPosition(new Vector3f(transX, transY, transZ));
-		camera.alterRotation(new Vector3f(rotX, rotY, 0));
-		
-		car.tick(delta);
-		if (buttonLeft) { car.steerLeft(delta);	}
-		if (buttonRight) { car.steerRight(delta); }
-		if (buttonUp) { car.accelerate(delta); }
-		if (buttonDown) { car.decelerate(delta); }
-		
+		// Procedural Shader needs input in order to move the scanlines...
+		proceduralShader.bind();
+		glUniform1f(proceduralShader.getUniformLocation("shaderTimer"), scanlineTimer);
+		// We have to enable alpha blending, otherwise the overlay would be opaque
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		renderer.renderAsset(cameraOverlay);
+		glDisable(GL_BLEND);
+	}
+	
+	private void clearScreen() {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+	
+	private void flickerLight(boolean slendiMode) {
+		// TODO make this less ugly and link it with the FPS
+		Random rand = new Random();
+		if (lightFlickers > 0) {
+			if (rand.nextFloat() > 0.8) {
+				light.toggle();
+				--lightFlickers;
+				if (slendiMode && lightFlickers > 3 && light.isOn() && rand.nextFloat() > 0.6) {
+					renderSlendi = true;
+				}
+			}
+		}
+		if (lightFlickers == 1) {
+			renderSlendi = false;
+		}
+		if (lightFlickers == 0) {
+			light.turnOn();
+		}
+		if (rand.nextFloat() > 0.99) {
+			lightFlickers += rand.nextInt(8);
+		}
+	}
+	
+	private void toggleCameraPan() {
+		if (cameraIsPanning == CAM_PAN_NONE) {
+			cameraIsPanning = cameraWasPanning;
+			cameraWasPanning = CAM_PAN_NONE;
+		}
+		else {
+			cameraWasPanning = cameraIsPanning;
+			cameraIsPanning = CAM_PAN_NONE;
+		}
+	}
+	
+	private void toggleCameraOverlay() {
+		renderCameraOverlay = !renderCameraOverlay;
+	}
+	
+	private void toggleSlendiMode() {
+		slendiMode = !slendiMode;
+	}
+	
+	private void adjustLightSource() {
 		if (lightIncrease) { light.setIntensity(light.getIntensity() + 0.1f * delta); }
 		if (lightDecrease) { light.setIntensity(light.getIntensity() - 0.1f * delta); }
 		if (toggleLight) { light.toggle(); }
+	}
+	
+	private void adjustCarWheels() {
+		if (buttonLeft)     { car.steerLeft(delta); }
+		if (buttonRight)    { car.steerRight(delta); }
+		if (buttonForward)  { car.accelerate(delta); }
+		if (buttonBackward) { car.decelerate(delta); }
+		car.tick(delta);
+	}
+	
+	private void adjustBulbAmbient() {
+		float ambient = (!light.isOn() || (light.getIntensity() <= 0.1)) ? 0.0f : 0.8f;
+		hangingBulb.getMaterial().setAmbientReflectivity(ambient);
+	}
+	
+	private void pitchCam() {
+		float camRotX = camera.getRotationX();
+		float camRotXDelta = (float)(Math.toRadians(CAM_PITCH_STEP)) * delta;
+		float camRotXMin   = (float) Math.toRadians(CAM_PITCH_MIN); // down limit
+		float camRotXMax   = (float) Math.toRadians(CAM_PITCH_MAX); // up limit
 		
-		Material carBodyMaterial = car.getParentAsset().getMaterial();
-		if (testValueUp)   { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()+1); }
-		if (testValueDown) { carBodyMaterial.setSpecularHardness(carBodyMaterial.getSpecularHardness()-1); }
+		if (buttonRotUp)   { camRotX += camRotXDelta; }
+		if (buttonRotDown) { camRotX -= camRotXDelta; }
 		
+		if (camRotX > camRotXMax) { camRotX = camRotXMax; }
+		if (camRotX < camRotXMin) { camRotX = camRotXMin; }
+
+		camera.setRotation(camRotX, camera.getRotationY(), camera.getRotationZ());		
+	}
+	
+	private void panCam() {
+		if (toggleCameraPan) { toggleCameraPan(); }		
+		if (cameraIsPanning == CAM_PAN_NONE) { return; }
+		
+		float camRotY = camera.getRotationY();
+		float camRotYDelta = (float)(Math.toRadians(CAM_PAN_STEP)) * delta;
+		float camRotYMin   = (float) Math.toRadians(CAM_PAN_MIN); // right limit
+		float camRotYMax   = (float) Math.toRadians(CAM_PAN_MAX); // left limit
+		
+		if (cameraPausedFor > 0) {
+			--cameraPausedFor;
+		}
+		if (cameraPausedFor > 0) {
+			return;
+		}
+		
+		if (cameraIsPanning == CAM_PAN_RIGHT) {
+			camRotY -= camRotYDelta;
+			if (camRotY <= camRotYMin) { // We're at the far right
+				cameraIsPanning = CAM_PAN_LEFT;
+				cameraPausedFor = 120;
+				camRotY = camRotYMin;
+			}
+		}
+		if (cameraIsPanning == CAM_PAN_LEFT) {
+			camRotY += camRotYDelta;
+			if (camRotY >= camRotYMax) { // We're at the far left
+				cameraIsPanning = CAM_PAN_RIGHT;
+				cameraPausedFor = 120;
+				camRotY = camRotYMax;
+			}
+		}
+		
+		camera.setRotation(camera.getRotationX(), camRotY, camera.getRotationZ());
 	}
 			
 	/**
@@ -314,10 +489,10 @@ public class Carage extends AbstractSimpleBase {
 			        	buttonRight = true;	
 			        	break;
 			        case Keyboard.KEY_W:
-			        	buttonUp = true;	
+			        	buttonForward = true;	
 			        	break;
 			        case Keyboard.KEY_S:
-			        	buttonDown = true;	
+			        	buttonBackward = true;	
 			        	break;
 			        case Keyboard.KEY_UP:
 			        	buttonRotUp = true;
@@ -331,26 +506,22 @@ public class Carage extends AbstractSimpleBase {
 			        case Keyboard.KEY_LEFT:
 			        	buttonRotLeft = true;
 			        	break;
-			        case Keyboard.KEY_I:
-			        	buttonZoomIn = true;
-			        	break;
-			        case Keyboard.KEY_K:
-			        	buttonZoomOut = true;
-			        	break;
-			        case Keyboard.KEY_O:
+			        case Keyboard.KEY_EQUALS:
+			        case Keyboard.KEY_ADD:
 			        	lightIncrease = true;
 			        	break;
-			        case Keyboard.KEY_L:
+			        case Keyboard.KEY_MINUS:
+			        case Keyboard.KEY_SUBTRACT:
 			        	lightDecrease = true;
 			        	break;
-			        case Keyboard.KEY_P:
+			        case Keyboard.KEY_L:
 			        	toggleLight = true;
 			        	break;
-			        case Keyboard.KEY_N:
-			        	testValueUp = true;
+			        case Keyboard.KEY_O:
+			        	toggleCameraOverlay = true;
 			        	break;
-			        case Keyboard.KEY_M:
-			        	testValueDown = true;
+			        case Keyboard.KEY_P:
+			        	toggleCameraPan = true;
 			        	break;
 		        }
 		    }
@@ -363,10 +534,10 @@ public class Carage extends AbstractSimpleBase {
 			        	buttonRight = false;	
 			        	break;
 			        case Keyboard.KEY_W:
-			        	buttonUp = false;	
+			        	buttonForward = false;	
 			        	break;
 			        case Keyboard.KEY_S:
-			        	buttonDown = false;	
+			        	buttonBackward = false;	
 			        	break;
 			        case Keyboard.KEY_UP:
 			        	buttonRotUp = false;
@@ -380,26 +551,22 @@ public class Carage extends AbstractSimpleBase {
 			        case Keyboard.KEY_LEFT:
 			        	buttonRotLeft = false;
 			        	break;
-			        case Keyboard.KEY_I:
-			        	buttonZoomIn = false;
-			        	break;
-			        case Keyboard.KEY_K:
-			        	buttonZoomOut = false;
-			        	break;
-			        case Keyboard.KEY_O:
+			        case Keyboard.KEY_EQUALS:
+			        case Keyboard.KEY_ADD:
 			        	lightIncrease = false;
 			        	break;
-			        case Keyboard.KEY_L:
+			        case Keyboard.KEY_MINUS:
+			        case Keyboard.KEY_SUBTRACT:
 			        	lightDecrease = false;
 			        	break;
-			        case Keyboard.KEY_P:
+			        case Keyboard.KEY_L:
 			        	toggleLight = false;
 			        	break;
-			        case Keyboard.KEY_N:
-			        	testValueUp = false;
+			        case Keyboard.KEY_O:
+			        	toggleCameraOverlay = false;
 			        	break;
-			        case Keyboard.KEY_M:
-			        	testValueDown = false;
+			        case Keyboard.KEY_P:
+			        	toggleCameraPan = false;
 			        	break;
 		        }
 		    }
