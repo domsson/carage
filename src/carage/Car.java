@@ -174,7 +174,7 @@ public class Car extends AssetGroup {
 		System.out.println("Front track: " + getFrontTrack() + " m");
 		System.out.println("Rear track : " + getFrontTrack() + " m");
 		System.out.println("Axle height: " + leftFrontWheel.getRadius() + " m");
-		System.out.println("Wheel size : " + (leftFrontWheel.getBoundingBox().getWidth() + " x " + leftFrontWheel.getBoundingBox().getLength() + " x " + leftFrontWheel.getBoundingBox().getHeight()) + " m");
+		System.out.println("Wheel size : " + (leftFrontWheel.getBoundingBox().getLength() + " x " + leftFrontWheel.getBoundingBox().getWidth() + " x " + leftFrontWheel.getBoundingBox().getHeight()) + " m");
 	}
 
 	/**

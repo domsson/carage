@@ -85,6 +85,7 @@ public class Carage extends AbstractSimpleBase {
 	private boolean toggleLight = false;
 	private boolean toggleCameraPan = false;
 	private boolean toggleCameraOverlay = false;
+	private boolean toggleSlendiMode = false;
 
 	private ShaderManager shaderManager;
 	private ShaderProgram phongShader;
@@ -102,9 +103,12 @@ public class Carage extends AbstractSimpleBase {
 	
 	private int lightFlickers = 0;
 	private int cameraIsPanning = CAM_PAN_NONE;
+	private int cameraWasPanning = CAM_PAN_NONE;
 	private int cameraPausedFor = 0;
 	private float scanlineTimer = 0;
 	private boolean renderSlendi = false;
+	private boolean renderCameraOverlay = true;
+	private boolean slendiMode = true;
 	
 	public static void main(String[] args) {
 		new Carage().start();
@@ -213,10 +217,15 @@ public class Carage extends AbstractSimpleBase {
 		workshopCeiling.setMaterial(new Material("", phongShader));
 		assets.add(workshopCeiling);
 		
-		Asset cardboardBox = new Asset("cardboardbox");
-		cardboardBox.setPosition(-3.2f, 0f, -3.8f);
-		cardboardBox.setRotation(0f, (float)Math.toRadians(35), 0f);
-		assets.add(cardboardBox);
+		Asset cardboardBox1 = new Asset("cardboardbox");
+		cardboardBox1.setPosition(-3.2f, 0f, -3.8f);
+		cardboardBox1.setRotation(0f, (float)Math.toRadians(35), 0f);
+		assets.add(cardboardBox1);
+		
+		Asset cardboardBox2 = new Asset("cardboardbox");
+		cardboardBox2.setPosition(-4.1f, 0f, -2.6f);
+		cardboardBox2.setRotation(0f, (float)Math.toRadians(-15), 0f);
+		assets.add(cardboardBox2);
 		
 		Asset genericWheel1 = new Asset("generic-wheel");
 		genericWheel1.setPosition(3.9f, 0.13f, 3.0f);
@@ -266,6 +275,7 @@ public class Carage extends AbstractSimpleBase {
 		increaseScanlineTimer();
 		processInput();
 		updateLightSource();
+		updateCameraOverlay();
 		updateScene();
 	}
 	
@@ -284,6 +294,10 @@ public class Carage extends AbstractSimpleBase {
 		light.sendToShader(phongShader);
 	}
 	
+	private void updateCameraOverlay() {
+		if (toggleCameraOverlay) { toggleCameraOverlay(); }
+	}
+	
 	private void updateScene() {
 		// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 		// What we want: SCALE, ROTATE, TRANS
@@ -291,7 +305,7 @@ public class Carage extends AbstractSimpleBase {
 		
 	    adjustCarWheels();
 	    adjustLightSource();
-		flickerLight();
+		flickerLight(slendiMode);
 		adjustBulbAmbient();
 		panCam();
 		pitchCam();
@@ -318,6 +332,8 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void renderCameraOverlay() {
+		if (!renderCameraOverlay) { return; }
+		
 		// Procedural Shader needs input in order to move the scanlines...
 		proceduralShader.bind();
 		glUniform1f(proceduralShader.getUniformLocation("shaderTimer"), scanlineTimer);
@@ -332,31 +348,52 @@ public class Carage extends AbstractSimpleBase {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	
-	private void flickerLight() {
+	private void flickerLight(boolean slendiMode) {
 		// TODO make this less ugly and link it with the FPS
 		Random rand = new Random();
 		if (lightFlickers > 0) {
 			if (rand.nextFloat() > 0.8) {
 				light.toggle();
 				--lightFlickers;
-				if (lightFlickers > 3 && light.isOn() && rand.nextFloat() > 0.6) {
+				if (slendiMode && lightFlickers > 3 && light.isOn() && rand.nextFloat() > 0.6) {
 					renderSlendi = true;
 				}
 			}
 		}
+		if (lightFlickers == 1) {
+			renderSlendi = false;
+		}
 		if (lightFlickers == 0) {
 			light.turnOn();
-			renderSlendi = false;
 		}
 		if (rand.nextFloat() > 0.99) {
 			lightFlickers += rand.nextInt(8);
 		}
 	}
 	
+	private void toggleCameraPan() {
+		if (cameraIsPanning == CAM_PAN_NONE) {
+			cameraIsPanning = cameraWasPanning;
+			cameraWasPanning = CAM_PAN_NONE;
+		}
+		else {
+			cameraWasPanning = cameraIsPanning;
+			cameraIsPanning = CAM_PAN_NONE;
+		}
+	}
+	
+	private void toggleCameraOverlay() {
+		renderCameraOverlay = !renderCameraOverlay;
+	}
+	
+	private void toggleSlendiMode() {
+		slendiMode = !slendiMode;
+	}
+	
 	private void adjustLightSource() {
 		if (lightIncrease) { light.setIntensity(light.getIntensity() + 0.1f * delta); }
 		if (lightDecrease) { light.setIntensity(light.getIntensity() - 0.1f * delta); }
-		if (toggleLight) { light.toggle(); }		
+		if (toggleLight) { light.toggle(); }
 	}
 	
 	private void adjustCarWheels() {
@@ -388,6 +425,7 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void panCam() {
+		if (toggleCameraPan) { toggleCameraPan(); }		
 		if (cameraIsPanning == CAM_PAN_NONE) { return; }
 		
 		float camRotY = camera.getRotationY();
@@ -476,8 +514,14 @@ public class Carage extends AbstractSimpleBase {
 			        case Keyboard.KEY_SUBTRACT:
 			        	lightDecrease = true;
 			        	break;
-			        case Keyboard.KEY_P:
+			        case Keyboard.KEY_L:
 			        	toggleLight = true;
+			        	break;
+			        case Keyboard.KEY_O:
+			        	toggleCameraOverlay = true;
+			        	break;
+			        case Keyboard.KEY_P:
+			        	toggleCameraPan = true;
 			        	break;
 		        }
 		    }
@@ -515,8 +559,14 @@ public class Carage extends AbstractSimpleBase {
 			        case Keyboard.KEY_SUBTRACT:
 			        	lightDecrease = false;
 			        	break;
-			        case Keyboard.KEY_P:
+			        case Keyboard.KEY_L:
 			        	toggleLight = false;
+			        	break;
+			        case Keyboard.KEY_O:
+			        	toggleCameraOverlay = false;
+			        	break;
+			        case Keyboard.KEY_P:
+			        	toggleCameraPan = false;
 			        	break;
 		        }
 		    }
