@@ -53,23 +53,16 @@ import carage.engine.VertexBufferObject;
 // http://www.gamedev.net/page/resources/_/technical/opengl/the-basics-of-glsl-40-shaders-r2861
 public class Carage extends AbstractSimpleBase {
 		
-	public static final int FPS = 60;
-	public static final String DEFAULT_SHADER = "phong";	
+	public static final int TARGET_FPS = 60;
+	public static final String DEFAULT_SHADER = "phong";
 	
-	public static final float CAM_PAN_MIN   = -65.00f; // Smaller angle = Panning right
-	public static final float CAM_PAN_MAX   =   0.00f; // Bigger angle  = Panning left 
-	public static final float CAM_PAN_STEP  =   0.25f;
-	
-	public static final float CAM_PITCH_MIN  = -45.00f; // Smaller angle = Looking down
-	public static final float CAM_PITCH_MAX  =  -5.00f; // Bigger angle  = Looking up
-	public static final float CAM_PITCH_STEP =   0.25f;
-	
-	public static final int CAM_PAN_NONE  =  0;
-	public static final int CAM_PAN_LEFT  =  1;
-	public static final int CAM_PAN_RIGHT = -1;
+	public static final float CAM_PAN_RIGHT = 65.00f; // Smaller angle = Panning right
+	public static final float CAM_PAN_LEFT  =  0.00f; // Bigger angle  = Panning left 
+	public static final float CAM_PAN_STEP  =  0.25f;
 	
 	private long lastRender = 0;
 	private float delta = 0;
+	private float deltaInSeconds = 0;
 	
 	// TODO Finally implement proper input handling, this is ugly
 	private boolean buttonForward  = false;
@@ -82,29 +75,23 @@ public class Carage extends AbstractSimpleBase {
 	private boolean buttonRotRight = false;
 	private boolean lightIncrease = false;
 	private boolean lightDecrease = false;
-	private boolean toggleLight = false;
-	private boolean toggleCameraPan = false;
-	private boolean toggleCameraOverlay = false;
-	private boolean toggleSlendiMode = false;
 
 	private ShaderManager shaderManager;
 	private ShaderProgram phongShader;
 	private ShaderProgram proceduralShader;
 	
-	private Renderer renderer;		// This guy is gonna take care of all the rendering
-	private Camera camera;			// We'll hand this to the Renderer, he needs it
-	private LightSource light;		// Only one single light is currently supported
+	private Renderer renderer;			// This guy is gonna take care of all the rendering
+	private SurveillanceCamera camera;	// We'll hand this to the Renderer, he needs it
+	private LightSource light;			// Only one single light is currently supported
 	
-	private Asset cameraOverlay;	// This is where we render our procedural onto
+	private Asset cameraOverlay;		// This is where we render our procedural onto
 	private ArrayList<Asset> assets = null;
 	private Car car = null;
 	private Asset hangingBulb = null;
 	private Asset slendi = null;
 	
+	private boolean lightIsOn = true;
 	private int lightFlickers = 0;
-	private int cameraIsPanning = CAM_PAN_NONE;
-	private int cameraWasPanning = CAM_PAN_NONE;
-	private int cameraPausedFor = 0;
 	private float scanlineTimer = 0;
 	private boolean renderSlendi = false;
 	private boolean renderCameraOverlay = true;
@@ -165,10 +152,11 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void initCamera() {
-		camera = new Camera();
+		camera = new SurveillanceCamera();
+		camera.allowPitching();
 		camera.setPosition(-2.8f, 2.2f, 4f);
 		camera.setRotation(new Vector3f(-0.3f, 0f, 0f));
-		cameraIsPanning = CAM_PAN_RIGHT;
+		camera.activateAutoPanning((float)Math.toRadians(CAM_PAN_LEFT), (float)Math.toRadians(CAM_PAN_RIGHT)); // TODO set proper values
 	}
 	
 	private void initLightSource() {
@@ -275,16 +263,16 @@ public class Carage extends AbstractSimpleBase {
 		increaseScanlineTimer();
 		processInput();
 		updateLightSource();
-		updateCameraOverlay();
 		updateScene();
 	}
 	
 	private void updateDelta() {
 		delta = getDelta();
+		deltaInSeconds = deltaToSeconds(delta);
 	}
 	
 	private void increaseScanlineTimer() {
-		scanlineTimer = (scanlineTimer >= 360) ? scanlineTimer - 360f : scanlineTimer + (FPS * delta / 1000f);
+		scanlineTimer = (scanlineTimer >= 360) ? scanlineTimer - 360f : scanlineTimer + (TARGET_FPS * delta / 1000f);
 	}
 	
 	private void updateLightSource() {
@@ -292,10 +280,6 @@ public class Carage extends AbstractSimpleBase {
 		// TODO Light handling has to be improved... we're changing states (shader program) just to send the uniforms over...
 		phongShader.bind();
 		light.sendToShader(phongShader);
-	}
-	
-	private void updateCameraOverlay() {
-		if (toggleCameraOverlay) { toggleCameraOverlay(); }
 	}
 	
 	private void updateScene() {
@@ -349,6 +333,10 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void flickerLight(boolean slendiMode) {
+		if (!lightIsOn) {
+			lightFlickers = 0;
+			return;
+		}
 		// TODO make this less ugly and link it with the FPS
 		Random rand = new Random();
 		if (lightFlickers > 0) {
@@ -371,15 +359,13 @@ public class Carage extends AbstractSimpleBase {
 		}
 	}
 	
+	private void toggleLight() {
+		lightIsOn = !lightIsOn;
+		light.toggle();
+	}
+	
 	private void toggleCameraPan() {
-		if (cameraIsPanning == CAM_PAN_NONE) {
-			cameraIsPanning = cameraWasPanning;
-			cameraWasPanning = CAM_PAN_NONE;
-		}
-		else {
-			cameraWasPanning = cameraIsPanning;
-			cameraIsPanning = CAM_PAN_NONE;
-		}
+		camera.toggleAutoPanning();
 	}
 	
 	private void toggleCameraOverlay() {
@@ -393,7 +379,6 @@ public class Carage extends AbstractSimpleBase {
 	private void adjustLightSource() {
 		if (lightIncrease) { light.setIntensity(light.getIntensity() + 0.1f * delta); }
 		if (lightDecrease) { light.setIntensity(light.getIntensity() - 0.1f * delta); }
-		if (toggleLight) { light.toggle(); }
 	}
 	
 	private void adjustCarWheels() {
@@ -410,54 +395,14 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void pitchCam() {
-		float camRotX = camera.getRotationX();
-		float camRotXDelta = (float)(Math.toRadians(CAM_PITCH_STEP)) * delta;
-		float camRotXMin   = (float) Math.toRadians(CAM_PITCH_MIN); // down limit
-		float camRotXMax   = (float) Math.toRadians(CAM_PITCH_MAX); // up limit
-		
-		if (buttonRotUp)   { camRotX += camRotXDelta; }
-		if (buttonRotDown) { camRotX -= camRotXDelta; }
-		
-		if (camRotX > camRotXMax) { camRotX = camRotXMax; }
-		if (camRotX < camRotXMin) { camRotX = camRotXMin; }
-
-		camera.setRotation(camRotX, camera.getRotationY(), camera.getRotationZ());		
+		if (buttonRotLeft)  { camera.panLeft(); }
+		if (buttonRotRight) { camera.panRight(); }
+		if (buttonRotUp)    { camera.pitchUp(); }
+		if (buttonRotDown)  { camera.pitchDown(); }
 	}
 	
 	private void panCam() {
-		if (toggleCameraPan) { toggleCameraPan(); }		
-		if (cameraIsPanning == CAM_PAN_NONE) { return; }
-		
-		float camRotY = camera.getRotationY();
-		float camRotYDelta = (float)(Math.toRadians(CAM_PAN_STEP)) * delta;
-		float camRotYMin   = (float) Math.toRadians(CAM_PAN_MIN); // right limit
-		float camRotYMax   = (float) Math.toRadians(CAM_PAN_MAX); // left limit
-		
-		if (cameraPausedFor > 0) {
-			--cameraPausedFor;
-		}
-		if (cameraPausedFor > 0) {
-			return;
-		}
-		
-		if (cameraIsPanning == CAM_PAN_RIGHT) {
-			camRotY -= camRotYDelta;
-			if (camRotY <= camRotYMin) { // We're at the far right
-				cameraIsPanning = CAM_PAN_LEFT;
-				cameraPausedFor = 120;
-				camRotY = camRotYMin;
-			}
-		}
-		if (cameraIsPanning == CAM_PAN_LEFT) {
-			camRotY += camRotYDelta;
-			if (camRotY >= camRotYMax) { // We're at the far left
-				cameraIsPanning = CAM_PAN_RIGHT;
-				cameraPausedFor = 120;
-				camRotY = camRotYMax;
-			}
-		}
-		
-		camera.setRotation(camera.getRotationX(), camRotY, camera.getRotationZ());
+		camera.tick(delta);
 	}
 			
 	/**
@@ -474,13 +419,17 @@ public class Carage extends AbstractSimpleBase {
 		long now = getTime();
 		float delta = now - lastRender;
 		lastRender = now;
-		return (FPS * delta / 1000f);
+		return (TARGET_FPS * delta / 1000f);
+	}
+	
+	private float deltaToSeconds(float delta) {
+		return 1f / TARGET_FPS * delta;
 	}
 	
 	// TODO Put this in some Input Handler Class(es)
 	private void processInput() {
 		while (Keyboard.next()) {
-		    if (Keyboard.getEventKeyState()) {
+		    if (Keyboard.getEventKeyState()) { // Keys pressed
 		        switch (Keyboard.getEventKey()) {
 			        case Keyboard.KEY_A:
 			        	buttonLeft = true;	
@@ -514,18 +463,9 @@ public class Carage extends AbstractSimpleBase {
 			        case Keyboard.KEY_SUBTRACT:
 			        	lightDecrease = true;
 			        	break;
-			        case Keyboard.KEY_L:
-			        	toggleLight = true;
-			        	break;
-			        case Keyboard.KEY_O:
-			        	toggleCameraOverlay = true;
-			        	break;
-			        case Keyboard.KEY_P:
-			        	toggleCameraPan = true;
-			        	break;
 		        }
 		    }
-		    else {
+		    else {	// Keys released
 		    	switch (Keyboard.getEventKey()) {
 			        case Keyboard.KEY_A:
 			        	buttonLeft = false;	
@@ -560,13 +500,13 @@ public class Carage extends AbstractSimpleBase {
 			        	lightDecrease = false;
 			        	break;
 			        case Keyboard.KEY_L:
-			        	toggleLight = false;
+			        	toggleLight();
 			        	break;
 			        case Keyboard.KEY_O:
-			        	toggleCameraOverlay = false;
+			        	toggleCameraOverlay();
 			        	break;
 			        case Keyboard.KEY_P:
-			        	toggleCameraPan = false;
+			        	toggleCameraPan();
 			        	break;
 		        }
 		    }

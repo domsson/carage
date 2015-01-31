@@ -11,7 +11,7 @@ uniform int viewportWidth;
 uniform int viewportHeight;
 uniform float scanlineTimer;
 
-const float scanlineAlpha = 0.3;
+const float scanlineAlpha = 0.25;
 const vec3 greenLight = vec3(0.27, 0.8, 0.27);
 const vec3 greenIntermediate = vec3(0.1, 0.7, 0.1);
 const vec3 greenDark = vec3(0, 0.68, 0);
