@@ -1,6 +1,7 @@
 carage
 ======
 Our simple car 'game' for the computer graphics course at HTW.
+![carage screen](http://i.imgur.com/7tPYgi3.png "Yep, that's Carage")
 
 Controls
 --------
