@@ -41,7 +41,6 @@ public class SurveillanceCamera extends Camera {
 	}
 	
 	public void toggleAutoPanning() {
-		System.out.println("toggle");
 		if (autoPanning == true) { deactivateAutoPanning(); }
 		else { activateAutoPanning(); }
 	}
