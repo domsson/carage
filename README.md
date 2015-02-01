@@ -4,13 +4,13 @@ Our simple car 'game' for the computer graphics course at HTW.
 
 Controls
 --------
-- `W`, `S`, `A`, `D`: Spin / Steer Wheels (Car won't move though)
+- `W` `S` `A` `D`: Spin / Steer Wheels (Car won't move though)
 - `O`: Toggle Camera **O**verlay
 - `L`: Toggle **L**amp (Turn light on/off)
 - `P`: Toggle Camera Auto-**P**anning
-- `+`, `-`: Increase / Decrease Light Intensity
-- `←`, `→`: Pan Camera left/right (when Auto-Panning is off)
-- `↑`, `↓`: Pitch camera up/down
+- `+` `-`: Increase / Decrease Light Intensity
+- `←` `→`: Pan Camera left/right (when Auto-Panning is off)
+- `↑` `↓`: Pitch Camera up/down
 
 Notes on engine design
 ----------------------
