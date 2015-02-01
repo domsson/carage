@@ -1,15 +1,15 @@
 package carage;
 import static org.lwjgl.opengl.GL11.GL_BACK;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_CCW;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL11.GL_RENDERER;
-import static org.lwjgl.opengl.GL11.GL_VERSION;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_RENDERER;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_VERSION;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
@@ -20,10 +20,8 @@ import static org.lwjgl.opengl.GL11.glFrontFace;
 import static org.lwjgl.opengl.GL11.glGetString;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
-import static org.lwjgl.opengl.GL20.glUseProgram;
-import static org.lwjgl.opengl.GL20.glUniform1i;
 import static org.lwjgl.opengl.GL20.glUniform1f;
-import static org.lwjgl.opengl.GL20.glUniform2i;
+import static org.lwjgl.opengl.GL20.glUniform1i;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -37,14 +35,12 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
 
 import carage.engine.Asset;
-import carage.engine.Camera;
 import carage.engine.LightSource;
 import carage.engine.Material;
 import carage.engine.PlaneGeometry;
 import carage.engine.Renderer;
 import carage.engine.ShaderAttribute;
 import carage.engine.ShaderManager;
-import carage.engine.VertexBufferObject;
 
 // http://antongerdelan.net/opengl/
 // http://www.opengl-tutorial.org/beginners-tutorials/
@@ -62,6 +58,7 @@ public class Carage extends AbstractSimpleBase {
 	
 	private long lastRender = 0;
 	private float delta = 0;
+	@SuppressWarnings("unused")
 	private float deltaInSeconds = 0;
 	
 	// TODO Finally implement proper input handling, this is ugly
@@ -310,9 +307,9 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void renderSlendi() {
-		if (renderSlendi) {
-			renderer.renderAsset(slendi);
-		}
+		if (!renderSlendi) { return; }
+		
+		renderer.renderAsset(slendi);
 	}
 	
 	private void renderCameraOverlay() {
@@ -337,7 +334,7 @@ public class Carage extends AbstractSimpleBase {
 			lightFlickers = 0;
 			return;
 		}
-		// TODO make this less ugly and link it with the FPS
+		// TODO make this less ugly and link it with the FPS; maybe even put it into the lamp's class
 		Random rand = new Random();
 		if (lightFlickers > 0) {
 			if (rand.nextFloat() > 0.8) {
@@ -372,6 +369,7 @@ public class Carage extends AbstractSimpleBase {
 		renderCameraOverlay = !renderCameraOverlay;
 	}
 	
+	@SuppressWarnings("unused")
 	private void toggleSlendiMode() {
 		slendiMode = !slendiMode;
 	}

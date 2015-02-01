@@ -257,6 +257,7 @@ public class Car extends AssetGroup {
 	 * that the car drove the given distance in meters
 	 * @param distance
 	 */
+	@SuppressWarnings("unused")
 	private void spinWheels(float distance) {
 		leftFrontWheel.spin(distance);
 		rightFrontWheel.spin(distance);

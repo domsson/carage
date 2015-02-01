@@ -1,6 +1,7 @@
 package carage.engine;
 
 import java.util.HashMap;
+
 import lenz.opengl.utils.ShaderProgram;
 
 public class ShaderManager {

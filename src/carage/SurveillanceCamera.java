@@ -16,6 +16,8 @@ public class SurveillanceCamera extends Camera {
 	public static final int PAN_LEFT  =  1;
 	public static final int PAN_RIGHT = -1;
 	
+	public static final float PAN_PAUSE_TIME = 120;
+	
 	private boolean pitchingAllowed = true;
 	private float pitchingStep      = DEFAULT_PITCH_STEP;
 	private float pitchingLimitUp   = DEFAULT_PITCH_LIMIT_UP;
@@ -23,13 +25,13 @@ public class SurveillanceCamera extends Camera {
 	
 	private int panningStatus           = PAN_NONE;
 	private int panningStatusBefore     = PAN_NONE;
-	private int panningPausedFor        = 0;
+	private float panningPausedFor      = 0;
 	private boolean autoPanning         = false;
-	private float autoPanningStep       = DEFAULT_PAN_STEP;
-	private float autoPanningLimitLeft  = DEFAULT_PAN_LIMIT_LEFT;
-	private float autoPanningLimitRight = DEFAULT_PAN_LIMIT_RIGHT;
+	private float panningStep       = DEFAULT_PAN_STEP;
+	private float panningLimitLeft  = DEFAULT_PAN_LIMIT_LEFT;
+	private float panningLimitRight = DEFAULT_PAN_LIMIT_RIGHT;
 	
-	// TODO Make everything use radians OR degree, not a wild mix of it!
+
 	public SurveillanceCamera() {
 		
 	}
@@ -45,7 +47,6 @@ public class SurveillanceCamera extends Camera {
 	}
 	
 	public void deactivateAutoPanning() {
-		// TODO
 		autoPanning = false;
 		panningStatusBefore = panningStatus;
 		panningStatus = PAN_NONE;
@@ -53,14 +54,14 @@ public class SurveillanceCamera extends Camera {
 	
 	public void activateAutoPanning(float radiansToLeft, float radiansToRight, float radiansPerSecond) {
 		autoPanning = true;
-		panningStatus = PAN_RIGHT;	// TODO start with panning left or right?
-		autoPanningLimitLeft  = radiansToLeft;
-		autoPanningLimitRight = radiansToRight;
-		autoPanningStep = radiansPerSecond;
+		panningStatus = PAN_RIGHT;	// TODO start with panning left or right? doesn't really matter though...
+		panningLimitLeft  = radiansToLeft;
+		panningLimitRight = radiansToRight;
+		panningStep = radiansPerSecond;
 	}
 	
 	public void activateAutoPanning(float radiansToLeft, float radiansToRight) {
-		activateAutoPanning(radiansToLeft, radiansToRight, autoPanningStep);
+		activateAutoPanning(radiansToLeft, radiansToRight, panningStep);
 	}
 	
 	public void activateAutoPanning() {
@@ -109,46 +110,46 @@ public class SurveillanceCamera extends Camera {
 	public void panLeft(float radiansDelta) {
 		if (autoPanning == true) { return; }
 		float newRotation = rotation.y + radiansDelta;
-		rotation.y = (newRotation > autoPanningLimitLeft) ? -autoPanningLimitLeft : newRotation;
+		rotation.y = (newRotation > panningLimitLeft) ? -panningLimitLeft : newRotation;
 	}
 	
 	public void panLeft() {
-		panLeft(autoPanningStep);
+		panLeft(panningStep);
 	}
 	
 	public void panRight(float radiansDelta) {
 		if (autoPanning == true) { return; }
 		float newRotation = rotation.y - radiansDelta;
-		rotation.y = (newRotation < -autoPanningLimitRight) ? -autoPanningLimitRight : newRotation;
+		rotation.y = (newRotation < -panningLimitRight) ? -panningLimitRight : newRotation;
 	}
 	
 	public void panRight() {
-		panRight(autoPanningStep);
+		panRight(panningStep);
 	}
 	
 	private void autoPan(float delta) {
 		if (autoPanning == false || panningStatus == PAN_NONE) { return; }
-		if (panningPausedFor > 0) { --panningPausedFor;	}
+		if (panningPausedFor > 0) { panningPausedFor -= delta; }
 		if (panningPausedFor > 0) { return;	}
 		
-		float panBy = autoPanningStep * delta;
+		float panBy = panningStep * delta;
 		float newRotation = rotation.y + (panningStatus * panBy);
 		
 		if (panningStatus == PAN_LEFT) {
-			if (newRotation > autoPanningLimitLeft) { // We're at the far left
-				rotation.y = autoPanningLimitLeft;
+			if (newRotation > panningLimitLeft) { // We're at the far left
+				rotation.y = panningLimitLeft;
 				panningStatus = PAN_RIGHT;
-				panningPausedFor = 120;
+				panningPausedFor = PAN_PAUSE_TIME;
 			}
 			else {
 				rotation.y = newRotation;
 			}
 		}
 		else if (panningStatus == PAN_RIGHT) { // We're at the far right
-			if (newRotation < -autoPanningLimitRight) {
-				rotation.y = -autoPanningLimitRight;
+			if (newRotation < -panningLimitRight) {
+				rotation.y = -panningLimitRight;
 				panningStatus = PAN_LEFT;
-				panningPausedFor = 120;
+				panningPausedFor = PAN_PAUSE_TIME;
 			}
 			else {
 				rotation.y = newRotation;
