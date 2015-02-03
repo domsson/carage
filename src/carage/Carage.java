@@ -48,6 +48,10 @@ import carage.engine.ShaderManager;
 // http://www.codinglabs.net/article_world_view_projection_matrix.aspx
 // http://www.gamedev.net/page/resources/_/technical/opengl/the-basics-of-glsl-40-shaders-r2861
 public class Carage extends AbstractSimpleBase {
+	
+	public static final String TITLE = "Carage";
+	public static final int WIDTH  = 800;
+	public static final int HEIGHT = 600;
 		
 	public static final int TARGET_FPS = 60;
 	public static final String DEFAULT_SHADER = "phong";
@@ -74,6 +78,7 @@ public class Carage extends AbstractSimpleBase {
 	private boolean lightDecrease = false;
 
 	private ShaderManager shaderManager;
+	private ShaderProgram gouraudShader;
 	private ShaderProgram phongShader;
 	private ShaderProgram proceduralShader;
 	
@@ -95,7 +100,7 @@ public class Carage extends AbstractSimpleBase {
 	private boolean slendiMode = true;
 	
 	public static void main(String[] args) {
-		new Carage().start();
+		new Carage().start(WIDTH, HEIGHT, TITLE);
 	}
 
 	@Override
@@ -141,6 +146,9 @@ public class Carage extends AbstractSimpleBase {
 		proceduralShader = shaderManager.get("procedural");
 		proceduralShader.bindAttributeLocations(attributeLocations);
 		
+		gouraudShader = shaderManager.get("gouraud");
+		gouraudShader.bindAttributeLocations(attributeLocations);
+		
 		// Pass in the viewport resolution. Do it again if the resolution changes!
 		proceduralShader.bind();
 		glUniform1i(proceduralShader.getUniformLocation("viewportWidth"), WIDTH);
@@ -153,7 +161,7 @@ public class Carage extends AbstractSimpleBase {
 		camera.allowPitching();
 		camera.setPosition(-2.8f, 2.2f, 4f);
 		camera.setRotation(new Vector3f(-0.3f, 0f, 0f));
-		camera.activateAutoPanning((float)Math.toRadians(CAM_PAN_LEFT), (float)Math.toRadians(CAM_PAN_RIGHT)); // TODO set proper values
+		camera.activateAutoPanning((float)Math.toRadians(CAM_PAN_LEFT), (float)Math.toRadians(CAM_PAN_RIGHT));
 	}
 	
 	private void initLightSource() {
@@ -228,6 +236,7 @@ public class Carage extends AbstractSimpleBase {
 		assets.add(genericWheel3);
 		
 		Asset genericWheel4 = new Asset("generic-wheel");
+		// genericWheel4.setMaterial(new Material("", gouraudShader));
 		genericWheel4.setPosition(-4.6f, 0.3f, 0.9f);
 		genericWheel4.setRotation((float)Math.toRadians(20), (float)Math.toRadians(-90), 0f);
 		assets.add(genericWheel4);
@@ -275,8 +284,13 @@ public class Carage extends AbstractSimpleBase {
 	private void updateLightSource() {
 		// Send light information to shader (in case it has moved, its intensity changed, ...)
 		// TODO Light handling has to be improved... we're changing states (shader program) just to send the uniforms over...
+		/*
+		gouraudShader.bind();
+		light.sendToShader(gouraudShader);
+		*/
 		phongShader.bind();
 		light.sendToShader(phongShader);
+		
 	}
 	
 	private void updateScene() {
