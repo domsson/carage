@@ -24,6 +24,11 @@ public class RenderMatrix extends Matrix4f {
 		this.name = name;
 	}
 	
+	public RenderMatrix(Matrix4f src, String name) {
+		super(src);
+		this.name = name;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -64,6 +69,15 @@ public class RenderMatrix extends Matrix4f {
 		}
 		sendToShader(shader, buffer);
 	}
+	
+	/*
+	public static void sendMatrixToShader(RenderMatrix matrix, ShaderProgram shader, FloatBuffer buffer) {
+		matrix.store(buffer);
+        buffer.flip();
+        glUniformMatrix4(shader.getUniformLocation(matrix.getName()), false, buffer);
+		buffer.clear();
+	}
+	*/
 	
 	/**
 	 * Create a buffer which will be used whenever this matrix is requested to send itself to the active shader.

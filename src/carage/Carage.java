@@ -120,6 +120,7 @@ public class Carage extends AbstractSimpleBase {
 		System.out.println("OpenGL Renderer: "+glGetString(GL_RENDERER));
 		System.out.println("OpenGL Version : "+glGetString(GL_VERSION));
 		System.out.println("GLSL Version   : "+glGetString(GL_SHADING_LANGUAGE_VERSION));
+		System.out.println();
 	}
 		
 	private void initViewport() {

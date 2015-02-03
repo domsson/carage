@@ -36,6 +36,8 @@ public class Renderer {
 	private ViewMatrix viewMatrix;
 	private ModelMatrix modelMatrix;
 	private NormalMatrix normalMatrix;
+	private RenderMatrix modelViewMatrix; // new
+	private RenderMatrix modelViewProjectionMatrix; // new
 	
 	private ShaderManager shaderManager = ShaderManager.getInstance();
 	private FloatBuffer matrixBuffer;
@@ -132,6 +134,9 @@ public class Renderer {
 		initProjectionMatrix();
 		initNormalMatrix(); // needs model and view matrix, hence has to be called after their initialization
 		initMatrixBuffer();
+		// new
+		modelViewMatrix = new RenderMatrix("modelViewMatrix"); // new
+		modelViewProjectionMatrix = new RenderMatrix("modelViewProjectionMatrix"); // new
 	}
 	
 	private void initNormalMatrix() {
@@ -158,9 +163,15 @@ public class Renderer {
 	}
 		
 	private void sendMatricesToShader(ShaderProgram shader) {
-		projectionMatrix.sendToShader(shader, matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
+		// projectionMatrix.sendToShader(shader, matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
 		viewMatrix.sendToShader(shader, matrixBuffer); // same
 		modelMatrix.sendToShader(shader, matrixBuffer); // same
+		
+		Matrix4f.mul(viewMatrix, modelMatrix, modelViewMatrix); // new
+		modelViewMatrix.sendToShader(shader, matrixBuffer); // new
+		Matrix4f.mul(projectionMatrix, modelViewMatrix, modelViewProjectionMatrix); // new
+		modelViewProjectionMatrix.sendToShader(shader, matrixBuffer); // new
+		
 		normalMatrix.sendToShader(shader, matrixBuffer); // same
 	}
 		
