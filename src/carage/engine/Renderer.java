@@ -17,6 +17,13 @@ import lenz.opengl.utils.ShaderProgram;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix4f;
 
+import carage.engine.matrix.ModelMatrix;
+import carage.engine.matrix.ModelViewMatrix;
+import carage.engine.matrix.ModelViewProjectionMatrix;
+import carage.engine.matrix.NormalMatrix;
+import carage.engine.matrix.ProjectionMatrix;
+import carage.engine.matrix.ViewMatrix;
+
 public class Renderer {
 	
 	public static final String DEFAULT_SHADER = "phong";

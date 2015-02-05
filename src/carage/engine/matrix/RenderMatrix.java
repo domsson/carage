@@ -1,4 +1,4 @@
-package carage.engine;
+package carage.engine.matrix;
 
 import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 
@@ -69,15 +69,6 @@ public class RenderMatrix extends Matrix4f {
 		}
 		sendToShader(shader, buffer);
 	}
-	
-	/*
-	public static void sendMatrixToShader(RenderMatrix matrix, ShaderProgram shader, FloatBuffer buffer) {
-		matrix.store(buffer);
-        buffer.flip();
-        glUniformMatrix4(shader.getUniformLocation(matrix.getName()), false, buffer);
-		buffer.clear();
-	}
-	*/
 	
 	/**
 	 * Create a buffer which will be used whenever this matrix is requested to send itself to the active shader.

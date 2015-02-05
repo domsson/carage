@@ -1,4 +1,5 @@
-package carage.engine;
+package carage.engine.matrix;
+
 
 // Normal Matrix = Transponierte und invertierte (Reihenfolge egal) ModelView Matrix!
 @SuppressWarnings("serial")
@@ -40,7 +41,7 @@ public class NormalMatrix extends RenderMatrix {
 	 */
 	public void update() {
 		if (modelViewMatrix == null) {
-			setModelViewMatrix((ModelViewMatrix) (new ModelViewMatrix()).setIdentity());
+			setModelViewMatrix(new ModelViewMatrix());
 		}
 		this.load(modelViewMatrix);
 		invert();

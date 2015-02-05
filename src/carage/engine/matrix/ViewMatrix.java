@@ -1,4 +1,6 @@
-package carage.engine;
+package carage.engine.matrix;
+
+import carage.engine.Camera;
 
 @SuppressWarnings("serial")
 public class ViewMatrix extends RenderMatrix {

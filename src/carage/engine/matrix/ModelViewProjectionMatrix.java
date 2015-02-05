@@ -1,6 +1,7 @@
-package carage.engine;
+package carage.engine.matrix;
 
 import org.lwjgl.util.vector.Matrix4f;
+
 
 @SuppressWarnings("serial")
 public class ModelViewProjectionMatrix extends RenderMatrix {
