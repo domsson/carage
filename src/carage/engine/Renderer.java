@@ -17,7 +17,6 @@ import lenz.opengl.utils.ShaderProgram;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix4f;
 
-// TODO make this static or singleton or something? i guess? or maybe not?!
 public class Renderer {
 	
 	public static final String DEFAULT_SHADER = "phong";
@@ -32,15 +31,20 @@ public class Renderer {
 	
 	private Camera camera;
 
+	// TODO This is one big mess of matrices!
+	// It kinda makes sense though, as pre-calculating the different combinations
+	// of matrices makes it possible to spoon-feed the shaders exactly what they
+	// need for their calculations, hence saving lots of matrix multiplications.
+	
 	private ProjectionMatrix projectionMatrix;
 	private ViewMatrix viewMatrix;
 	private ModelMatrix modelMatrix;
 	private NormalMatrix normalMatrix;
-	private RenderMatrix modelViewMatrix; // new
-	private RenderMatrix modelViewProjectionMatrix; // new
+	private ModelViewMatrix modelViewMatrix; // new
+	private ModelViewProjectionMatrix modelViewProjectionMatrix; // new
 	
-	private ShaderManager shaderManager = ShaderManager.getInstance();
 	private FloatBuffer matrixBuffer;
+	private ShaderManager shaderManager = ShaderManager.getInstance();
 	
 	public Renderer() {
 		this.width = DEFAULT_WIDTH;
@@ -131,16 +135,23 @@ public class Renderer {
 	private void initMatrices() {
 		initModelMatrix();
 		initViewMatrix();
+		initModelViewMatrix();
 		initProjectionMatrix();
-		initNormalMatrix(); // needs model and view matrix, hence has to be called after their initialization
+		initModelViewProjectionMatrix(); // needs model-view and projection matrices, so init those first!
+		initNormalMatrix(); // needs model-view matrix, hence has to be called after its initialization!
 		initMatrixBuffer();
-		// new
-		modelViewMatrix = new RenderMatrix("modelViewMatrix"); // new
-		modelViewProjectionMatrix = new RenderMatrix("modelViewProjectionMatrix"); // new
+	}
+	
+	private void initModelViewProjectionMatrix() {
+		modelViewProjectionMatrix = new ModelViewProjectionMatrix(modelViewMatrix, projectionMatrix);
+	}
+	
+	private void initModelViewMatrix() {
+		modelViewMatrix = new ModelViewMatrix(modelMatrix, viewMatrix);
 	}
 	
 	private void initNormalMatrix() {
-		normalMatrix = new NormalMatrix(modelMatrix, viewMatrix);
+		normalMatrix = new NormalMatrix(modelViewMatrix);
 	}
 	
 	private void initProjectionMatrix() {
@@ -162,17 +173,14 @@ public class Renderer {
 		matrixBuffer = BufferUtils.createFloatBuffer(16);
 	}
 		
+	// TODO performance: only send matrices if they have actually changed (how to check/know?)
 	private void sendMatricesToShader(ShaderProgram shader) {
-		// projectionMatrix.sendToShader(shader, matrixBuffer); // TODO performance: this only needs to be send _if_ it has changed! how/where to check?
-		viewMatrix.sendToShader(shader, matrixBuffer); // same
-		modelMatrix.sendToShader(shader, matrixBuffer); // same
-		
-		Matrix4f.mul(viewMatrix, modelMatrix, modelViewMatrix); // new
-		modelViewMatrix.sendToShader(shader, matrixBuffer); // new
-		Matrix4f.mul(projectionMatrix, modelViewMatrix, modelViewProjectionMatrix); // new
-		modelViewProjectionMatrix.sendToShader(shader, matrixBuffer); // new
-		
-		normalMatrix.sendToShader(shader, matrixBuffer); // same
+		// projectionMatrix.sendToShader(shader, matrixBuffer);
+		viewMatrix.sendToShader(shader, matrixBuffer);
+		modelMatrix.sendToShader(shader, matrixBuffer);
+		modelViewMatrix.sendToShader(shader, matrixBuffer);
+		modelViewProjectionMatrix.sendToShader(shader, matrixBuffer);
+		normalMatrix.sendToShader(shader, matrixBuffer);
 	}
 		
 	private void ensureAssetHasMaterial(Renderable asset) {
