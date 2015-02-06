@@ -63,7 +63,7 @@ public class Carage extends AbstractSimpleBase {
 	private long lastRender = 0;
 	private float delta = 0;
 	@SuppressWarnings("unused")
-	private float deltaInSeconds = 0;
+	private float secondsSinceLastRender = 0;
 	
 	// TODO Finally implement proper input handling, this is ugly
 	private boolean buttonForward  = false;
@@ -276,11 +276,11 @@ public class Carage extends AbstractSimpleBase {
 	
 	private void updateDelta() {
 		delta = getDelta();
-		deltaInSeconds = deltaToSeconds(delta);
+		secondsSinceLastRender = deltaToSeconds(delta);
 	}
 	
 	private void increaseScanlineTimer() {
-		scanlineTimer = (scanlineTimer >= 360) ? scanlineTimer - 360 : scanlineTimer + deltaInSeconds;
+		scanlineTimer = (scanlineTimer >= 1) ? scanlineTimer - 1 : scanlineTimer + secondsSinceLastRender;
 		System.out.println(scanlineTimer);
 	}
 	

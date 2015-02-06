@@ -30,7 +30,7 @@ highp float rand(vec2 co)
 }
 
 vec3 scanlines() {
-	int time = int(scanlineTimer) % 6;
+	int time = int(scanlineTimer * 12) % 6;
 	int lineNumber = int(pass_TextureCoord.t * viewportHeight) % 6;
 
 	vec3 pixelColor = greenLight;
