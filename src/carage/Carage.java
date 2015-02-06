@@ -94,7 +94,7 @@ public class Carage extends AbstractSimpleBase {
 	
 	private boolean lightIsOn = true;
 	private int lightFlickers = 0;
-	private float scanlineTimer = 0;
+	private float scanlineTimer = 0f;
 	private boolean renderSlendi = false;
 	private boolean renderCameraOverlay = true;
 	private boolean slendiMode = true;
@@ -112,6 +112,7 @@ public class Carage extends AbstractSimpleBase {
 		initLightSource();
 		initRenderer();
 		initAssets();
+		lastRender = getTime();
 	}
 	
 	private void printInfo() {
@@ -279,7 +280,8 @@ public class Carage extends AbstractSimpleBase {
 	}
 	
 	private void increaseScanlineTimer() {
-		scanlineTimer = (scanlineTimer >= 360) ? scanlineTimer - 360f : scanlineTimer + (TARGET_FPS * delta / 1000f);
+		scanlineTimer = (scanlineTimer >= 360) ? scanlineTimer - 360 : scanlineTimer + deltaInSeconds;
+		System.out.println(scanlineTimer);
 	}
 	
 	private void updateLightSource() {
@@ -332,7 +334,7 @@ public class Carage extends AbstractSimpleBase {
 		
 		// Procedural Shader needs input in order to move the scanlines...
 		proceduralShader.bind();
-		glUniform1f(proceduralShader.getUniformLocation("shaderTimer"), scanlineTimer);
+		glUniform1f(proceduralShader.getUniformLocation("scanlineTimer"), scanlineTimer);
 		// We have to enable alpha blending, otherwise the overlay would be opaque
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
