@@ -281,7 +281,6 @@ public class Carage extends AbstractSimpleBase {
 	
 	private void increaseScanlineTimer() {
 		scanlineTimer = (scanlineTimer >= 1) ? scanlineTimer - 1 : scanlineTimer + secondsSinceLastRender;
-		System.out.println(scanlineTimer);
 	}
 	
 	private void updateLightSource() {
