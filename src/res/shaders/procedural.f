@@ -44,7 +44,7 @@ vec3 scanlines() {
     vec3 pixelColor = (1, 0, 0);
     
     if (scanlineTimer > 180) {
-        pixelColor = (0, 1, 0);
+        pixelColor = vec3(0, 1, 0);
     }
 
 	return pixelColor;
