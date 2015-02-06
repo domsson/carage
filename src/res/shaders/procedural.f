@@ -13,7 +13,7 @@ uniform float scanlineTimer;
 
 const float scanlineAlpha = 0.25;
 const vec3 greenLight = vec3(0.27, 0.8, 0.27);
-const vec3 greenIntermediate = vec3(0.1, 0.7, 0.1);
+const vec3 greenMedium = vec3(0.1, 0.7, 0.1);
 const vec3 greenDark = vec3(0, 0.68, 0);
 
 out vec4 out_Color;
@@ -30,22 +30,16 @@ highp float rand(vec2 co)
 }
 
 vec3 scanlines() {
-/*	int time = int(scanlineTimer) % 6;
+	int time = int(scanlineTimer) % 6;
 	int lineNumber = int(pass_TextureCoord.t * viewportHeight) % 6;
 
 	vec3 pixelColor = greenLight;
 	if (lineNumber == ((0 + time) % 6) || lineNumber == ((3 + time) % 6)) {
-		pixelColor = greenIntermediate;
+		pixelColor = greenMedium;
 	}
 	if (lineNumber == ((4 + time) % 6) || lineNumber == ((5 + time) % 6)) {
 		pixelColor = greenDark;
-	}*/
-    
-    vec3 pixelColor = vec3(1, 0, 0);
-    
-    if (scanlineTimer > 180) {
-        pixelColor = vec3(0, 1, 0);
-    }
+	}
 
 	return pixelColor;
 }
