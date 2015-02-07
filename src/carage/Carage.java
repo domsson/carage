@@ -93,6 +93,7 @@ public class Carage extends AbstractSimpleBase {
 	
 	private boolean lightIsOn = true;
 	private int lightFlickers = 0;
+	private boolean flickerMode = true;
 	private float scanlineTimer = 0f;
 	private boolean renderSlendi = false;
 	private boolean renderCameraOverlay = true;
@@ -301,7 +302,7 @@ public class Carage extends AbstractSimpleBase {
 		
 	    adjustCarWheels();
 	    adjustLightSource();
-		flickerLight(slendiMode);
+		if (flickerMode) { flickerLight(slendiMode); }
 		adjustBulbAmbient();
 		panCam();
 		pitchCam();
@@ -388,6 +389,12 @@ public class Carage extends AbstractSimpleBase {
 	@SuppressWarnings("unused")
 	private void toggleSlendiMode() {
 		slendiMode = !slendiMode;
+	}
+	
+	private void toggleFlickerMode() {
+		flickerMode = !flickerMode;
+		lightIsOn = true;
+		light.turnOn();
 	}
 	
 	private void adjustLightSource() {
@@ -521,6 +528,9 @@ public class Carage extends AbstractSimpleBase {
 			        	break;
 			        case Keyboard.KEY_P:
 			        	toggleCameraPan();
+			        	break;
+			        case Keyboard.KEY_F:
+			        	toggleFlickerMode();
 			        	break;
 		        }
 		    }

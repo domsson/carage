@@ -6,6 +6,7 @@ Our simple car 'game' for the computer graphics course at HTW.
 Controls
 --------
 - `W` `S` `A` `D`: Spin / Steer Wheels (Car won't move though)
+- `F`: Toggle Light **F**lickering
 - `O`: Toggle Camera **O**verlay
 - `L`: Toggle **L**amp (Turn light on/off)
 - `P`: Toggle Camera Auto-**P**anning
