@@ -334,6 +334,7 @@ public class Carage extends AbstractSimpleBase {
 		// Procedural Shader needs input in order to move the scanlines...
 		proceduralShader.bind();
 		glUniform1f(proceduralShader.getUniformLocation("scanlineTimer"), scanlineTimer);
+		glUniform1f(proceduralShader.getUniformLocation("randomNumber"), (float)Math.random());
 		// We have to enable alpha blending, otherwise the overlay would be opaque
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
