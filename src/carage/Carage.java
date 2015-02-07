@@ -62,7 +62,6 @@ public class Carage extends AbstractSimpleBase {
 	
 	private long lastRender = 0;
 	private float delta = 0;
-	@SuppressWarnings("unused")
 	private float secondsSinceLastRender = 0;
 	
 	// TODO Finally implement proper input handling, this is ugly

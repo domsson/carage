@@ -57,5 +57,6 @@ void main(void) {
     vec4 scanlineColor = vec4(scanlines(), scanlineAlpha);
     vec2 quantTexCoords = quantitise(pass_TextureCoord, pixelStepSize);
     float noise = ((rand(vec2(quantTexCoords.s * scanlineTimer, quantTexCoords.t)) - 0.5) * noiseFactor) + 1;
-	out_Color = (texColor.a == 0) ? scanlineColor * noise : (1 - linesFactor) * texColor + linesFactor * scanlineColor * noise;
+    vec4 modifiedTexColor = (texColor.r > 0.1 && texColor.g == 0 && scanlineTimer > 0.5) ? vec4(0, 0, 0, 1) : texColor;
+    out_Color = (modifiedTexColor.a == 0) ? scanlineColor * noise : (1 - linesFactor) * modifiedTexColor + linesFactor * scanlineColor * noise;
 }

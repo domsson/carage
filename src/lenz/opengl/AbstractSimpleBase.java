@@ -1,9 +1,8 @@
 package lenz.opengl;
 import org.lwjgl.LWJGLException;
-//import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
-//import org.lwjgl.opengl.PixelFormat;
+import org.lwjgl.opengl.PixelFormat;
 
 public abstract class AbstractSimpleBase {
 	
@@ -23,10 +22,10 @@ public abstract class AbstractSimpleBase {
 		try {
 			Display.setTitle(title);
 			Display.setDisplayMode(new DisplayMode(width, height));
-			Display.create();
+			//Display.create();
 			// http://stackoverflow.com/questions/18702467/enable-anti-aliasing-with-lwjgl
-			// The last value (samples) will get us Antialiasing! But what do the other values do!?
-			// Display.create(new PixelFormat(/*Alpha Bits*/2, /*Depth bits*/ 2, /*Stencil bits*/ 0, /*samples*/2));
+			// TODO The last value (samples) will get us Antialiasing! But what do the other values do!?
+			Display.create(new PixelFormat(/*Alpha Bits*/2, /*Depth bits*/ 2, /*Stencil bits*/ 0, /*samples*/2));
 		} catch (LWJGLException e) {
 			throw new RuntimeException("Unable to intialize display", e);
 		}
