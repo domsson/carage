@@ -6,3 +6,5 @@ bin/*
 .metadata/
 # ignore eclipse project specific files
 .classpath
+# ignore dropbox meta file, if any
+.dropbox
