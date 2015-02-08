@@ -129,7 +129,8 @@ public class Material {
 	}
 	
 	private void initShader(String shaderName) {
-		setShader(new ShaderProgram(shaderName));
+		ShaderManager shaderManager = ShaderManager.getInstance();
+		setShader(shaderManager.get(shaderName));
 	}
 
 	private void normalizeReflectivities() {
