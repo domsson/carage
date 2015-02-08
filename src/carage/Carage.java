@@ -116,8 +116,6 @@ public class Carage extends AbstractSimpleBase {
 		initRenderer();
 		initAssets();
 		lastRender = getTime();
-		System.out.println("X:" + NOISE_GRAIN_SIZE_X);
-		System.out.println("Y:" + NOISE_GRAIN_SIZE_Y);
 	}
 	
 	private void printInfo() {
