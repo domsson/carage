@@ -5,5 +5,4 @@ bin/*
 # ignore eclipse metadata folder
 .metadata/
 # ignore eclipse project specific files
-.project
 .classpath
