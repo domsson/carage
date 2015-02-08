@@ -24,11 +24,11 @@ out vec3 pass_Normal;
 out vec3 pass_LightPosition;
 
 float diffuseComponent(vec3 light, vec3 normal) {
-	return max(dot(light, normal), 0f);
+	return max(dot(light, normal), 0);
 }
 
 float specularComponent(vec3 reflection, vec3 camera, float hardness) {
-	return pow(max(dot(reflection, camera), 0f), hardness);
+	return pow(max(dot(reflection, camera), 0), hardness);
 }
 
 vec3 lightVector(vec3 lightSource, vec3 position) {
@@ -44,7 +44,7 @@ float intensity(vec3 light, vec3 normal, float lightIntensity) {
 	float specular = lightIntensity * materialSpecularReflectivity * specularComponent(reflection, camera, materialSpecularHardness);
 	
 	float intensity = ambient + diffuse + specular;
-	return clamp(intensity, 0f, 1f);
+	return clamp(intensity, 0, 1);
 }
 
 void main(void) {
