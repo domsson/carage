@@ -60,6 +60,9 @@ public class Carage extends AbstractSimpleBase {
 	public static final float CAM_PAN_LEFT  =  0.00f; // Bigger angle  = Panning left 
 	public static final float CAM_PAN_STEP  =  0.25f;
 	
+	public static final float NOISE_GRAIN_SIZE_X = 1/200f; // relative to resolution
+	public static final float NOISE_GRAIN_SIZE_Y = (WIDTH * NOISE_GRAIN_SIZE_X) / HEIGHT;
+	
 	private long lastRender = 0;
 	private float delta = 0;
 	private float secondsSinceLastRender = 0;
@@ -113,6 +116,8 @@ public class Carage extends AbstractSimpleBase {
 		initRenderer();
 		initAssets();
 		lastRender = getTime();
+		System.out.println("X:" + NOISE_GRAIN_SIZE_X);
+		System.out.println("Y:" + NOISE_GRAIN_SIZE_Y);
 	}
 	
 	private void printInfo() {
@@ -155,6 +160,8 @@ public class Carage extends AbstractSimpleBase {
 		proceduralShader.bind();
 		glUniform1i(proceduralShader.getUniformLocation("viewportWidth"), WIDTH);
 		glUniform1i(proceduralShader.getUniformLocation("viewportHeight"), HEIGHT);
+		glUniform1f(proceduralShader.getUniformLocation("noiseGrainSizeX"), NOISE_GRAIN_SIZE_X);
+		glUniform1f(proceduralShader.getUniformLocation("noiseGrainSizeY"), NOISE_GRAIN_SIZE_Y);
 		proceduralShader.unbind();
 	}
 	
@@ -334,7 +341,6 @@ public class Carage extends AbstractSimpleBase {
 		// Procedural Shader needs input in order to move the scanlines...
 		proceduralShader.bind();
 		glUniform1f(proceduralShader.getUniformLocation("scanlineTimer"), scanlineTimer);
-		glUniform1f(proceduralShader.getUniformLocation("randomNumber"), (float)Math.random());
 		// We have to enable alpha blending, otherwise the overlay would be opaque
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

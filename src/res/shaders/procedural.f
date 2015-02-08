@@ -10,7 +10,8 @@ uniform sampler2D tex;
 uniform int viewportWidth;
 uniform int viewportHeight;
 uniform float scanlineTimer;
-uniform float randomNumber;
+uniform float noiseGrainSizeX;
+uniform float noiseGrainSizeY;
 
 const float scanlineAlpha = 0.25;
 const vec3 greenLight = vec3(0.35, 0.9, 0.35);
@@ -48,14 +49,14 @@ vec3 scanlines() {
 	return pixelColor;
 }
 
-vec2 quantitise(vec2 st, int stepSize) {
-    return vec2(int((st.s * (viewportWidth / stepSize)) + 0.5), int((st.t * (viewportHeight / stepSize)) + 0.5));
+vec2 quantitise(vec2 st) {
+    return vec2(int((st.s / noiseGrainSizeX) + 0.5), int((st.t / noiseGrainSizeY) + 0.5));
 }
 
 void main(void) {
 	vec4 texColor = texture(tex, pass_TextureCoord);
     vec4 scanlineColor = vec4(scanlines(), scanlineAlpha);
-    vec2 quantTexCoords = quantitise(pass_TextureCoord, pixelStepSize);
+    vec2 quantTexCoords = quantitise(pass_TextureCoord);
     float noise = ((rand(vec2(quantTexCoords.s * scanlineTimer, quantTexCoords.t)) - 0.5) * noiseFactor) + 1;
     vec4 modifiedTexColor = (texColor.r > 0.1 && texColor.g == 0 && scanlineTimer > 0.5) ? vec4(0, 0, 0, 1) : texColor;
     out_Color = (modifiedTexColor.a == 0) ? scanlineColor * noise : (1 - linesFactor) * modifiedTexColor + linesFactor * scanlineColor * noise;
