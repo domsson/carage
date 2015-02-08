@@ -49,14 +49,14 @@ vec3 scanlines() {
 	return pixelColor;
 }
 
-vec2 quantitise(vec2 st) {
+vec2 quantise(vec2 st) {
     return vec2(int((st.s / noiseGrainSizeX) + 0.5), int((st.t / noiseGrainSizeY) + 0.5));
 }
 
 void main(void) {
 	vec4 texColor = texture(tex, pass_TextureCoord);
     vec4 scanlineColor = vec4(scanlines(), scanlineAlpha);
-    vec2 quantTexCoords = quantitise(pass_TextureCoord);
+    vec2 quantTexCoords = quantise(pass_TextureCoord);
     float noise = ((rand(vec2(quantTexCoords.s * scanlineTimer, quantTexCoords.t)) - 0.5) * noiseFactor) + 1;
     vec4 modifiedTexColor = (texColor.r > 0.1 && texColor.g == 0 && scanlineTimer > 0.5) ? vec4(0, 0, 0, 1) : texColor;
     out_Color = (modifiedTexColor.a == 0) ? scanlineColor * noise : (1 - linesFactor) * modifiedTexColor + linesFactor * scanlineColor * noise;
