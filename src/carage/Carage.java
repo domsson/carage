@@ -254,7 +254,7 @@ public class Carage extends AbstractSimpleBase {
 		assets.add(ladder);
 				
 		hangingBulb = new Asset("hanging-bulb");
-		hangingBulb.setMaterial(new Material("", null, 0.8f, 0.05f, 0.15f, 50));
+		hangingBulb.setMaterial(new Material("", phongShader, 0.8f, 0.05f, 0.15f, 50));
 		hangingBulb.setPosition(0f, 2.0f, 2.0f);
 		assets.add(hangingBulb);
 		

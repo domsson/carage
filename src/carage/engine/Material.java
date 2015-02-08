@@ -14,6 +14,7 @@ public class Material {
 	
 	protected String name = "";				// In case we're going to implement a MaterialManager for material re-use... not used for now.
 	protected ShaderProgram shader = null;
+	ShaderManager shaderManager = ShaderManager.getInstance();
 	
 	protected float ambientReflectivity;	// 'ka' in the lecture slides; "ka + kd + ks = 1"
 	protected float diffuseReflectivity;	// 'kd' in the lecture slides; "ka + kd + ks = 1"
@@ -129,7 +130,6 @@ public class Material {
 	}
 	
 	private void initShader(String shaderName) {
-		ShaderManager shaderManager = ShaderManager.getInstance();
 		setShader(shaderManager.get(shaderName));
 	}
 
