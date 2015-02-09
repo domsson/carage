@@ -4,6 +4,7 @@ This is the result of a university assignment (computer graphics course).
 We¹ decided to go for a lot more than what was asked of us. Although we
 did not implement all the things we put on our list, we still ended up with
 what you could call a very limited 3D engine on top of LWJGL/OpenGL.
+
 ![carage screen](http://i.imgur.com/tb4vuqV.png "Yep, that's Carage")
 
 Controls
