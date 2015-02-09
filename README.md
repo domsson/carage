@@ -4,7 +4,7 @@ This is the result of a university assignment (computer graphics course).
 We¹ decided to go for a lot more than what was asked of us. Although we
 did not implement all the things we put on our list, we still ended up with
 what you could call a very limited 3D engine on top of LWJGL/OpenGL.
-![carage screen](http://i.imgur.com/7tPYgi3.png "Yep, that's Carage")
+![carage screen](http://i.imgur.com/tb4vuqV.png "Yep, that's Carage")
 
 Controls
 --------
@@ -62,14 +62,14 @@ Notes on engine design
 
 Copyright / License
 -------------------
-You may use all code from within the `carage` package in any way you want.
+You **may use** all code from within the `carage` package in any way you want.
 All of this code has been written by us¹ or is from sources that freely
 distribute their code as well (such code should have a link to the source
 in the preceding comment). Code in the `lenz` package has been written by
 our professor, hence you would need to contact him to ask him about the
-license details if you were to use or distribute this code. You may **not**
+license details if you were to use or distribute this code. You **may not**
 use or redistribute The included 3D models or textures, other than for
-testing this application on your machine.
+locally testing this application on your machine.
 
 Some useful resources
 ---------------------
