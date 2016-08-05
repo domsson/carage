@@ -44,7 +44,7 @@ public class GeometryManager {
 	// TODO move this (and the following three) over to Geometry itself? Or is this a good place for it?
 	private Geometry loadGeometry(String resource) {
 		OBJLoader objectLoader = new OBJLoader(resource+"."+GEOMETRY_FORMAT);
-		return new Geometry(getVAO(objectLoader), getIBO(objectLoader), getBoundingBox(objectLoader));
+		return new Geometry(getVAO(objectLoader), getBoundingBox(objectLoader));
 	}
 	
 	private VertexArrayObject getVAO(OBJLoader objectLoader) {
@@ -56,6 +56,7 @@ public class GeometryManager {
 		if (objectLoader.hasNormals()) {
 			vao.addVBO(new VertexBufferObject(objectLoader.getExpandedNormals(), 3), ShaderAttribute.NORMALS);
 		}
+		vao.addIBO(getIBO(objectLoader));
 		return vao;
 	}
 	

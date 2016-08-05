@@ -100,18 +100,6 @@ public class Asset extends Entity implements Renderable {
 		return geometry.getVAOId();
 	}
 	
-	public boolean hasIBO() {
-		return geometry.hasIBO();
-	}
-	
-	public IndexBufferObject getIBO() {
-		return geometry.getIBO();
-	}
-	
-	public int getIBOId() {
-		return geometry.getIBOId();
-	}
-	
 	public boolean hasBoundingBox() {
 		return geometry.hasBoundingBox();
 	}

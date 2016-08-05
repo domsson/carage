@@ -64,7 +64,6 @@ public class Renderer {
 		initMatrices();
 	}
 	
-	
 	public Renderer(int width, int height, Camera camera) {
 		this.width = width;
 		this.height = height;
@@ -88,7 +87,7 @@ public class Renderer {
 	private void performAssetRendering(Renderable asset) {
 		glActiveTexture(GL_TEXTURE0);						// This is the default and we're okay with it
 		glBindTexture(GL_TEXTURE_2D, asset.getTextureId());	// Bind the Asset's Texture to the state machine
-		renderVAO(asset.getVAO(), asset.getIBO());			// Render the Asset's Geometry via VAO & IBO
+		renderVAO(asset.getVAO());							// Render the Asset's Geometry via VAO & IBO
 		glBindTexture(GL_TEXTURE_2D, 0);					// Unbind the Texture to have a clean state
 	}
 	
@@ -118,24 +117,23 @@ public class Renderer {
 	}
 	
 	public static void renderVAO(int vaoId) {
+		// TODO issue: we don't know if the VAO has an IBO or not
+		// If it has (we could pass that in as argument), we still don't know
+		// its size - so we'd have to pass that in as well.
+		// Currently the method isn't in use. Should consider to throw it out entirely.
 		glBindVertexArray(vaoId);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
 	}
 	
 	public static void renderVAO(VertexArrayObject vao) {
-		renderVAO(vao.getId());
-	}
-	
-	public static void renderVAO(VertexArrayObject vao, IndexBufferObject ibo) {
-		if (ibo == null) {
-			renderVAO(vao);
-			return;
-		}
 		vao.bind();
-		ibo.bind();
-		glDrawElements(GL_TRIANGLES, ibo.getSize(), GL_UNSIGNED_INT, 0);
-		ibo.unbind();
+		if (vao.hasIBO()) {
+			glDrawElements(GL_TRIANGLES, vao.getIBO().getSize(), GL_UNSIGNED_INT, 0);
+		}
+		else {
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+		}
 		vao.unbind();
 	}
 	

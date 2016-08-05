@@ -13,7 +13,8 @@ public class VertexArrayObject {
 
 	private int id = 0;	
 	private EnumMap<ShaderAttribute, VertexBufferObject> vbos = new EnumMap<>(ShaderAttribute.class);
-
+	private IndexBufferObject ibo;
+	
 	public VertexArrayObject() {
 		generateId();
 	}
@@ -32,6 +33,14 @@ public class VertexArrayObject {
 		vbo.unbind();
 		unbind();
 	}
+	
+	public void addIBO(IndexBufferObject ibo) {
+		this.ibo = ibo;
+		bind();
+		ibo.bind(); // This should register the IBO with this VAO in OpenGL
+		unbind();
+		ibo.unbind(); // Important: unbind the IBO *after* unbinding the VAO
+	}
 
 	/**
 	 * Get a VBO that has been previously added to this VAO.
@@ -40,6 +49,14 @@ public class VertexArrayObject {
 	 */
 	public VertexBufferObject getVBO(ShaderAttribute shaderAttribute) {
 		return vbos.get(shaderAttribute);
+	}
+	
+	public boolean hasIBO() {
+		return (ibo != null);
+	}
+	
+	public IndexBufferObject getIBO() {
+		return ibo;
 	}
 	
 	/**

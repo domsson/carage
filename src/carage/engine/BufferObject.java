@@ -209,9 +209,7 @@ public class BufferObject {
 	protected void createBuffer(int[] data) {
 		size = data.length;
 		generateId();
-//		bind();
 		sendBuffer(bufferFromData(data));
-//		unbind();
 	}
 	
 	/**
@@ -223,9 +221,7 @@ public class BufferObject {
 	protected void createBuffer(float[] data) {
 		size = data.length;
 		generateId();
-//		bind();
 		sendBuffer(bufferFromData(data));
-//		unbind();
 	}
 	
 	/**

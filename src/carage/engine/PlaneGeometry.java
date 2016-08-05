@@ -7,13 +7,14 @@ public class PlaneGeometry extends Geometry {
 	private VertexBufferObject positionVBO = null;
 	private VertexBufferObject normalsVBO = null;
 	private VertexBufferObject textureVBO = null;
+	private IndexBufferObject ibo = null;
 	
 	public PlaneGeometry() {
 		buildPositionVBO();
 		buildNormalsVBO();
 		buildTextureVBO();
-		buildVAO();
 		buildIBO();
+		buildVAO();
 		buildBoundingBox();
 	}
 	
@@ -64,7 +65,8 @@ public class PlaneGeometry extends Geometry {
 		vao = new VertexArrayObject();
 		vao.addVBO(positionVBO, ShaderAttribute.POSITION);
 		vao.addVBO(normalsVBO, ShaderAttribute.NORMALS);
-		vao.addVBO(textureVBO, ShaderAttribute.TEXTURE);		
+		vao.addVBO(textureVBO, ShaderAttribute.TEXTURE);
+		vao.addIBO(ibo);
 	}
 	
 	private void buildBoundingBox() {
